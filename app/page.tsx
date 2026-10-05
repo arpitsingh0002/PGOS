@@ -47,15 +47,15 @@ export default function LandingPage() {
           <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Link href="/tenant/login">
-            <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-xs text-slate-300">
-              Tenant Portal
+        <div className="flex items-center gap-2.5">
+          <Link href="/student-login">
+            <Button variant="outline" size="sm" className="text-xs border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/40 hover:text-cyan-200 gap-1.5 shadow-sm">
+              🎓 Student Login
             </Button>
           </Link>
           <Link href="/login">
             <Button size="sm" variant="outline" className="text-xs">
-              Sign In
+              Owner Sign In
             </Button>
           </Link>
           <Link href="/dashboard">
