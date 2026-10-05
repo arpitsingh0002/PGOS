@@ -1269,8 +1269,23 @@ export function usePGStore() {
     meal_type?: 'lunch' | 'breakfast_pack' | 'dinner_pack';
     property_id?: string;
     building_id?: string;
+    bypassCutoff?: boolean;
   }) => {
     const today = getTodayDateStr();
+    const currentHour = new Date().getHours();
+
+    // Students can ONLY opt for tiffin before 9:00 AM
+    if (!params.bypassCutoff && currentHour >= 9) {
+      const existing = tiffinOrders.find(
+        (t) => t.tenant_id === params.tenant_id && t.date === today
+      );
+      if (!existing) {
+        throw new Error(
+          'Daily tiffin opt-in is only permitted before 9:00 AM daily. Please dine in the mess dining hall today.'
+        );
+      }
+    }
+
     const existingIndex = tiffinOrders.findIndex(
       (t) => t.tenant_id === params.tenant_id && t.date === today
     );
@@ -1326,8 +1341,14 @@ export function usePGStore() {
     return targetOrder;
   };
 
-  const cancelTiffin = (tenantId: string) => {
+  const cancelTiffin = (tenantId: string, bypassCutoff: boolean = false) => {
     const today = getTodayDateStr();
+    const currentHour = new Date().getHours();
+    if (!bypassCutoff && currentHour >= 9) {
+      throw new Error(
+        'Tiffin orders cannot be cancelled after 9:00 AM as kitchen preparation has already commenced.'
+      );
+    }
     const target = tiffinOrders.find((t) => t.tenant_id === tenantId && t.date === today);
     if (!target) return;
     const updated = tiffinOrders.filter((t) => t.id !== target.id);

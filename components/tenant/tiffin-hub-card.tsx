@@ -12,8 +12,9 @@ import {
   Edit2,
   Check,
   Package,
-  ArrowRight,
   ShieldCheck,
+  Lock,
+  Info,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -52,6 +53,13 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
     const day = String(now.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }, []);
+
+  // Time Cutoff: Student can ONLY opt for tiffin before 9:00 AM
+  // Simulated hour state enables testing both "Before 9 AM (Open)" and "After 9 AM (Closed)" states
+  const [simulatedHour, setSimulatedHour] = React.useState<number | null>(null);
+  const actualHour = new Date().getHours();
+  const effectiveHour = simulatedHour !== null ? simulatedHour : actualHour;
+  const isPast9AM = effectiveHour >= 9;
 
   // Check if tenant already has an active order for today
   const existingOrder = tiffinOrders.find(
@@ -100,6 +108,11 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
   };
 
   const handleConfirmOrder = async () => {
+    if (isPast9AM && !existingOrder) {
+      toast.error('Opt-in closed: Students can only request tiffin before 9:00 AM.');
+      return;
+    }
+
     if (!college.trim()) {
       toast.error('Please enter your college name');
       return;
@@ -118,22 +131,32 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
         delivery_time: deliverySlot,
         meal_type: 'lunch',
         notes: specialNotes.trim() || undefined,
+        bypassCutoff: simulatedHour !== null ? simulatedHour < 9 : false,
       });
       toast.success(
         `🍱 Tiffin confirmed for ${deliverySlot}! Grouped under ${college.trim()}`
       );
-    } catch {
-      toast.error('Could not submit tiffin order. Please try again.');
+    } catch (err: any) {
+      toast.error(err?.message || 'Could not submit tiffin order. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleCancel = async () => {
+    if (isPast9AM && simulatedHour === null) {
+      toast.error('Tiffin orders cannot be cancelled after 9:00 AM as kitchen prep has commenced.');
+      return;
+    }
+
     if (confirm('Are you sure you want to cancel today\'s packed tiffin?')) {
-      await cancelTiffin(currentTenant.id);
-      setOptInChoice('no');
-      toast.info('Tiffin order cancelled. You can dine at the mess buffet today.');
+      try {
+        await cancelTiffin(currentTenant.id, true);
+        setOptInChoice('no');
+        toast.info('Tiffin order cancelled. You can dine at the mess buffet today.');
+      } catch (err: any) {
+        toast.error(err?.message || 'Failed to cancel order.');
+      }
     }
   };
 
@@ -143,78 +166,137 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
       <div className="absolute top-0 right-0 w-44 h-44 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header */}
-      <div className="flex items-start justify-between pb-3 border-b border-slate-800 relative z-10">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between pb-3 border-b border-slate-800 relative z-10 gap-2">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-400 flex items-center justify-center shadow-md">
             <Package className="h-5 w-5" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-sm font-bold text-white tracking-tight">
                 Daily Packed Tiffin Service
               </h3>
               <Badge variant="warning" className="text-[10px] py-0 px-2">
                 Today&apos;s Lunch
               </Badge>
+              {isPast9AM ? (
+                <Badge variant="danger" className="text-[10px] gap-1">
+                  <Lock className="h-2.5 w-2.5" /> Closed (Past 9 AM)
+                </Badge>
+              ) : (
+                <Badge variant="success" className="text-[10px] gap-1">
+                  <Clock className="h-2.5 w-2.5" /> Open Until 09:00 AM
+                </Badge>
+              )}
             </div>
             <p className="text-xs text-slate-400 mt-0.5">
-              Opt-in daily before 07:00 AM • Categorized by college route
+              Rule: Opt-in allowed only <strong>before 09:00 AM</strong> daily &bull; Categorized by college
             </p>
           </div>
         </div>
 
-        {existingOrder ? (
-          <Badge variant="success" className="text-[10px] flex items-center gap-1">
-            <CheckCircle2 className="h-3 w-3" /> Opted In
-          </Badge>
-        ) : (
-          <Badge variant="outline" className="text-[10px]">
-            Action Required
-          </Badge>
-        )}
+        {/* Status & Simulation Switcher */}
+        <div className="flex items-center gap-2 self-start sm:self-center">
+          {/* Quick tester simulation toggle */}
+          <button
+            type="button"
+            onClick={() => {
+              if (simulatedHour === null) {
+                setSimulatedHour(8); // Test before 9 AM
+                toast.info('Simulating 08:00 AM (Opt-In Open)');
+              } else if (simulatedHour === 8) {
+                setSimulatedHour(10); // Test after 9 AM
+                toast.info('Simulating 10:00 AM (Opt-In Closed)');
+              } else {
+                setSimulatedHour(null); // Real current time
+                toast.info('Reset to actual system time');
+              }
+            }}
+            title="Click to test cutoff behavior before/after 9:00 AM"
+            className="text-[10px] px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-850 text-slate-400 hover:text-white border border-slate-800 transition-colors"
+          >
+            🕒 Time: {simulatedHour !== null ? `${simulatedHour}:00 (${simulatedHour < 9 ? 'Open' : 'Closed'})` : 'Live'}
+          </button>
+
+          {existingOrder ? (
+            <Badge variant="success" className="text-[10px] flex items-center gap-1">
+              <CheckCircle2 className="h-3 w-3" /> Opted In
+            </Badge>
+          ) : isPast9AM ? (
+            <Badge variant="outline" className="text-[10px] text-rose-400 border-rose-500/30">
+              Closed for Today
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="text-[10px] text-emerald-400 border-emerald-500/30">
+              Open to Order
+            </Badge>
+          )}
+        </div>
       </div>
 
       {/* Body Content */}
       <div className="pt-4 space-y-4 relative z-10">
-        {/* Toggle Question: Do you want tiffin today? */}
-        <div>
-          <label className="text-xs font-semibold text-slate-200 block mb-2">
-            Do you want a packed tiffin for college today?
-          </label>
-          <div className="grid grid-cols-2 gap-2.5">
-            <button
-              type="button"
-              onClick={() => setOptInChoice('yes')}
-              className={`p-3 rounded-2xl text-xs font-semibold flex items-center justify-center gap-2 transition-all border ${
-                optInChoice === 'yes'
-                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-emerald-500 shadow-lg shadow-emerald-600/25 ring-1 ring-emerald-400'
-                  : 'bg-slate-900/80 text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white'
-              }`}
-            >
-              <Package className="h-4 w-4" />
-              <span>Yes, Pack My Tiffin</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                if (existingOrder) {
-                  handleCancel();
-                } else {
-                  setOptInChoice('no');
-                }
-              }}
-              className={`p-3 rounded-2xl text-xs font-semibold flex items-center justify-center gap-2 transition-all border ${
-                optInChoice === 'no'
-                  ? 'bg-slate-800 text-slate-200 border-slate-700 shadow-md'
-                  : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-300'
-              }`}
-            >
-              <UtensilsCrossed className="h-4 w-4" />
-              <span>No, Dine in Mess</span>
-            </button>
+        {/* CUTOFF NOTICE: If past 9:00 AM and student has NOT opted in */}
+        {isPast9AM && !existingOrder && (
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-rose-950/40 via-slate-900 to-amber-950/30 border border-rose-500/30 space-y-2 animate-in fade-in duration-200">
+            <div className="flex items-center gap-2 text-rose-400 font-bold text-xs">
+              <Lock className="h-4 w-4" />
+              <span>Daily Tiffin Requests Closed for Today (Deadline: 09:00 AM)</span>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              As per mess policy, <strong>students can only opt for tiffin before 9:00 AM</strong> so kitchen
+              staff can finalize ingredients, cook, and pack meals batch-wise for college departures.
+            </p>
+            <div className="pt-1 flex items-center gap-2 text-[11px] text-amber-300">
+              <UtensilsCrossed className="h-3.5 w-3.5 text-amber-400" />
+              <span>
+                Please dine directly at the mess dining hall buffet (Open: 12:30 PM &ndash; 02:30 PM).
+              </span>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Toggle Question: Do you want tiffin today? (Only interactive before 9 AM or if order exists) */}
+        {(!isPast9AM || existingOrder) && (
+          <div>
+            <label className="text-xs font-semibold text-slate-200 block mb-2">
+              Do you want a packed tiffin for college today?
+            </label>
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => setOptInChoice('yes')}
+                className={`p-3 rounded-2xl text-xs font-semibold flex items-center justify-center gap-2 transition-all border ${
+                  optInChoice === 'yes'
+                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-emerald-500 shadow-lg shadow-emerald-600/25 ring-1 ring-emerald-400'
+                    : 'bg-slate-900/80 text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white'
+                }`}
+              >
+                <Package className="h-4 w-4" />
+                <span>Yes, Pack My Tiffin</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (existingOrder) {
+                    handleCancel();
+                  } else {
+                    setOptInChoice('no');
+                  }
+                }}
+                className={`p-3 rounded-2xl text-xs font-semibold flex items-center justify-center gap-2 transition-all border ${
+                  optInChoice === 'no'
+                    ? 'bg-slate-800 text-slate-200 border-slate-700 shadow-md'
+                    : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-300'
+                }`}
+              >
+                <UtensilsCrossed className="h-4 w-4" />
+                <span>No, Dine in Mess</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* If opted NO */}
         {optInChoice === 'no' && !existingOrder && (
@@ -241,7 +323,7 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
                     College / Institution
                   </span>
                 </div>
-                {!isEditingCollege && !existingOrder && (
+                {!isEditingCollege && !existingOrder && !isPast9AM && (
                   <button
                     type="button"
                     onClick={() => setIsEditingCollege(true)}
@@ -273,7 +355,7 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
                   <div>
                     <p className="text-xs font-bold text-white tracking-tight">{college}</p>
                     <p className="text-[10px] text-slate-400">
-                      Fetched from your student profile • Kitchen sorts orders by college
+                      Fetched from student personal info &bull; Grouped on staff portal by college
                     </p>
                   </div>
                   <Badge variant="secondary" className="text-[10px] font-mono">
@@ -296,7 +378,7 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
                     <button
                       key={slot.time}
                       type="button"
-                      disabled={!!existingOrder}
+                      disabled={!!existingOrder || (isPast9AM && !existingOrder)}
                       onClick={() => setDeliverySlot(slot.time)}
                       className={`p-2.5 rounded-xl text-left transition-all border ${
                         isSelected
@@ -318,7 +400,7 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
             </div>
 
             {/* Special Instructions (Optional) */}
-            {!existingOrder && (
+            {!existingOrder && !isPast9AM && (
               <div>
                 <label className="text-xs font-semibold text-slate-300 block mb-1">
                   Kitchen Note (Optional)
@@ -363,32 +445,63 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
                   )}
                 </div>
 
-                {/* Evening Return Mandate Banner */}
-                <div className="p-3 rounded-xl bg-amber-950/30 border border-amber-500/30 text-[11px] text-amber-200 flex items-start gap-2.5">
-                  <AlertTriangle className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="font-semibold block text-amber-300">
-                      Evening Tiffin Return Rule:
-                    </strong>
-                    Please return your washed tiffin container at the kitchen counter before{' '}
-                    <span className="underline font-bold">8:30 PM</span>. Staff will verify your box
-                    return on the staff tablet. Your record remains pending until verified.
+                {/* Evening Return Mandate & Staff-Only Verification Banner */}
+                <div className="p-3.5 rounded-xl bg-slate-900/90 border border-amber-500/30 space-y-2 text-xs">
+                  <div className="flex items-start gap-2.5">
+                    <ShieldCheck className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="font-semibold block text-emerald-300">
+                        Staff-Only Return Verification Policy:
+                      </strong>
+                      <p className="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
+                        Tiffin return verification can <strong>only be performed by staff on the staff panel</strong>.
+                        Students cannot verify their own return. Please hand over your clean, washed container to
+                        the mess counter before <span className="underline font-bold text-amber-300">8:30 PM</span>.
+                        The mess staff will verify and clear your box record.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pt-1.5 border-t border-slate-800 flex items-center justify-between text-[11px]">
+                    <span className="text-slate-400">Current Box Status:</span>
+                    <Badge variant="warning" className="text-[10px] font-mono">
+                      Pending Staff Return Scan
+                    </Badge>
                   </div>
                 </div>
 
-                <div className="pt-1 flex items-center justify-end">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleCancel}
-                    className="h-7 text-[11px] text-rose-400 border-rose-500/20 hover:bg-rose-500/10 hover:border-rose-500/40"
-                  >
-                    <XCircle className="h-3.5 w-3.5 mr-1" /> Cancel Tiffin
-                  </Button>
+                {/* Cancellation notice */}
+                <div className="pt-1 flex items-center justify-between text-[10px] text-slate-400">
+                  <span>{isPast9AM ? 'Order locked after 9:00 AM' : 'Can cancel before 9:00 AM'}</span>
+                  {!isPast9AM && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleCancel}
+                      className="h-7 text-[11px] text-rose-400 border-rose-500/20 hover:bg-rose-500/10 hover:border-rose-500/40"
+                    >
+                      <XCircle className="h-3.5 w-3.5 mr-1" /> Cancel Tiffin
+                    </Button>
+                  )}
                 </div>
               </div>
+            ) : isPast9AM ? (
+              /* If past 9 AM and not ordered, show disabled lock button */
+              <div className="pt-2">
+                <Button
+                  size="sm"
+                  disabled
+                  className="w-full bg-slate-800 text-slate-500 font-bold text-xs py-2.5 rounded-xl cursor-not-allowed gap-1.5"
+                >
+                  <Lock className="h-3.5 w-3.5" />
+                  Opt-In Closed for Today (Past 09:00 AM Deadline)
+                </Button>
+                <p className="text-[10px] text-slate-400 text-center mt-2">
+                  Orders open daily from 05:00 AM to 09:00 AM for college departure packing
+                </p>
+              </div>
             ) : (
-              /* Action Button */
+              /* Active Action Button before 9 AM */
               <div className="pt-2">
                 <Button
                   size="sm"
@@ -399,13 +512,23 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
                   <Sparkles className="h-3.5 w-3.5" />
                   {isSubmitting ? 'Saving Order...' : `Confirm Packed Tiffin for ${deliverySlot}`}
                 </Button>
-                <p className="text-[10px] text-slate-400 text-center mt-2">
-                  Kitchen locks morning packaging at 07:15 AM
+                <p className="text-[10px] text-emerald-400/90 text-center mt-2 flex items-center justify-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  Open now &bull; Closes strictly at 09:00 AM
                 </p>
               </div>
             )}
           </div>
         )}
+
+        {/* Global Policy Reminder for All Students */}
+        <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 text-[11px] text-slate-400 flex items-start gap-2">
+          <Info className="h-3.5 w-3.5 text-indigo-400 flex-shrink-0 mt-0.5" />
+          <span>
+            <strong>Policy:</strong> Daily opt-in cut-off is strictly <strong>09:00 AM</strong>.
+            Tiffin return verification is <strong>restricted exclusively to the staff portal</strong> upon container inspection.
+          </span>
+        </div>
       </div>
     </Card>
   );

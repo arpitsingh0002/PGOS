@@ -154,13 +154,16 @@ export default function StaffTiffinManagementPage() {
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
               Live Operations
             </Badge>
+            <span className="text-slate-600">&bull;</span>
+            <Badge variant="outline" className="text-[10px] text-emerald-400 border-emerald-500/30 font-semibold gap-1">
+              <ShieldCheck className="h-3 w-3" /> Exclusive Staff Verification Portal
+            </Badge>
           </div>
           <h1 className="text-2xl font-black tracking-tight text-white flex items-center gap-2.5">
             Student Daily Tiffin Hub & Box Return
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Route packaging categorized by student college • Evening container return verification &
-            auto-clear
+            Route packaging categorized by student college (opt-in closes 9:00 AM) &bull; Evening container return verification &amp; auto-clear (staff only)
           </p>
         </div>
 
