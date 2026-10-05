@@ -16,6 +16,13 @@ import {
   Notice,
   PropertyFeatures,
   TiffinOrder,
+  StaffAttendance,
+  StaffAttendanceStatus,
+  InventoryItem,
+  InventoryCategory,
+  InventoryRequest,
+  InventoryNeedPriority,
+  InventoryRequestStatus,
 } from '@/types/database';
 import {
   isSupabaseConfigured,
@@ -54,6 +61,9 @@ import {
   INITIAL_STAFF,
   INITIAL_TASKS,
   INITIAL_NOTICES,
+  INITIAL_STAFF_ATTENDANCE,
+  INITIAL_INVENTORY_ITEMS,
+  INITIAL_INVENTORY_REQUESTS,
   getTodayDateStr,
 } from '@/lib/data/initial-data';
 
@@ -76,6 +86,9 @@ export function usePGStore() {
   const [notices, setNotices] = useState<Notice[]>(INITIAL_NOTICES);
   const [featureFlags, setFeatureFlags] = useState<Record<string, PropertyFeatures>>(INITIAL_FEATURES);
   const [tiffinOrders, setTiffinOrders] = useState<TiffinOrder[]>(INITIAL_TIFFIN_ORDERS);
+  const [staffAttendance, setStaffAttendance] = useState<StaffAttendance[]>(INITIAL_STAFF_ATTENDANCE);
+  const [inventory, setInventory] = useState<InventoryItem[]>(INITIAL_INVENTORY_ITEMS);
+  const [inventoryRequests, setInventoryRequests] = useState<InventoryRequest[]>(INITIAL_INVENTORY_REQUESTS);
   const [syncStatus, setSyncStatus] = useState<'local' | 'syncing' | 'synced' | 'error'>('local');
   const [isLiveDB, setIsLiveDB] = useState<boolean>(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
@@ -158,6 +171,15 @@ export function usePGStore() {
 
       const savedTiffins = localStorage.getItem('pgos_tiffins');
       if (savedTiffins) setTiffinOrders(JSON.parse(savedTiffins));
+
+      const savedAttendance = localStorage.getItem('pgos_staff_attendance');
+      if (savedAttendance) setStaffAttendance(JSON.parse(savedAttendance));
+
+      const savedInventory = localStorage.getItem('pgos_inventory');
+      if (savedInventory) setInventory(JSON.parse(savedInventory));
+
+      const savedInvReqs = localStorage.getItem('pgos_inventory_requests');
+      if (savedInvReqs) setInventoryRequests(JSON.parse(savedInvReqs));
     } catch {
       // LocalStorage not available or parse error
     }
@@ -400,6 +422,159 @@ export function usePGStore() {
     setFeatureFlags(updated);
     saveToStorage('pgos_features', updated);
     updateFeatureFlagDB(propId, feature, val).catch(console.warn);
+  };
+
+  // Staff Attendance Actions
+  const markStaffAttendance = (
+    staffId: string,
+    propertyId: string,
+    status: StaffAttendanceStatus,
+    notes?: string,
+    check_in_time?: string,
+    check_out_time?: string
+  ) => {
+    const today = getTodayDateStr();
+    const staffMember = staff.find((s) => s.id === staffId);
+    const existingIdx = staffAttendance.findIndex(
+      (a) => a.staff_id === staffId && a.date === today
+    );
+
+    let updated: StaffAttendance[];
+    if (existingIdx >= 0) {
+      const existing = staffAttendance[existingIdx];
+      const record: StaffAttendance = {
+        ...existing,
+        status,
+        notes: notes !== undefined ? notes : existing.notes,
+        check_in_time: check_in_time !== undefined ? check_in_time : existing.check_in_time,
+        check_out_time: check_out_time !== undefined ? check_out_time : existing.check_out_time,
+      };
+      updated = [...staffAttendance];
+      updated[existingIdx] = record;
+    } else {
+      const record: StaffAttendance = {
+        id: `att-${Date.now()}-${staffId}`,
+        staff_id: staffId,
+        property_id: propertyId,
+        date: today,
+        status,
+        check_in_time: check_in_time || '08:00 AM',
+        check_out_time: check_out_time,
+        notes: notes || '',
+        staff_name: staffMember?.name || 'Staff Member',
+        staff_role: staffMember?.role || 'staff',
+      };
+      updated = [record, ...staffAttendance];
+    }
+
+    setStaffAttendance(updated);
+    saveToStorage('pgos_staff_attendance', updated);
+    return updated;
+  };
+
+  // Inventory Management Actions
+  const updateInventoryStock = (itemId: string, changeQty: number) => {
+    const updated = inventory.map((item) => {
+      if (item.id === itemId) {
+        const newQty = Math.max(0, item.quantity + changeQty);
+        return {
+          ...item,
+          quantity: newQty,
+          last_restocked: changeQty > 0 ? getTodayDateStr() : item.last_restocked,
+        };
+      }
+      return item;
+    });
+    setInventory(updated);
+    saveToStorage('pgos_inventory', updated);
+    return updated;
+  };
+
+  const addInventoryItem = (newItem: Omit<InventoryItem, 'id' | 'last_restocked'>) => {
+    const item: InventoryItem = {
+      ...newItem,
+      id: `inv-${Date.now()}`,
+      last_restocked: getTodayDateStr(),
+    };
+    const updated = [item, ...inventory];
+    setInventory(updated);
+    saveToStorage('pgos_inventory', updated);
+    return item;
+  };
+
+  const deleteInventoryItem = (itemId: string) => {
+    const updated = inventory.filter((item) => item.id !== itemId);
+    setInventory(updated);
+    saveToStorage('pgos_inventory', updated);
+    return updated;
+  };
+
+  // Inventory Requisition / Required Supplies Actions
+  const addInventoryRequest = (
+    newReq: Omit<InventoryRequest, 'id' | 'created_at' | 'status'>
+  ) => {
+    const req: InventoryRequest = {
+      ...newReq,
+      id: `req-${Date.now()}`,
+      status: 'pending',
+      created_at: new Date().toISOString(),
+    };
+    const updated = [req, ...inventoryRequests];
+    setInventoryRequests(updated);
+    saveToStorage('pgos_inventory_requests', updated);
+    return req;
+  };
+
+  const updateInventoryRequestStatus = (
+    requestId: string,
+    status: InventoryRequestStatus
+  ) => {
+    const targetReq = inventoryRequests.find((r) => r.id === requestId);
+    const updated = inventoryRequests.map((r) =>
+      r.id === requestId
+        ? {
+            ...r,
+            status,
+            procured_at: status === 'procured' ? new Date().toISOString() : r.procured_at,
+          }
+        : r
+    );
+    setInventoryRequests(updated);
+    saveToStorage('pgos_inventory_requests', updated);
+
+    // If status is marked 'procured', automatically add to the active inventory stock!
+    if (status === 'procured' && targetReq) {
+      const existingItem = inventory.find(
+        (item) =>
+          item.property_id === targetReq.property_id &&
+          item.name.toLowerCase() === targetReq.item_name.toLowerCase()
+      );
+      if (existingItem) {
+        updateInventoryStock(existingItem.id, targetReq.quantity);
+      } else {
+        addInventoryItem({
+          property_id: targetReq.property_id,
+          name: targetReq.item_name,
+          category: targetReq.category,
+          quantity: targetReq.quantity,
+          unit: targetReq.unit,
+          min_threshold: Math.max(2, Math.floor(targetReq.quantity / 2)),
+          cost_per_unit: targetReq.estimated_cost
+            ? Math.round(targetReq.estimated_cost / targetReq.quantity)
+            : undefined,
+          notes: `Procured from requisition ${targetReq.id}`,
+        });
+      }
+    }
+
+    return updated;
+  };
+
+  const deleteInventoryRequest = (requestId: string) => {
+    const updated = inventoryRequests.filter((r) => r.id !== requestId);
+    setInventoryRequests(updated);
+    saveToStorage('pgos_inventory_requests', updated);
+    return updated;
   };
 
   // Tiffin Box Management Actions
@@ -670,5 +845,18 @@ export function usePGStore() {
     updateTaskStatus,
     addNotice,
     updateFeatureFlag,
+    // Staff Attendance
+    staffAttendance,
+    markStaffAttendance,
+    // Inventory
+    inventory,
+    updateInventoryStock,
+    addInventoryItem,
+    deleteInventoryItem,
+    // Inventory Requisitions / Required Supplies
+    inventoryRequests,
+    addInventoryRequest,
+    updateInventoryRequestStatus,
+    deleteInventoryRequest,
   };
 }
