@@ -323,6 +323,7 @@ export interface TiffinOrder {
   delivery_time: string; // e.g. "07:30 AM", "08:15 AM", "12:30 PM"
   status: TiffinStatus;
   meal_type?: 'lunch' | 'breakfast_pack' | 'dinner_pack';
+  box_number?: string;
   notes?: string;
   verified_by?: string;
   verified_at?: string;

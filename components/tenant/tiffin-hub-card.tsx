@@ -15,6 +15,10 @@ import {
   ShieldCheck,
   Lock,
   Info,
+  QrCode,
+  Flame,
+  ChefHat,
+  Timer,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,6 +35,7 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
   const {
     tenants,
     tiffinOrders,
+    messMenus,
     requestTiffin,
     cancelTiffin,
     updateTenantCollege,
@@ -53,6 +58,10 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
     const day = String(now.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }, []);
+
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const todayDay = days[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1];
+  const todaysMenu = messMenus.find((m) => m.day_of_week === todayDay) || messMenus[0];
 
   // Time Cutoff: Student can ONLY opt for tiffin before 9:00 AM
   // Simulated hour state enables testing both "Before 9 AM (Open)" and "After 9 AM (Closed)" states
@@ -79,6 +88,7 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
   const [isEditingCollege, setIsEditingCollege] = React.useState<boolean>(false);
   const [specialNotes, setSpecialNotes] = React.useState<string>(existingOrder?.notes || '');
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
+  const [showContainerQR, setShowContainerQR] = React.useState<boolean>(false);
 
   // Sync state if order changes or tenant updates
   React.useEffect(() => {
@@ -96,6 +106,28 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
     { time: '08:30 AM', label: 'Late Morning', desc: '9 AM lecture starts' },
     { time: '12:15 PM', label: 'Noon Drop', desc: 'Lunch time delivery' },
   ];
+
+  // Container Box ID allocation (e.g. BOX-101A)
+  const containerBoxId = React.useMemo(() => {
+    if (existingOrder?.box_number) return existingOrder.box_number;
+    const bedLetter = currentTenant.bed_number ? currentTenant.bed_number.slice(-1).toUpperCase() : 'A';
+    return `BOX-${currentTenant.room_number || '101'}${bedLetter}`;
+  }, [existingOrder, currentTenant]);
+
+  // Remaining time to cutoff calculation
+  const cutoffCountdownText = React.useMemo(() => {
+    if (isPast9AM) return 'Cutoff Passed';
+    if (simulatedHour !== null) return `~${9 - simulatedHour}h remaining`;
+    const now = new Date();
+    const target = new Date();
+    target.setHours(9, 0, 0, 0);
+    const diffMs = target.getTime() - now.getTime();
+    if (diffMs <= 0) return 'Closing soon';
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const hrs = Math.floor(diffMins / 60);
+    const mins = diffMins % 60;
+    return hrs > 0 ? `${hrs}h ${mins}m left` : `${mins}m left`;
+  }, [isPast9AM, simulatedHour]);
 
   const handleSaveCollege = () => {
     if (!college.trim()) {
@@ -134,7 +166,10 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
         bypassCutoff: simulatedHour !== null ? simulatedHour < 9 : false,
       });
       toast.success(
-        `🍱 Tiffin confirmed for ${deliverySlot}! Grouped under ${college.trim()}`
+        `🍱 Tiffin confirmed for ${deliverySlot}! Grouped under ${college.trim()}`,
+        {
+          description: `Container assigned: ${containerBoxId}. Return before 8:30 PM.`,
+        }
       );
     } catch (err: any) {
       toast.error(err?.message || 'Could not submit tiffin order. Please try again.');
@@ -163,7 +198,7 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
   return (
     <Card className="glass-card p-5 border-indigo-500/30 bg-gradient-to-br from-indigo-950/40 via-slate-900 to-slate-950 relative overflow-hidden shadow-xl">
       {/* Background ambient glow */}
-      <div className="absolute top-0 right-0 w-44 h-44 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between pb-3 border-b border-slate-800 relative z-10 gap-2">
@@ -180,22 +215,22 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
                 Today&apos;s Lunch
               </Badge>
               {isPast9AM ? (
-                <Badge variant="danger" className="text-[10px] gap-1">
-                  <Lock className="h-2.5 w-2.5" /> Closed (Past 9 AM)
+                <Badge variant="danger" className="text-[10px] gap-1 font-semibold">
+                  <Lock className="h-2.5 w-2.5" /> Closed at 09:00 AM
                 </Badge>
               ) : (
-                <Badge variant="success" className="text-[10px] gap-1">
-                  <Clock className="h-2.5 w-2.5" /> Open Until 09:00 AM
+                <Badge variant="success" className="text-[10px] gap-1 font-semibold">
+                  <Timer className="h-2.5 w-2.5" /> {cutoffCountdownText}
                 </Badge>
               )}
             </div>
             <p className="text-xs text-slate-400 mt-0.5">
-              Rule: Opt-in allowed only <strong>before 09:00 AM</strong> daily &bull; Categorized by college
+              Rule: Opt-in allowed only <strong>before 09:00 AM</strong> daily &bull; Packed by college route
             </p>
           </div>
         </div>
 
-        {/* Status & Simulation Switcher */}
+        {/* Status & Simulator Switcher */}
         <div className="flex items-center gap-2 self-start sm:self-center">
           {/* Quick tester simulation toggle */}
           <button
@@ -219,7 +254,7 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
           </button>
 
           {existingOrder ? (
-            <Badge variant="success" className="text-[10px] flex items-center gap-1">
+            <Badge variant="success" className="text-[10px] flex items-center gap-1 font-semibold">
               <CheckCircle2 className="h-3 w-3" /> Opted In
             </Badge>
           ) : isPast9AM ? (
@@ -236,6 +271,24 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
 
       {/* Body Content */}
       <div className="pt-4 space-y-4 relative z-10">
+        {/* TODAY'S LUNCH MENU PREVIEW CHIP */}
+        {todaysMenu?.lunch && (
+          <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80 flex items-start gap-2.5 text-xs">
+            <ChefHat className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
+                  What&apos;s In Today&apos;s Tiffin Box ({todayDay})
+                </span>
+                <span className="text-[10px] text-slate-500 font-mono">Chef Fresh</span>
+              </div>
+              <p className="text-[11px] text-slate-200 font-medium truncate mt-0.5">
+                {todaysMenu.lunch}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* CUTOFF NOTICE: If past 9:00 AM and student has NOT opted in */}
         {isPast9AM && !existingOrder && (
           <div className="p-4 rounded-2xl bg-gradient-to-r from-rose-950/40 via-slate-900 to-amber-950/30 border border-rose-500/30 space-y-2 animate-in fade-in duration-200">
@@ -245,7 +298,7 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
             </div>
             <p className="text-xs text-slate-300 leading-relaxed">
               As per mess policy, <strong>students can only opt for tiffin before 9:00 AM</strong> so kitchen
-              staff can finalize ingredients, cook, and pack meals batch-wise for college departures.
+              staff can finalize cooking, batch by college, and dispatch on time.
             </p>
             <div className="pt-1 flex items-center gap-2 text-[11px] text-amber-300">
               <UtensilsCrossed className="h-3.5 w-3.5 text-amber-400" />
@@ -382,7 +435,7 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
                       onClick={() => setDeliverySlot(slot.time)}
                       className={`p-2.5 rounded-xl text-left transition-all border ${
                         isSelected
-                          ? 'bg-indigo-600/25 border-indigo-500 text-white shadow-sm'
+                          ? 'bg-indigo-600/25 border-indigo-500 text-white shadow-sm ring-1 ring-indigo-500'
                           : 'bg-slate-950/60 border-slate-800 text-slate-300 hover:border-slate-700 disabled:opacity-60'
                       }`}
                     >
@@ -431,6 +484,47 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
                   </Badge>
                 </div>
 
+                {/* Digital Container Pass Badge */}
+                <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 flex items-center justify-center font-mono font-bold text-xs">
+                      #{containerBoxId.slice(-4)}
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-semibold block">
+                        Assigned Box ID
+                      </span>
+                      <span className="text-xs font-mono font-bold text-white tracking-wider">
+                        {containerBoxId}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowContainerQR(!showContainerQR)}
+                    className="text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 bg-slate-900 px-2 py-1 rounded-lg border border-slate-800"
+                  >
+                    <QrCode className="h-3.5 w-3.5" />
+                    <span>{showContainerQR ? 'Hide Pass' : 'Show Pass'}</span>
+                  </button>
+                </div>
+
+                {/* Expanded Container QR Pass */}
+                {showContainerQR && (
+                  <div className="p-3 rounded-xl bg-slate-950 border border-indigo-500/30 text-center space-y-2 animate-in fade-in duration-200">
+                    <div className="p-3 bg-white rounded-lg inline-block mx-auto shadow-md">
+                      <QrCode className="h-24 w-24 text-slate-900 mx-auto" />
+                      <span className="text-[10px] font-mono font-bold text-slate-900 block mt-1">
+                        {containerBoxId}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-400">
+                      Show this box pass to the dining counter staff during evening return
+                    </p>
+                  </div>
+                )}
+
                 <div className="text-[11px] text-slate-300 space-y-1">
                   <p>
                     <strong className="text-white">Route:</strong> {existingOrder.college_name}
@@ -457,15 +551,15 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
                         Tiffin return verification can <strong>only be performed by staff on the staff panel</strong>.
                         Students cannot verify their own return. Please hand over your clean, washed container to
                         the mess counter before <span className="underline font-bold text-amber-300">8:30 PM</span>.
-                        The mess staff will verify and clear your box record.
+                        The mess staff will scan your container and clear your record.
                       </p>
                     </div>
                   </div>
 
                   <div className="pt-1.5 border-t border-slate-800 flex items-center justify-between text-[11px]">
-                    <span className="text-slate-400">Current Box Status:</span>
+                    <span className="text-slate-400">Current Container State:</span>
                     <Badge variant="warning" className="text-[10px] font-mono">
-                      Pending Staff Return Scan
+                      Awaiting Kitchen Counter Return
                     </Badge>
                   </div>
                 </div>
@@ -512,9 +606,9 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
                   <Sparkles className="h-3.5 w-3.5" />
                   {isSubmitting ? 'Saving Order...' : `Confirm Packed Tiffin for ${deliverySlot}`}
                 </Button>
-                <p className="text-[10px] text-emerald-400/90 text-center mt-2 flex items-center justify-center gap-1">
+                <p className="text-[10px] text-emerald-400/90 text-center mt-2 flex items-center justify-center gap-1 font-medium">
                   <Clock className="h-3 w-3" />
-                  Open now &bull; Closes strictly at 09:00 AM
+                  Open now &bull; Closes strictly at 09:00 AM ({cutoffCountdownText})
                 </p>
               </div>
             )}

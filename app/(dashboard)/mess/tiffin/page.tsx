@@ -25,6 +25,9 @@ import {
   MapPin,
   ChevronRight,
   Send,
+  ChefHat,
+  Flame,
+  Zap,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -48,10 +51,11 @@ export default function StaffTiffinManagementPage() {
 
   const [activeTab, setActiveTab] = React.useState<string>('college-batches');
   const [searchQuery, setSearchQuery] = React.useState<string>('');
+  const [quickScanInput, setQuickScanInput] = React.useState<string>('');
   const [selectedStaff, setSelectedStaff] = React.useState<string>('Ramesh Kumar (Mess Incharge)');
   const [selectedCollegeFilter, setSelectedCollegeFilter] = React.useState<string>('all');
   const [recentlyVerified, setRecentlyVerified] = React.useState<
-    Array<{ id: string; studentName: string; roomNumber: string; college: string; time: string }>
+    Array<{ id: string; studentName: string; roomNumber: string; college: string; boxId: string; time: string; verifiedBy: string }>
   >([]);
 
   // Format today's date
@@ -65,12 +69,29 @@ export default function StaffTiffinManagementPage() {
     });
   }, []);
 
+  // Kitchen packaging volume estimates
+  const kitchenVolume = React.useMemo(() => {
+    const boxCount = totalTiffinsOptedToday;
+    const estimatedRotis = boxCount * 3 + todayTiffins.filter((t) => t.notes?.toLowerCase().includes('extra roti') || t.notes?.toLowerCase().includes('extra chapati')).length * 2;
+    const specialDiets = todayTiffins.filter((t) => t.notes && t.notes.trim().length > 0);
+    return {
+      boxCount,
+      estimatedRotis,
+      dalPortions: boxCount,
+      ricePortions: boxCount,
+      specialDietsCount: specialDiets.length,
+    };
+  }, [totalTiffinsOptedToday, todayTiffins]);
+
   // Filtered pending returns
   const filteredPendingReturns = React.useMemo(() => {
     return pendingTiffinReturns.filter((order) => {
+      const roomStr = order.room_number || '';
+      const boxId = `BOX-${roomStr}${order.bed_number ? order.bed_number.slice(-1) : 'A'}`;
       const matchesSearch =
         order.tenant_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (order.room_number || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        roomStr.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        boxId.toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.college_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (order.phone && order.phone.includes(searchQuery));
       const matchesCollege =
@@ -80,8 +101,15 @@ export default function StaffTiffinManagementPage() {
   }, [pendingTiffinReturns, searchQuery, selectedCollegeFilter]);
 
   // Handle Verify Return: Automatically clears/deletes data from pending queue
-  const handleVerifyReturn = async (orderId: string, studentName: string, room: string, college: string) => {
+  const handleVerifyReturn = async (
+    orderId: string,
+    studentName: string,
+    room: string,
+    college: string,
+    boxId?: string
+  ) => {
     try {
+      const assignedBox = boxId || `BOX-${room}`;
       await verifyReturnTiffin(orderId, selectedStaff);
       // Track in local session log
       setRecentlyVerified((prev) => [
@@ -90,7 +118,9 @@ export default function StaffTiffinManagementPage() {
           studentName,
           roomNumber: room,
           college,
+          boxId: assignedBox,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          verifiedBy: selectedStaff,
         },
         ...prev.slice(0, 9), // keep last 10
       ]);
@@ -103,6 +133,29 @@ export default function StaffTiffinManagementPage() {
       );
     } catch {
       toast.error('Failed to verify tiffin return. Please try again.');
+    }
+  };
+
+  // Instant Keypad / Barcode Scan to clear a box
+  const handleQuickScanSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = quickScanInput.trim().toLowerCase();
+    if (!query) return;
+
+    const matched = pendingTiffinReturns.find((order) => {
+      const room = (order.room_number || '').toLowerCase();
+      const name = order.tenant_name.toLowerCase();
+      const boxId = `box-${room}${order.bed_number ? order.bed_number.slice(-1).toLowerCase() : 'a'}`;
+      return room === query || name.includes(query) || boxId === query;
+    });
+
+    if (matched) {
+      const room = matched.room_number || '101';
+      const boxId = `BOX-${room}${matched.bed_number ? matched.bed_number.slice(-1) : 'A'}`;
+      handleVerifyReturn(matched.id, matched.tenant_name, room, matched.college_name, boxId);
+      setQuickScanInput('');
+    } else {
+      toast.error(`No pending unreturned container found matching "${quickScanInput}"`);
     }
   };
 
@@ -142,7 +195,7 @@ export default function StaffTiffinManagementPage() {
       {/* Top Header & Navigation */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-800">
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <Link
               href="/mess"
               className="text-xs text-slate-400 hover:text-white flex items-center gap-1 transition-colors"
@@ -150,7 +203,7 @@ export default function StaffTiffinManagementPage() {
               <ArrowLeft className="h-3.5 w-3.5" /> Back to Mess Overview
             </Link>
             <span className="text-slate-600">&bull;</span>
-            <Badge variant="success" className="text-[10px] gap-1">
+            <Badge variant="success" className="text-[10px] gap-1 font-semibold">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
               Live Operations
             </Badge>
@@ -160,7 +213,7 @@ export default function StaffTiffinManagementPage() {
             </Badge>
           </div>
           <h1 className="text-2xl font-black tracking-tight text-white flex items-center gap-2.5">
-            Student Daily Tiffin Hub & Box Return
+            Student Daily Tiffin Hub &amp; Box Return
           </h1>
           <p className="text-xs text-slate-400 mt-1">
             Route packaging categorized by student college (opt-in closes 9:00 AM) &bull; Evening container return verification &amp; auto-clear (staff only)
@@ -251,7 +304,7 @@ export default function StaffTiffinManagementPage() {
         {/* Verified & Cleared */}
         <Card className="glass-card p-4 border-emerald-500/30 bg-gradient-to-br from-emerald-950/30 to-slate-900">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-emerald-300">Verified & Cleared</span>
+            <span className="text-xs font-semibold text-emerald-300">Verified &amp; Cleared</span>
             <div className="h-8 w-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
               <CheckCircle2 className="h-4 w-4" />
             </div>
@@ -265,6 +318,38 @@ export default function StaffTiffinManagementPage() {
           <p className="text-[10px] text-slate-400 mt-1">Auto-removed upon verification</p>
         </Card>
       </div>
+
+      {/* KITCHEN COOKING & PACKAGING VOLUME ESTIMATOR */}
+      <Card className="glass-card p-4 border-slate-800 bg-slate-950/60">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-800/80 gap-2">
+          <div className="flex items-center gap-2">
+            <ChefHat className="h-4 w-4 text-amber-400" />
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+              Kitchen Preparation &amp; Packing Volume (Morning Estimate)
+            </h3>
+          </div>
+          <span className="text-[10px] text-slate-400">Pack Cutoff: 07:15 AM &bull; Dispatch by College Routes</span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 text-xs">
+          <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
+            <span className="text-[10px] text-slate-400 block mb-0.5">Total Tiffins</span>
+            <p className="text-base font-bold text-white">{kitchenVolume.boxCount} Boxes</p>
+          </div>
+          <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
+            <span className="text-[10px] text-slate-400 block mb-0.5">Est. Rotis to Roll</span>
+            <p className="text-base font-bold text-amber-400">~{kitchenVolume.estimatedRotis} Rotis</p>
+          </div>
+          <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
+            <span className="text-[10px] text-slate-400 block mb-0.5">Curry &amp; Rice Tins</span>
+            <p className="text-base font-bold text-emerald-400">{kitchenVolume.dalPortions} Portions</p>
+          </div>
+          <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
+            <span className="text-[10px] text-slate-400 block mb-0.5">Special Dietary Notes</span>
+            <p className="text-base font-bold text-cyan-400">{kitchenVolume.specialDietsCount} Special Notes</p>
+          </div>
+        </div>
+      </Card>
 
       {/* Operations Navigation Tabs */}
       <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
@@ -299,7 +384,7 @@ export default function StaffTiffinManagementPage() {
               <h3 className="text-base font-bold text-white">No Tiffin Orders for Today</h3>
               <p className="text-xs text-slate-400">
                 Residents haven&apos;t opted for packed tiffin yet. Orders appear here live as
-                students submit from their mobile app.
+                students submit from their mobile app before 09:00 AM.
               </p>
             </Card>
           ) : (
@@ -343,83 +428,90 @@ export default function StaffTiffinManagementPage() {
 
                   {/* Student Orders in this College */}
                   <div className="divide-y divide-slate-850">
-                    {group.orders.map((order) => (
-                      <div
-                        key={order.id}
-                        className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-900/40 transition-colors"
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className="h-8 w-8 rounded-full bg-slate-800 text-slate-200 flex items-center justify-center font-bold text-xs mt-0.5">
-                            {order.tenant_name.slice(0, 2).toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-bold text-white">
-                                {order.tenant_name}
-                              </span>
-                              <Badge variant="outline" className="text-[10px] font-mono">
-                                Room {order.room_number} &bull; {order.bed_number || 'Bed A'}
-                              </Badge>
-                              {order.phone && (
-                                <a
-                                  href={`tel:${order.phone}`}
-                                  className="text-[11px] text-slate-400 hover:text-indigo-300 flex items-center gap-0.5"
-                                >
-                                  <Phone className="h-3 w-3" /> {formatPhone(order.phone)}
-                                </a>
-                              )}
+                    {group.orders.map((order) => {
+                      const boxId = `BOX-${order.room_number || '101'}${order.bed_number ? order.bed_number.slice(-1) : 'A'}`;
+                      return (
+                        <div
+                          key={order.id}
+                          className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-900/40 transition-colors"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="h-8 w-8 rounded-full bg-slate-800 text-slate-200 flex items-center justify-center font-bold text-xs mt-0.5">
+                              {order.tenant_name.slice(0, 2).toUpperCase()}
                             </div>
+                            <div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-sm font-bold text-white">
+                                  {order.tenant_name}
+                                </span>
+                                <Badge variant="outline" className="text-[10px] font-mono">
+                                  Room {order.room_number || '101'} &bull; {order.bed_number || 'Bed A'}
+                                </Badge>
+                                <span className="px-1.5 py-0.5 rounded bg-indigo-950/70 border border-indigo-500/30 text-[10px] font-mono font-bold text-indigo-300">
+                                  {boxId}
+                                </span>
+                                {order.phone && (
+                                  <a
+                                    href={`tel:${order.phone}`}
+                                    className="text-[11px] text-slate-400 hover:text-indigo-300 flex items-center gap-0.5"
+                                  >
+                                    <Phone className="h-3 w-3" /> {formatPhone(order.phone)}
+                                  </a>
+                                )}
+                              </div>
 
-                            <div className="flex items-center gap-3 text-xs text-slate-400 mt-1">
-                              <span className="flex items-center gap-1 text-amber-300 font-medium">
-                                <Clock className="h-3.5 w-3.5" /> Slot: {order.delivery_time}
-                              </span>
-                              <span>&bull;</span>
-                              <span className="capitalize">{order.meal_type} Box</span>
-                              {order.notes && (
-                                <>
-                                  <span>&bull;</span>
-                                  <span className="text-cyan-300 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-800/40 text-[10px]">
-                                    Note: {order.notes}
-                                  </span>
-                                </>
-                              )}
+                              <div className="flex items-center gap-3 text-xs text-slate-400 mt-1 flex-wrap">
+                                <span className="flex items-center gap-1 text-amber-300 font-medium">
+                                  <Clock className="h-3.5 w-3.5" /> Slot: {order.delivery_time}
+                                </span>
+                                <span>&bull;</span>
+                                <span className="capitalize">{order.meal_type || 'lunch'} Box</span>
+                                {order.notes && (
+                                  <>
+                                    <span>&bull;</span>
+                                    <span className="text-cyan-300 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-800/40 text-[10px]">
+                                      Note: {order.notes}
+                                    </span>
+                                  </>
+                                )}
+                              </div>
                             </div>
+                          </div>
+
+                          {/* Status / Quick Action */}
+                          <div className="flex items-center gap-2 sm:self-center">
+                            <Badge
+                              variant={
+                                order.status === 'dispatched'
+                                  ? 'success'
+                                  : order.status === 'prepared'
+                                  ? 'warning'
+                                  : 'default'
+                              }
+                              className="text-[10px] uppercase font-mono"
+                            >
+                              {order.status === 'requested' ? 'In Queue' : order.status}
+                            </Badge>
+
+                            <Button
+                              size="sm"
+                              onClick={() =>
+                                handleVerifyReturn(
+                                  order.id,
+                                  order.tenant_name,
+                                  order.room_number || '101',
+                                  order.college_name,
+                                  boxId
+                                )
+                              }
+                              className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold gap-1 shadow-md shadow-emerald-600/20"
+                            >
+                              <Check className="h-3.5 w-3.5" /> Return Box
+                            </Button>
                           </div>
                         </div>
-
-                        {/* Status / Quick Action */}
-                        <div className="flex items-center gap-2 sm:self-center">
-                          <Badge
-                            variant={
-                              order.status === 'dispatched'
-                                ? 'success'
-                                : order.status === 'prepared'
-                                ? 'warning'
-                                : 'default'
-                            }
-                            className="text-[10px] uppercase font-mono"
-                          >
-                            {order.status === 'requested' ? 'In Queue' : order.status}
-                          </Badge>
-
-                          <Button
-                            size="sm"
-                            onClick={() =>
-                              handleVerifyReturn(
-                                order.id,
-                                order.tenant_name,
-                                order.room_number || '101',
-                                order.college_name
-                              )
-                            }
-                            className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold gap-1 shadow-md shadow-emerald-600/20"
-                          >
-                            <Check className="h-3.5 w-3.5" /> Return Box
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </Card>
               ))}
@@ -438,7 +530,7 @@ export default function StaffTiffinManagementPage() {
                 <ShieldCheck className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-white">Evening Return Verification Mode</h3>
+                <h3 className="text-sm font-bold text-white">Evening Return Verification Mode (Staff Desk)</h3>
                 <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">
                   As residents return their clean tiffin container to the kitchen counter, click{' '}
                   <strong className="text-emerald-400 font-semibold">&ldquo;Verify Return &amp; Clear Box&rdquo;</strong>.
@@ -448,10 +540,31 @@ export default function StaffTiffinManagementPage() {
               </div>
             </div>
 
-            <Badge variant="success" className="whitespace-nowrap">
+            <Badge variant="success" className="whitespace-nowrap font-semibold">
               Auto-Clear Active
             </Badge>
           </div>
+
+          {/* Quick-Scan Keypad Form */}
+          <form
+            onSubmit={handleQuickScanSubmit}
+            className="p-3.5 rounded-2xl bg-slate-950 border border-indigo-500/30 flex items-center gap-2"
+          >
+            <QrCode className="h-5 w-5 text-indigo-400 flex-shrink-0" />
+            <Input
+              value={quickScanInput}
+              onChange={(e) => setQuickScanInput(e.target.value)}
+              placeholder="Instant Return: Type Room Number (e.g. 101) or Box ID and press Enter..."
+              className="h-9 text-xs bg-slate-900 border-slate-700 flex-1"
+            />
+            <Button
+              type="submit"
+              size="sm"
+              className="h-9 px-4 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold gap-1 shadow-md shadow-emerald-600/25"
+            >
+              <Zap className="h-3.5 w-3.5" /> Instant Clear
+            </Button>
+          </form>
 
           {/* Search & Filter Bar */}
           <div className="flex flex-col sm:flex-row gap-3">
@@ -487,7 +600,7 @@ export default function StaffTiffinManagementPage() {
               <div className="h-12 w-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
                 <CheckCircle2 className="h-6 w-6" />
               </div>
-              <h3 className="text-base font-bold text-white">All Tiffin Boxes Returned & Verified!</h3>
+              <h3 className="text-base font-bold text-white">All Tiffin Boxes Returned &amp; Verified!</h3>
               <p className="text-xs text-slate-400 max-w-md mx-auto">
                 Zero outstanding lunch containers. All residents have returned their boxes and their
                 data has been cleared from the queue.
@@ -495,81 +608,88 @@ export default function StaffTiffinManagementPage() {
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-              {filteredPendingReturns.map((order) => (
-                <Card
-                  key={order.id}
-                  className="glass-card p-4 border-slate-800 hover:border-emerald-500/40 transition-all space-y-3"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-white">{order.tenant_name}</h4>
-                        <Badge variant="outline" className="text-[10px] font-mono">
-                          Room {order.room_number} &bull; {order.bed_number || 'Bed A'}
-                        </Badge>
+              {filteredPendingReturns.map((order) => {
+                const boxId = `BOX-${order.room_number || '101'}${order.bed_number ? order.bed_number.slice(-1) : 'A'}`;
+                return (
+                  <Card
+                    key={order.id}
+                    className="glass-card p-4 border-slate-800 hover:border-emerald-500/40 transition-all space-y-3"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-sm font-bold text-white">{order.tenant_name}</h4>
+                          <Badge variant="outline" className="text-[10px] font-mono">
+                            Room {order.room_number || '101'} &bull; {order.bed_number || 'Bed A'}
+                          </Badge>
+                          <span className="px-1.5 py-0.5 rounded bg-indigo-950/80 border border-indigo-500/30 text-[10px] font-mono font-bold text-indigo-300">
+                            {boxId}
+                          </span>
+                        </div>
+                        <p className="text-xs text-indigo-300 flex items-center gap-1.5 mt-0.5">
+                          <GraduationCap className="h-3.5 w-3.5" />
+                          <span>{order.college_name}</span>
+                        </p>
                       </div>
-                      <p className="text-xs text-indigo-300 flex items-center gap-1.5 mt-0.5">
-                        <GraduationCap className="h-3.5 w-3.5" />
-                        <span>{order.college_name}</span>
+
+                      <Badge variant="warning" className="text-[10px] uppercase font-mono">
+                        Box Out
+                      </Badge>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-between text-xs text-slate-300">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5 text-amber-400" />
+                        <span>Slot: {order.delivery_time}</span>
+                      </div>
+
+                      {order.phone && (
+                        <span className="text-[11px] text-slate-400 font-mono">
+                          {formatPhone(order.phone)}
+                        </span>
+                      )}
+                    </div>
+
+                    {order.notes && (
+                      <p className="text-[11px] text-slate-400 italic">
+                        Special Note: &ldquo;{order.notes}&rdquo;
                       </p>
-                    </div>
-
-                    <Badge variant="warning" className="text-[10px] uppercase font-mono">
-                      Box Out
-                    </Badge>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-between text-xs text-slate-300">
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="h-3.5 w-3.5 text-amber-400" />
-                      <span>Slot: {order.delivery_time}</span>
-                    </div>
-
-                    {order.phone && (
-                      <span className="text-[11px] text-slate-400 font-mono">
-                        {formatPhone(order.phone)}
-                      </span>
                     )}
-                  </div>
 
-                  {order.notes && (
-                    <p className="text-[11px] text-slate-400 italic">
-                      Special Note: &ldquo;{order.notes}&rdquo;
-                    </p>
-                  )}
+                    {/* Action Buttons */}
+                    <div className="pt-1 flex items-center justify-between gap-2">
+                      {order.phone && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            sendWhatsAppReminder(order.phone || '', order.tenant_name, order.room_number || '101')
+                          }
+                          className="text-xs gap-1 border-slate-700 text-slate-300 hover:text-emerald-400 hover:border-emerald-500/40"
+                        >
+                          <MessageCircle className="h-3.5 w-3.5 text-emerald-400" /> WhatsApp Ping
+                        </Button>
+                      )}
 
-                  {/* Action Buttons */}
-                  <div className="pt-1 flex items-center justify-between gap-2">
-                    {order.phone && (
                       <Button
                         size="sm"
-                        variant="outline"
                         onClick={() =>
-                          sendWhatsAppReminder(order.phone || '', order.tenant_name, order.room_number || '101')
+                          handleVerifyReturn(
+                            order.id,
+                            order.tenant_name,
+                            order.room_number || '101',
+                            order.college_name,
+                            boxId
+                          )
                         }
-                        className="text-xs gap-1 border-slate-700 text-slate-300 hover:text-emerald-400 hover:border-emerald-500/40"
+                        className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs gap-1.5 shadow-md shadow-emerald-600/20"
                       >
-                        <MessageCircle className="h-3.5 w-3.5 text-emerald-400" /> WhatsApp Ping
+                        <Check className="h-4 w-4" /> Verify Return &amp; Clear
                       </Button>
-                    )}
-
-                    <Button
-                      size="sm"
-                      onClick={() =>
-                        handleVerifyReturn(
-                          order.id,
-                          order.tenant_name,
-                          order.room_number || '101',
-                          order.college_name
-                        )
-                      }
-                      className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs gap-1.5 shadow-md shadow-emerald-600/20"
-                    >
-                      <Check className="h-4 w-4" /> Verify Return &amp; Clear
-                    </Button>
-                  </div>
-                </Card>
-              ))}
+                    </div>
+                  </Card>
+                );
+              })}
             </div>
           )}
 
@@ -578,9 +698,9 @@ export default function StaffTiffinManagementPage() {
             <div className="pt-4 border-t border-slate-800 space-y-2">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Recently Verified Boxes (This Session)
+                  Recently Verified Boxes (This Shift Log)
                 </h4>
-                <span className="text-[10px] text-emerald-400">
+                <span className="text-[10px] text-emerald-400 font-mono">
                   {recentlyVerified.length} cleared
                 </span>
               </div>
@@ -592,10 +712,16 @@ export default function StaffTiffinManagementPage() {
                   >
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 flex-shrink-0" />
-                      <span className="font-semibold text-white">{item.studentName}</span>
-                      <span className="text-slate-400 text-[11px]">(Room {item.roomNumber})</span>
+                      <div>
+                        <span className="font-semibold text-white">{item.studentName}</span>
+                        <span className="text-slate-400 text-[11px] ml-1">(Room {item.roomNumber})</span>
+                        <span className="text-indigo-400 font-mono text-[10px] ml-1.5">{item.boxId}</span>
+                      </div>
                     </div>
-                    <span className="text-[10px] font-mono text-slate-500">{item.time}</span>
+                    <div className="text-right">
+                      <span className="text-[10px] font-mono text-slate-400 block">{item.time}</span>
+                      <span className="text-[9px] text-slate-500 block truncate max-w-[120px]">{item.verifiedBy}</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -651,70 +777,77 @@ export default function StaffTiffinManagementPage() {
               </div>
 
               <div className="divide-y divide-slate-800 rounded-2xl border border-slate-800 glass-card overflow-hidden">
-                {pendingTiffinReturns.map((order) => (
-                  <div
-                    key={order.id}
-                    className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-slate-900/40 transition-colors"
-                  >
-                    <div>
+                {pendingTiffinReturns.map((order) => {
+                  const boxId = `BOX-${order.room_number || '101'}${order.bed_number ? order.bed_number.slice(-1) : 'A'}`;
+                  return (
+                    <div
+                      key={order.id}
+                      className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-slate-900/40 transition-colors"
+                    >
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-bold text-white">{order.tenant_name}</span>
+                          <Badge variant="warning" className="text-[10px]">
+                            Container Missing
+                          </Badge>
+                          <Badge variant="outline" className="text-[10px] font-mono">
+                            Room {order.room_number || '101'} &bull; {order.bed_number || 'Bed A'}
+                          </Badge>
+                          <span className="px-1.5 py-0.5 rounded bg-indigo-950/80 border border-indigo-500/30 text-[10px] font-mono font-bold text-indigo-300">
+                            {boxId}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 mt-1">
+                          <span className="text-indigo-300 flex items-center gap-1">
+                            <GraduationCap className="h-3.5 w-3.5" /> {order.college_name}
+                          </span>
+                          <span>&bull;</span>
+                          <span className="flex items-center gap-1 text-amber-400">
+                            <Clock className="h-3.5 w-3.5" /> Dispatched: {order.delivery_time}
+                          </span>
+                          {order.phone && (
+                            <>
+                              <span>&bull;</span>
+                              <span className="font-mono">{formatPhone(order.phone)}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-white">{order.tenant_name}</span>
-                        <Badge variant="warning" className="text-[10px]">
-                          Container Missing
-                        </Badge>
-                        <Badge variant="outline" className="text-[10px] font-mono">
-                          Room {order.room_number || '101'} &bull; {order.bed_number || 'Bed A'}
-                        </Badge>
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 mt-1">
-                        <span className="text-indigo-300 flex items-center gap-1">
-                          <GraduationCap className="h-3.5 w-3.5" /> {order.college_name}
-                        </span>
-                        <span>&bull;</span>
-                        <span className="flex items-center gap-1 text-amber-400">
-                          <Clock className="h-3.5 w-3.5" /> Dispatched: {order.delivery_time}
-                        </span>
                         {order.phone && (
-                          <>
-                            <span>&bull;</span>
-                            <span className="font-mono">{formatPhone(order.phone)}</span>
-                          </>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              sendWhatsAppReminder(order.phone || '', order.tenant_name, order.room_number || '101')
+                            }
+                            className="text-xs gap-1 text-slate-300 border-slate-700 hover:border-emerald-500/40 hover:text-emerald-400"
+                          >
+                            <MessageCircle className="h-3.5 w-3.5 text-emerald-400" /> Ping
+                          </Button>
                         )}
-                      </div>
-                    </div>
 
-                    <div className="flex items-center gap-2">
-                      {order.phone && (
                         <Button
                           size="sm"
-                          variant="outline"
                           onClick={() =>
-                            sendWhatsAppReminder(order.phone || '', order.tenant_name, order.room_number || '101')
+                            handleVerifyReturn(
+                              order.id,
+                              order.tenant_name,
+                              order.room_number || '101',
+                              order.college_name,
+                              boxId
+                            )
                           }
-                          className="text-xs gap-1 text-slate-300 border-slate-700 hover:border-emerald-500/40 hover:text-emerald-400"
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs gap-1 shadow-md shadow-emerald-600/20"
                         >
-                          <MessageCircle className="h-3.5 w-3.5 text-emerald-400" /> Ping
+                          <Check className="h-3.5 w-3.5" /> Verify &amp; Clear Now
                         </Button>
-                      )}
-
-                      <Button
-                        size="sm"
-                        onClick={() =>
-                          handleVerifyReturn(
-                            order.id,
-                            order.tenant_name,
-                            order.room_number || '101',
-                            order.college_name
-                          )
-                        }
-                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs gap-1 shadow-md shadow-emerald-600/20"
-                      >
-                        <Check className="h-3.5 w-3.5" /> Verify &amp; Clear Now
-                      </Button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
