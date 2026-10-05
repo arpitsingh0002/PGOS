@@ -13,23 +13,16 @@ import {
   Phone,
   MessageCircle,
   Check,
-  Filter,
   ArrowLeft,
   Calendar,
-  Building2,
   Sparkles,
   ShieldCheck,
   UserCheck,
-  RefreshCw,
-  QrCode,
-  MapPin,
-  ChevronRight,
   Send,
   ChefHat,
-  Flame,
   Zap,
 } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -55,7 +48,7 @@ export default function StaffTiffinManagementPage() {
   const [selectedStaff, setSelectedStaff] = React.useState<string>('Ramesh Kumar (Mess Incharge)');
   const [selectedCollegeFilter, setSelectedCollegeFilter] = React.useState<string>('all');
   const [recentlyVerified, setRecentlyVerified] = React.useState<
-    Array<{ id: string; studentName: string; roomNumber: string; college: string; boxId: string; time: string; verifiedBy: string }>
+    Array<{ id: string; studentName: string; roomNumber: string; college: string; time: string; verifiedBy: string }>
   >([]);
 
   // Format today's date
@@ -87,11 +80,9 @@ export default function StaffTiffinManagementPage() {
   const filteredPendingReturns = React.useMemo(() => {
     return pendingTiffinReturns.filter((order) => {
       const roomStr = order.room_number || '';
-      const boxId = `BOX-${roomStr}${order.bed_number ? order.bed_number.slice(-1) : 'A'}`;
       const matchesSearch =
         order.tenant_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         roomStr.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        boxId.toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.college_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (order.phone && order.phone.includes(searchQuery));
       const matchesCollege =
@@ -105,11 +96,9 @@ export default function StaffTiffinManagementPage() {
     orderId: string,
     studentName: string,
     room: string,
-    college: string,
-    boxId?: string
+    college: string
   ) => {
     try {
-      const assignedBox = boxId || `BOX-${room}`;
       await verifyReturnTiffin(orderId, selectedStaff);
       // Track in local session log
       setRecentlyVerified((prev) => [
@@ -118,7 +107,6 @@ export default function StaffTiffinManagementPage() {
           studentName,
           roomNumber: room,
           college,
-          boxId: assignedBox,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           verifiedBy: selectedStaff,
         },
@@ -126,7 +114,7 @@ export default function StaffTiffinManagementPage() {
       ]);
 
       toast.success(
-        `🍱 Tiffin box for ${studentName} (Room ${room}) verified & cleared! Container returned.`,
+        `🍱 Tiffin for ${studentName} (Room ${room}) verified & cleared!`,
         {
           description: `Verified by ${selectedStaff}. Record removed from pending list.`,
         }
@@ -145,17 +133,15 @@ export default function StaffTiffinManagementPage() {
     const matched = pendingTiffinReturns.find((order) => {
       const room = (order.room_number || '').toLowerCase();
       const name = order.tenant_name.toLowerCase();
-      const boxId = `box-${room}${order.bed_number ? order.bed_number.slice(-1).toLowerCase() : 'a'}`;
-      return room === query || name.includes(query) || boxId === query;
+      return room === query || name.includes(query);
     });
 
     if (matched) {
       const room = matched.room_number || '101';
-      const boxId = `BOX-${room}${matched.bed_number ? matched.bed_number.slice(-1) : 'A'}`;
-      handleVerifyReturn(matched.id, matched.tenant_name, room, matched.college_name, boxId);
+      handleVerifyReturn(matched.id, matched.tenant_name, room, matched.college_name);
       setQuickScanInput('');
     } else {
-      toast.error(`No pending unreturned container found matching "${quickScanInput}"`);
+      toast.error(`No pending unreturned tiffin found matching "${quickScanInput}"`);
     }
   };
 
@@ -429,7 +415,6 @@ export default function StaffTiffinManagementPage() {
                   {/* Student Orders in this College */}
                   <div className="divide-y divide-slate-850">
                     {group.orders.map((order) => {
-                      const boxId = `BOX-${order.room_number || '101'}${order.bed_number ? order.bed_number.slice(-1) : 'A'}`;
                       return (
                         <div
                           key={order.id}
@@ -447,9 +432,6 @@ export default function StaffTiffinManagementPage() {
                                 <Badge variant="outline" className="text-[10px] font-mono">
                                   Room {order.room_number || '101'} &bull; {order.bed_number || 'Bed A'}
                                 </Badge>
-                                <span className="px-1.5 py-0.5 rounded bg-indigo-950/70 border border-indigo-500/30 text-[10px] font-mono font-bold text-indigo-300">
-                                  {boxId}
-                                </span>
                                 {order.phone && (
                                   <a
                                     href={`tel:${order.phone}`}
@@ -465,7 +447,7 @@ export default function StaffTiffinManagementPage() {
                                   <Clock className="h-3.5 w-3.5" /> Slot: {order.delivery_time}
                                 </span>
                                 <span>&bull;</span>
-                                <span className="capitalize">{order.meal_type || 'lunch'} Box</span>
+                                <span className="capitalize">{order.meal_type || 'lunch'}</span>
                                 {order.notes && (
                                   <>
                                     <span>&bull;</span>
@@ -500,13 +482,12 @@ export default function StaffTiffinManagementPage() {
                                   order.id,
                                   order.tenant_name,
                                   order.room_number || '101',
-                                  order.college_name,
-                                  boxId
+                                  order.college_name
                                 )
                               }
                               className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold gap-1 shadow-md shadow-emerald-600/20"
                             >
-                              <Check className="h-3.5 w-3.5" /> Return Box
+                              <Check className="h-3.5 w-3.5" /> Return Tiffin
                             </Button>
                           </div>
                         </div>
@@ -550,11 +531,11 @@ export default function StaffTiffinManagementPage() {
             onSubmit={handleQuickScanSubmit}
             className="p-3.5 rounded-2xl bg-slate-950 border border-indigo-500/30 flex items-center gap-2"
           >
-            <QrCode className="h-5 w-5 text-indigo-400 flex-shrink-0" />
+            <Zap className="h-5 w-5 text-indigo-400 flex-shrink-0" />
             <Input
               value={quickScanInput}
               onChange={(e) => setQuickScanInput(e.target.value)}
-              placeholder="Instant Return: Type Room Number (e.g. 101) or Box ID and press Enter..."
+              placeholder="Instant Return: Type Room Number (e.g. 101) or Student Name and press Enter..."
               className="h-9 text-xs bg-slate-900 border-slate-700 flex-1"
             />
             <Button
@@ -600,16 +581,15 @@ export default function StaffTiffinManagementPage() {
               <div className="h-12 w-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
                 <CheckCircle2 className="h-6 w-6" />
               </div>
-              <h3 className="text-base font-bold text-white">All Tiffin Boxes Returned &amp; Verified!</h3>
+              <h3 className="text-base font-bold text-white">All Tiffins Returned &amp; Verified!</h3>
               <p className="text-xs text-slate-400 max-w-md mx-auto">
-                Zero outstanding lunch containers. All residents have returned their boxes and their
+                Zero outstanding lunch containers. All residents have returned their tiffins and their
                 data has been cleared from the queue.
               </p>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
               {filteredPendingReturns.map((order) => {
-                const boxId = `BOX-${order.room_number || '101'}${order.bed_number ? order.bed_number.slice(-1) : 'A'}`;
                 return (
                   <Card
                     key={order.id}
@@ -622,9 +602,6 @@ export default function StaffTiffinManagementPage() {
                           <Badge variant="outline" className="text-[10px] font-mono">
                             Room {order.room_number || '101'} &bull; {order.bed_number || 'Bed A'}
                           </Badge>
-                          <span className="px-1.5 py-0.5 rounded bg-indigo-950/80 border border-indigo-500/30 text-[10px] font-mono font-bold text-indigo-300">
-                            {boxId}
-                          </span>
                         </div>
                         <p className="text-xs text-indigo-300 flex items-center gap-1.5 mt-0.5">
                           <GraduationCap className="h-3.5 w-3.5" />
@@ -633,7 +610,7 @@ export default function StaffTiffinManagementPage() {
                       </div>
 
                       <Badge variant="warning" className="text-[10px] uppercase font-mono">
-                        Box Out
+                        Pending Return
                       </Badge>
                     </div>
 
@@ -678,8 +655,7 @@ export default function StaffTiffinManagementPage() {
                             order.id,
                             order.tenant_name,
                             order.room_number || '101',
-                            order.college_name,
-                            boxId
+                            order.college_name
                           )
                         }
                         className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs gap-1.5 shadow-md shadow-emerald-600/20"
@@ -698,7 +674,7 @@ export default function StaffTiffinManagementPage() {
             <div className="pt-4 border-t border-slate-800 space-y-2">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Recently Verified Boxes (This Shift Log)
+                  Recently Verified Returns (This Shift Log)
                 </h4>
                 <span className="text-[10px] text-emerald-400 font-mono">
                   {recentlyVerified.length} cleared
@@ -715,7 +691,7 @@ export default function StaffTiffinManagementPage() {
                       <div>
                         <span className="font-semibold text-white">{item.studentName}</span>
                         <span className="text-slate-400 text-[11px] ml-1">(Room {item.roomNumber})</span>
-                        <span className="text-indigo-400 font-mono text-[10px] ml-1.5">{item.boxId}</span>
+                        <span className="text-indigo-400 text-[11px] ml-1.5">&bull; {item.college}</span>
                       </div>
                     </div>
                     <div className="text-right">
@@ -778,7 +754,6 @@ export default function StaffTiffinManagementPage() {
 
               <div className="divide-y divide-slate-800 rounded-2xl border border-slate-800 glass-card overflow-hidden">
                 {pendingTiffinReturns.map((order) => {
-                  const boxId = `BOX-${order.room_number || '101'}${order.bed_number ? order.bed_number.slice(-1) : 'A'}`;
                   return (
                     <div
                       key={order.id}
@@ -793,9 +768,6 @@ export default function StaffTiffinManagementPage() {
                           <Badge variant="outline" className="text-[10px] font-mono">
                             Room {order.room_number || '101'} &bull; {order.bed_number || 'Bed A'}
                           </Badge>
-                          <span className="px-1.5 py-0.5 rounded bg-indigo-950/80 border border-indigo-500/30 text-[10px] font-mono font-bold text-indigo-300">
-                            {boxId}
-                          </span>
                         </div>
 
                         <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 mt-1">
@@ -836,8 +808,7 @@ export default function StaffTiffinManagementPage() {
                               order.id,
                               order.tenant_name,
                               order.room_number || '101',
-                              order.college_name,
-                              boxId
+                              order.college_name
                             )
                           }
                           className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs gap-1 shadow-md shadow-emerald-600/20"
