@@ -359,3 +359,25 @@ export interface InventoryItem {
   last_restocked: string;
   notes?: string;
 }
+
+export type InventoryNeedPriority = 'urgent' | 'normal';
+export type InventoryRequestStatus = 'pending' | 'approved' | 'procured' | 'rejected';
+
+export interface InventoryRequest {
+  id: string;
+  property_id: string;
+  item_name: string;
+  category: InventoryCategory;
+  quantity: number;
+  unit: string;
+  priority: InventoryNeedPriority;
+  status: InventoryRequestStatus;
+  requested_by: string; // e.g. "Suresh Gowda (Manager)"
+  reason?: string;
+  estimated_cost?: number;
+  created_at: string;
+  procured_at?: string;
+  // Computed / Relations
+  property_name?: string;
+}
+

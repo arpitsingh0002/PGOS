@@ -41,6 +41,9 @@ import {
   XCircle,
   UserX,
   PhoneCall,
+  Flame,
+  Truck,
+  ShoppingCart,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -54,6 +57,8 @@ import {
   InventoryCategory,
   ComplaintPriority,
   ComplaintStatus,
+  InventoryNeedPriority,
+  InventoryRequestStatus,
 } from '@/types/database';
 
 export default function ManagerDashboardPage() {
@@ -72,6 +77,9 @@ export default function ManagerDashboardPage() {
     inventory,
     updateInventoryStock,
     addInventoryItem,
+    inventoryRequests,
+    addInventoryRequest,
+    updateInventoryRequestStatus,
     addPayment,
     updateComplaintStatus,
     addComplaint,
@@ -88,13 +96,15 @@ export default function ManagerDashboardPage() {
   // Active navigation tab within Manager Portal
   const [activeTab, setActiveTab] = React.useState<
     'attendance' | 'complaints' | 'inventory' | 'students' | 'rent' | 'sop'
-  >('attendance');
+  >('inventory');
 
   // Search queries for various tabs
   const [studentSearch, setStudentSearch] = React.useState('');
   const [inventorySearch, setInventorySearch] = React.useState('');
   const [inventoryCategoryFilter, setInventoryCategoryFilter] = React.useState<string>('all');
   const [complaintStatusFilter, setComplaintStatusFilter] = React.useState<string>('all');
+  const [inventorySubTab, setInventorySubTab] = React.useState<'required' | 'stock'>('required');
+  const [reqPriorityFilter, setReqPriorityFilter] = React.useState<'all' | 'urgent' | 'normal'>('all');
 
   // Quick modals / forms states
   const [showAddStaffModal, setShowAddStaffModal] = React.useState(false);
@@ -127,6 +137,16 @@ export default function ManagerDashboardPage() {
   const [invMinThreshold, setInvMinThreshold] = React.useState('5');
   const [invCost, setInvCost] = React.useState('150');
 
+  // Required Inventory Requisition Modal state
+  const [showAddRequestModal, setShowAddRequestModal] = React.useState(false);
+  const [reqItemName, setReqItemName] = React.useState('');
+  const [reqCategory, setReqCategory] = React.useState<InventoryCategory>('kitchen');
+  const [reqQty, setReqQty] = React.useState('2');
+  const [reqUnit, setReqUnit] = React.useState('cylinders');
+  const [reqPriority, setReqPriority] = React.useState<InventoryNeedPriority>('urgent');
+  const [reqReason, setReqReason] = React.useState('');
+  const [reqEstimatedCost, setReqEstimatedCost] = React.useState('1800');
+
   // Resolution note dialog
   const [resolvingComplaintId, setResolvingComplaintId] = React.useState<string | null>(null);
   const [resolutionNote, setResolutionNote] = React.useState('');
@@ -146,7 +166,6 @@ export default function ManagerDashboardPage() {
   const [visitorName, setVisitorName] = React.useState('');
   const [visitorPhone, setVisitorPhone] = React.useState('');
   const [visitingRoom, setVisitingRoom] = React.useState('101');
-  const [purpose, setPurpose] = React.useState('Room Inquiry / Visit');
   const [recentVisitors, setRecentVisitors] = React.useState([
     { id: 'v1', name: 'Manish Rawat', phone: '9845012345', room: '101 (Aarav Sharma)', time: '10:15 AM', status: 'Inside Premises' },
     { id: 'v2', name: 'Kavita Hegde (Parent)', phone: '9740112288', room: '201 (Pooja Hegde)', time: '11:30 AM', status: 'Checked Out' },
@@ -182,15 +201,23 @@ export default function ManagerDashboardPage() {
     (a) => a.date === todayStr && (a.property_id === activeBranch.id || !a.property_id)
   );
   const presentCount = todayAttendanceRecords.filter((a) => a.status === 'present').length;
-  const halfDayCount = todayAttendanceRecords.filter((a) => a.status === 'half_day').length;
   const absentCount = todayAttendanceRecords.filter((a) => a.status === 'absent' || a.status === 'leave').length;
   const totalStaffCount = branchStaff.length;
 
   // Branch Inventory
-  const branchInventory = inventory.filter(
+  const branchInventory = (inventory || []).filter(
     (item) => item.property_id === activeBranch.id || !item.property_id
   );
   const lowStockItems = branchInventory.filter((item) => item.quantity <= item.min_threshold);
+
+  // Branch Inventory Requests (Required Supplies)
+  const branchRequests = (inventoryRequests || []).filter(
+    (r) => r.property_id === activeBranch.id || !r.property_id
+  );
+  const urgentRequests = branchRequests.filter(
+    (r) => r.priority === 'urgent' && r.status !== 'procured'
+  );
+  const pendingRequests = branchRequests.filter((r) => r.status === 'pending');
 
   // Branch Rent Overview
   const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
@@ -201,8 +228,6 @@ export default function ManagerDashboardPage() {
     (p) => p.status === 'paid' && p.payment_type === 'rent'
   );
   const totalRentCollected = branchPaidPayments.reduce((sum, p) => sum + p.amount, 0);
-
-  // Calculate expected rent from active branch tenants
   const totalExpectedRent = branchTenants.reduce((sum, t) => sum + (t.monthly_rent || 8500), 0);
   const pendingRentAmount = Math.max(0, totalExpectedRent - totalRentCollected);
 
@@ -249,7 +274,7 @@ export default function ManagerDashboardPage() {
     toast.success(`Attendance updated to "${status.toUpperCase()}"! Synced to Owner HQ.`);
   };
 
-  // Fast Complaint Status Change
+  // Complaint Status Change
   const handleComplaintStatusChange = (id: string, newStatus: ComplaintStatus) => {
     if (newStatus === 'resolved') {
       setResolvingComplaintId(id);
@@ -322,7 +347,7 @@ export default function ManagerDashboardPage() {
     setRentTxnRef('');
   };
 
-  // Add Inventory Item
+  // Add Inventory Item directly to stock
   const handleCreateInventory = (e: React.FormEvent) => {
     e.preventDefault();
     if (!invName.trim()) {
@@ -342,6 +367,33 @@ export default function ManagerDashboardPage() {
     toast.success(`Added ${invName} to property inventory!`);
     setShowAddInventoryModal(false);
     setInvName('');
+  };
+
+  // Add Required Inventory Request (with Priority: Urgent vs Normal)
+  const handleCreateInventoryRequest = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reqItemName.trim()) {
+      toast.error('Please specify the required item name');
+      return;
+    }
+    addInventoryRequest({
+      property_id: activeBranch.id,
+      item_name: reqItemName,
+      category: reqCategory,
+      quantity: parseInt(reqQty) || 1,
+      unit: reqUnit,
+      priority: reqPriority,
+      requested_by: 'Suresh Gowda (Manager)',
+      reason: reqReason || 'Required for property operations',
+      estimated_cost: parseFloat(reqEstimatedCost) || undefined,
+      property_name: activeBranch.name,
+    });
+    toast.success(
+      `Requisition for ${reqItemName} (${reqPriority.toUpperCase()} PRIORITY) submitted! Visible to Owner.`
+    );
+    setShowAddRequestModal(false);
+    setReqItemName('');
+    setReqReason('');
   };
 
   // Add Staff Member
@@ -388,7 +440,7 @@ export default function ManagerDashboardPage() {
             </Badge>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Real-time branch control: Staff attendance, complaints resolution, supply inventory, student directory & rent collection.
+            Real-time branch control: Staff attendance, complaints resolution, supply inventory & indents, student directory & rent collection.
           </p>
         </div>
 
@@ -457,14 +509,24 @@ export default function ManagerDashboardPage() {
           </p>
         </Card>
 
-        <Card className="glass-card p-3 border-amber-500/20 hover:border-amber-500/40 transition-colors">
+        {/* Required Inventory KPI with Urgent Alert */}
+        <Card className={`glass-card p-3 transition-colors ${
+          urgentRequests.length > 0 ? 'border-rose-500/40 bg-rose-950/10' : 'border-amber-500/20'
+        }`}>
           <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-[11px] font-medium uppercase tracking-wider">Low Supplies</span>
-            <Package className="h-3.5 w-3.5 text-amber-400" />
+            <span className="text-[11px] font-medium uppercase tracking-wider">Supplies Requisitions</span>
+            <ShoppingCart className={`h-3.5 w-3.5 ${urgentRequests.length > 0 ? 'text-rose-400' : 'text-amber-400'}`} />
           </div>
-          <div className="text-xl font-bold text-white">{lowStockItems.length}</div>
-          <p className="text-[10px] text-amber-400 mt-0.5">
-            {lowStockItems.length > 0 ? 'Restock order needed' : 'All stocks adequate'}
+          <div className="text-xl font-bold text-white flex items-center gap-1.5">
+            {branchRequests.length}
+            {urgentRequests.length > 0 && (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse">
+                {urgentRequests.length} URGENT
+              </span>
+            )}
+          </div>
+          <p className="text-[10px] text-slate-400 mt-0.5">
+            {pendingRequests.length} pending owner approval
           </p>
         </Card>
 
@@ -496,6 +558,23 @@ export default function ManagerDashboardPage() {
       ------------------------------------------------------------- */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-800">
         <button
+          onClick={() => setActiveTab('inventory')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all whitespace-nowrap ${
+            activeTab === 'inventory'
+              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+              : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800'
+          }`}
+        >
+          <Boxes className="h-4 w-4" />
+          Inventory & Supplies
+          {urgentRequests.length > 0 && (
+            <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white font-bold text-[10px] animate-pulse">
+              {urgentRequests.length} URGENT
+            </span>
+          )}
+        </button>
+
+        <button
           onClick={() => setActiveTab('attendance')}
           className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all whitespace-nowrap ${
             activeTab === 'attendance'
@@ -504,7 +583,7 @@ export default function ManagerDashboardPage() {
           }`}
         >
           <UserCheck className="h-4 w-4" />
-          1. Staff Attendance ({presentCount}/{branchStaff.length || 4})
+          Staff Attendance ({presentCount}/{branchStaff.length || 4})
         </button>
 
         <button
@@ -516,27 +595,10 @@ export default function ManagerDashboardPage() {
           }`}
         >
           <Wrench className="h-4 w-4" />
-          2. Complaints Desk
+          Complaints Desk
           {openComplaints.length > 0 && (
             <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px]">
               {openComplaints.length}
-            </span>
-          )}
-        </button>
-
-        <button
-          onClick={() => setActiveTab('inventory')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all whitespace-nowrap ${
-            activeTab === 'inventory'
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-              : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-        >
-          <Boxes className="h-4 w-4" />
-          3. Inventory & Supplies
-          {lowStockItems.length > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-slate-950 font-bold text-[10px]">
-              {lowStockItems.length} Low
             </span>
           )}
         </button>
@@ -550,7 +612,7 @@ export default function ManagerDashboardPage() {
           }`}
         >
           <GraduationCap className="h-4 w-4" />
-          4. Student Directory ({branchTenants.length})
+          Student Directory ({branchTenants.length})
         </button>
 
         <button
@@ -562,7 +624,7 @@ export default function ManagerDashboardPage() {
           }`}
         >
           <CreditCard className="h-4 w-4" />
-          5. Rent Management
+          Rent Management
         </button>
 
         <button
@@ -574,12 +636,418 @@ export default function ManagerDashboardPage() {
           }`}
         >
           <ClipboardList className="h-4 w-4" />
-          6. Daily SOP & Gate Pass
+          Daily SOP & Gate Pass
         </button>
       </div>
 
       {/* -------------------------------------------------------------
-          TAB 1: STAFF ATTENDANCE & DETAILS
+          TAB 1: INVENTORY & SUPPLIES (WITH REQUIRED SUPPLIES & NEED PRIORITY)
+      ------------------------------------------------------------- */}
+      {activeTab === 'inventory' && (
+        <div className="space-y-4">
+          {/* Sub-Header with Dual Action Buttons */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-semibold text-white flex items-center gap-2">
+                  <Boxes className="h-4 w-4 text-indigo-400" />
+                  Branch Consumables, Property Supplies & Procurement Requisitions
+                </h2>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Track on-site stock buffers and request required inventory with <strong>Urgent</strong> or <strong>Normal</strong> need priority.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2.5 flex-wrap">
+              {/* Switch between Required Requisitions and Current Stock */}
+              <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+                <button
+                  onClick={() => setInventorySubTab('required')}
+                  className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition-all ${
+                    inventorySubTab === 'required'
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <ShoppingCart className="h-3.5 w-3.5" />
+                  Required Supplies ({branchRequests.length})
+                  {urgentRequests.length > 0 && (
+                    <span className="h-2 w-2 rounded-full bg-rose-400 animate-pulse" />
+                  )}
+                </button>
+                <button
+                  onClick={() => setInventorySubTab('stock')}
+                  className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition-all ${
+                    inventorySubTab === 'stock'
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <Boxes className="h-3.5 w-3.5" />
+                  Current Stock ({branchInventory.length})
+                </button>
+              </div>
+
+              {/* Action Button: Add Required Inventory (Priority: Urgent / Normal) */}
+              <Button
+                size="sm"
+                onClick={() => setShowAddRequestModal(true)}
+                className="bg-rose-600 hover:bg-rose-500 text-white text-xs gap-1.5 shadow-md shadow-rose-600/20 font-bold"
+              >
+                <Plus className="h-3.5 w-3.5" /> Request Required Supplies
+              </Button>
+
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setShowAddInventoryModal(true)}
+                className="text-xs gap-1.5"
+              >
+                <Plus className="h-3.5 w-3.5 text-indigo-400" /> New Stock SKU
+              </Button>
+            </div>
+          </div>
+
+          {/* Urgent Need Emergency Alert Banner if any pending urgent requests */}
+          {urgentRequests.length > 0 && (
+            <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-3.5 flex items-center justify-between text-xs text-rose-300 animate-in fade-in">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300">
+                  <Flame className="h-4 w-4 animate-bounce" />
+                </div>
+                <div>
+                  <span className="font-bold text-sm text-white block">
+                    {urgentRequests.length} Urgent Inventory Requirement{urgentRequests.length > 1 ? 's' : ''} Active!
+                  </span>
+                  <span className="text-[11px] text-rose-300/90">
+                    Items required urgently for branch operations:{' '}
+                    <strong>{urgentRequests.map((r) => `${r.item_name} (${r.quantity} ${r.unit})`).join(', ')}</strong>.
+                    Shared live with Owner procurement.
+                  </span>
+                </div>
+              </div>
+              <Badge className="bg-rose-600 text-white font-bold text-[11px] px-2.5 py-1">
+                URGENT ATTENTION
+              </Badge>
+            </div>
+          )}
+
+          {/* -------------------------------------------------------------
+              SUB-TAB 1: REQUIRED SUPPLIES & PROCUREMENT INDENTS (WITH PRIORITY)
+          ------------------------------------------------------------- */}
+          {inventorySubTab === 'required' && (
+            <div className="space-y-4">
+              {/* Priority Filter Bar */}
+              <div className="flex items-center justify-between gap-3 bg-slate-900/40 p-2.5 rounded-xl border border-slate-800 text-xs">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-slate-400 font-medium">Filter Priority:</span>
+                  {(['all', 'urgent', 'normal'] as const).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setReqPriorityFilter(p)}
+                      className={`px-3 py-1 rounded-lg capitalize font-semibold transition-all ${
+                        reqPriorityFilter === p
+                          ? p === 'urgent'
+                            ? 'bg-rose-600 text-white shadow-sm'
+                            : 'bg-indigo-600 text-white shadow-sm'
+                          : 'text-slate-400 hover:text-white bg-slate-950/60'
+                      }`}
+                    >
+                      {p === 'urgent' ? '🚨 Urgent Priority' : p === 'normal' ? '📦 Normal Priority' : 'All Requests'}
+                    </button>
+                  ))}
+                </div>
+
+                <span className="text-slate-400">
+                  Showing{' '}
+                  {
+                    branchRequests.filter((r) =>
+                      reqPriorityFilter === 'all' ? true : r.priority === reqPriorityFilter
+                    ).length
+                  }{' '}
+                  requisitions
+                </span>
+              </div>
+
+              {/* Requisitions Grid / Table */}
+              <div className="glass-card overflow-hidden border-slate-800">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-900/80 text-slate-400 border-b border-slate-800 font-medium">
+                      <tr>
+                        <th className="py-3 px-4">Required Item</th>
+                        <th className="py-3 px-4">Category</th>
+                        <th className="py-3 px-4">Quantity Needed</th>
+                        <th className="py-3 px-4">Need Priority</th>
+                        <th className="py-3 px-4">Reason & Justification</th>
+                        <th className="py-3 px-4">Status</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/60">
+                      {branchRequests
+                        .filter((r) =>
+                          reqPriorityFilter === 'all' ? true : r.priority === reqPriorityFilter
+                        )
+                        .map((req) => {
+                          const isUrgent = req.priority === 'urgent';
+                          const isProcured = req.status === 'procured';
+
+                          return (
+                            <tr
+                              key={req.id}
+                              className={`transition-colors ${
+                                isUrgent && !isProcured
+                                  ? 'bg-rose-950/20 hover:bg-rose-950/30'
+                                  : 'hover:bg-slate-900/40'
+                              }`}
+                            >
+                              <td className="py-3.5 px-4">
+                                <span className="font-bold text-white block text-sm">
+                                  {req.item_name}
+                                </span>
+                                <span className="text-[11px] text-slate-400">
+                                  Requested by {req.requested_by} • {formatDate(req.created_at)}
+                                </span>
+                              </td>
+
+                              <td className="py-3.5 px-4">
+                                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                                  {req.category}
+                                </span>
+                              </td>
+
+                              <td className="py-3.5 px-4 font-mono font-bold text-white text-sm">
+                                {req.quantity} <span className="text-xs font-normal text-slate-400">{req.unit}</span>
+                              </td>
+
+                              {/* Priority Column */}
+                              <td className="py-3.5 px-4">
+                                {isUrgent ? (
+                                  <Badge className="bg-rose-500/20 text-rose-300 border-rose-500/40 text-xs font-bold animate-pulse px-2.5 py-1 flex items-center gap-1.5 w-fit">
+                                    <AlertTriangle className="h-3.5 w-3.5 text-rose-400" />
+                                    URGENT NEED
+                                  </Badge>
+                                ) : (
+                                  <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 text-xs font-medium px-2.5 py-1 flex items-center gap-1.5 w-fit">
+                                    <Package className="h-3.5 w-3.5 text-blue-400" />
+                                    NORMAL NEED
+                                  </Badge>
+                                )}
+                              </td>
+
+                              <td className="py-3.5 px-4 text-slate-300 text-xs max-w-sm">
+                                <span>{req.reason || 'Regular branch requirement'}</span>
+                                {req.estimated_cost && (
+                                  <span className="block text-[11px] text-slate-400 mt-0.5">
+                                    Est. Budget: <strong className="text-white">{formatINR(req.estimated_cost)}</strong>
+                                  </span>
+                                )}
+                              </td>
+
+                              <td className="py-3.5 px-4">
+                                <Badge
+                                  className={`text-[10px] capitalize px-2.5 py-0.5 ${
+                                    req.status === 'procured'
+                                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                      : req.status === 'approved'
+                                      ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                      : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                  }`}
+                                >
+                                  {req.status === 'procured'
+                                    ? '✓ Procured & Added'
+                                    : req.status === 'approved'
+                                    ? 'Approved by Owner'
+                                    : 'Pending Owner Review'}
+                                </Badge>
+                              </td>
+
+                              <td className="py-3.5 px-4 text-right">
+                                {req.status !== 'procured' ? (
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      updateInventoryRequestStatus(req.id, 'procured');
+                                      toast.success(
+                                        `Requisition marked as Procured! Added ${req.quantity} ${req.unit} to active stock.`
+                                      );
+                                    }}
+                                    className="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] h-7 px-2.5"
+                                  >
+                                    <Check className="h-3 w-3 mr-1" /> Mark Received
+                                  </Button>
+                                ) : (
+                                  <span className="text-[11px] text-emerald-400 font-semibold flex items-center justify-end gap-1">
+                                    <CheckCircle2 className="h-3.5 w-3.5" /> Stock Updated
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* -------------------------------------------------------------
+              SUB-TAB 2: CURRENT ON-SITE STOCK GRID
+          ------------------------------------------------------------- */}
+          {inventorySubTab === 'stock' && (
+            <div className="space-y-4">
+              {/* Search & Filter */}
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-500" />
+                  <input
+                    type="text"
+                    placeholder="Search stock item..."
+                    value={inventorySearch}
+                    onChange={(e) => setInventorySearch(e.target.value)}
+                    className="pl-8 pr-3 py-1.5 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 w-56"
+                  />
+                </div>
+
+                <select
+                  value={inventoryCategoryFilter}
+                  onChange={(e) => setInventoryCategoryFilter(e.target.value)}
+                  className="bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none cursor-pointer"
+                >
+                  <option value="all">All Categories</option>
+                  <option value="cleaning">Cleaning</option>
+                  <option value="electrical">Electrical</option>
+                  <option value="plumbing">Plumbing</option>
+                  <option value="kitchen">Kitchen / Mess</option>
+                  <option value="linen">Linen & Bedsheets</option>
+                  <option value="safety">Safety & Medical</option>
+                </select>
+              </div>
+
+              {/* Low Stock Warning Banner if any */}
+              {lowStockItems.length > 0 && (
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 flex items-center justify-between text-xs text-amber-300">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-400" />
+                    <span>
+                      <strong>{lowStockItems.length} items below minimum buffer!</strong> Restock required for:{' '}
+                      {lowStockItems.map((i) => i.name).join(', ')}.
+                    </span>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setReqItemName(lowStockItems[0]?.name || '');
+                      setReqCategory(lowStockItems[0]?.category || 'cleaning');
+                      setReqUnit(lowStockItems[0]?.unit || 'pcs');
+                      setReqPriority('urgent');
+                      setShowAddRequestModal(true);
+                    }}
+                    className="bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs h-7"
+                  >
+                    Raise Urgent Indent
+                  </Button>
+                </div>
+              )}
+
+              {/* Stock Items Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {branchInventory
+                  .filter((item) => {
+                    const matchSearch = item.name.toLowerCase().includes(inventorySearch.toLowerCase());
+                    const matchCategory =
+                      inventoryCategoryFilter === 'all' || item.category === inventoryCategoryFilter;
+                    return matchSearch && matchCategory;
+                  })
+                  .map((item) => {
+                    const isLow = item.quantity <= item.min_threshold;
+
+                    return (
+                      <Card
+                        key={item.id}
+                        className={`glass-card p-4 transition-all flex flex-col justify-between ${
+                          isLow ? 'border-amber-500/40 bg-amber-950/10' : 'border-slate-800'
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-start justify-between mb-2">
+                            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                              {item.category}
+                            </span>
+                            {isLow ? (
+                              <Badge className="bg-rose-500/10 text-rose-400 border-rose-500/20 text-[10px]">
+                                Low Stock
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[10px]">
+                                In Stock
+                              </Badge>
+                            )}
+                          </div>
+
+                          <h3 className="text-sm font-bold text-white mb-1">{item.name}</h3>
+                          <p className="text-[11px] text-slate-400 mb-3">{item.notes || 'General property store'}</p>
+
+                          <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800/80 space-y-1 mb-3">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-slate-400">Available Stock:</span>
+                              <span className="font-bold text-lg text-white">
+                                {item.quantity} <span className="text-xs font-normal text-slate-400">{item.unit}</span>
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-[11px] text-slate-400">
+                              <span>Min Buffer:</span>
+                              <span>{item.min_threshold} {item.unit}</span>
+                            </div>
+                            {item.cost_per_unit && (
+                              <div className="flex items-center justify-between text-[11px] text-slate-400">
+                                <span>Cost / unit:</span>
+                                <span className="text-slate-300 font-semibold">{formatINR(item.cost_per_unit)}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Stock Increment / Decrement actions */}
+                        <div className="flex items-center gap-2 pt-2 border-t border-slate-800">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            disabled={item.quantity <= 0}
+                            onClick={() => {
+                              updateInventoryStock(item.id, -1);
+                              toast.info(`Dispensed 1 ${item.unit} of ${item.name}`);
+                            }}
+                            className="flex-1 text-xs h-8 gap-1"
+                          >
+                            <Minus className="h-3 w-3" /> Dispense 1
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              updateInventoryStock(item.id, 5);
+                              toast.success(`Restocked +5 ${item.unit} to ${item.name}`);
+                            }}
+                            className="flex-1 text-xs h-8 bg-indigo-600 hover:bg-indigo-500 gap-1"
+                          >
+                            <Plus className="h-3 w-3" /> Restock +5
+                          </Button>
+                        </div>
+                      </Card>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* -------------------------------------------------------------
+          TAB 2: STAFF ATTENDANCE
       ------------------------------------------------------------- */}
       {activeTab === 'attendance' && (
         <div className="space-y-4">
@@ -594,18 +1062,15 @@ export default function ManagerDashboardPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-2.5">
-              <Button
-                size="sm"
-                onClick={() => setShowAddStaffModal(true)}
-                className="bg-indigo-600 hover:bg-indigo-500 text-xs gap-1.5"
-              >
-                <Plus className="h-3.5 w-3.5" /> Add Staff Member
-              </Button>
-            </div>
+            <Button
+              size="sm"
+              onClick={() => setShowAddStaffModal(true)}
+              className="bg-indigo-600 hover:bg-indigo-500 text-xs gap-1.5"
+            >
+              <Plus className="h-3.5 w-3.5" /> Add Staff Member
+            </Button>
           </div>
 
-          {/* Attendance Table / Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {branchStaff.map((member) => {
               const attendanceRecord = todayAttendanceRecords.find((a) => a.staff_id === member.id);
@@ -663,15 +1128,9 @@ export default function ManagerDashboardPage() {
                         <span className="text-slate-400">Monthly Salary:</span>
                         <span className="text-slate-200 font-semibold">{formatINR(member.salary)}</span>
                       </div>
-                      {attendanceRecord?.notes && (
-                        <div className="text-[11px] text-slate-400 bg-slate-900/80 p-1.5 rounded mt-1">
-                          Note: {attendanceRecord.notes}
-                        </div>
-                      )}
                     </div>
                   </div>
 
-                  {/* Attendance Action Toggles */}
                   <div className="space-y-2">
                     <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
                       Mark Today's Status:
@@ -748,7 +1207,7 @@ export default function ManagerDashboardPage() {
       )}
 
       {/* -------------------------------------------------------------
-          TAB 2: COMPLAINTS DESK
+          TAB 3: COMPLAINTS DESK
       ------------------------------------------------------------- */}
       {activeTab === 'complaints' && (
         <div className="space-y-4">
@@ -790,7 +1249,6 @@ export default function ManagerDashboardPage() {
             </div>
           </div>
 
-          {/* Complaints Table */}
           <div className="glass-card overflow-hidden border-slate-800">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
@@ -892,163 +1350,6 @@ export default function ManagerDashboardPage() {
                 </tbody>
               </table>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* -------------------------------------------------------------
-          TAB 3: INVENTORY & SUPPLIES
-      ------------------------------------------------------------- */}
-      {activeTab === 'inventory' && (
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
-            <div>
-              <h2 className="text-base font-semibold text-white flex items-center gap-2">
-                <Boxes className="h-4 w-4 text-indigo-400" />
-                Branch Consumables & Property Supplies Inventory
-              </h2>
-              <p className="text-xs text-slate-400">
-                Track cleaning supplies, electricals, plumbing washers, mess gas cylinders, and linens.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-500" />
-                <input
-                  type="text"
-                  placeholder="Search item..."
-                  value={inventorySearch}
-                  onChange={(e) => setInventorySearch(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-
-              <select
-                value={inventoryCategoryFilter}
-                onChange={(e) => setInventoryCategoryFilter(e.target.value)}
-                className="bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none cursor-pointer"
-              >
-                <option value="all">All Categories</option>
-                <option value="cleaning">Cleaning</option>
-                <option value="electrical">Electrical</option>
-                <option value="plumbing">Plumbing</option>
-                <option value="kitchen">Kitchen / Mess</option>
-                <option value="linen">Linen & Bedsheets</option>
-                <option value="safety">Safety & Medical</option>
-              </select>
-
-              <Button
-                size="sm"
-                onClick={() => setShowAddInventoryModal(true)}
-                className="bg-indigo-600 hover:bg-indigo-500 text-xs gap-1.5"
-              >
-                <Plus className="h-3.5 w-3.5" /> Add New Item
-              </Button>
-            </div>
-          </div>
-
-          {/* Low Stock Warning Banner if any */}
-          {lowStockItems.length > 0 && (
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 flex items-center justify-between text-xs text-amber-300">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-amber-400" />
-                <span>
-                  <strong>{lowStockItems.length} items below minimum buffer!</strong> Restock required for:{' '}
-                  {lowStockItems.map((i) => i.name).join(', ')}.
-                </span>
-              </div>
-              <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30">Action Needed</Badge>
-            </div>
-          )}
-
-          {/* Inventory Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {branchInventory
-              .filter((item) => {
-                const matchSearch = item.name.toLowerCase().includes(inventorySearch.toLowerCase());
-                const matchCategory =
-                  inventoryCategoryFilter === 'all' || item.category === inventoryCategoryFilter;
-                return matchSearch && matchCategory;
-              })
-              .map((item) => {
-                const isLow = item.quantity <= item.min_threshold;
-
-                return (
-                  <Card
-                    key={item.id}
-                    className={`glass-card p-4 transition-all flex flex-col justify-between ${
-                      isLow ? 'border-amber-500/40 bg-amber-950/10' : 'border-slate-800'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-start justify-between mb-2">
-                        <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-                          {item.category}
-                        </span>
-                        {isLow ? (
-                          <Badge className="bg-rose-500/10 text-rose-400 border-rose-500/20 text-[10px]">
-                            Low Stock
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[10px]">
-                            In Stock
-                          </Badge>
-                        )}
-                      </div>
-
-                      <h3 className="text-sm font-bold text-white mb-1">{item.name}</h3>
-                      <p className="text-[11px] text-slate-400 mb-3">{item.notes || 'General property store'}</p>
-
-                      <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800/80 space-y-1 mb-3">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-slate-400">Available Stock:</span>
-                          <span className="font-bold text-lg text-white">
-                            {item.quantity} <span className="text-xs font-normal text-slate-400">{item.unit}</span>
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-[11px] text-slate-400">
-                          <span>Min Threshold:</span>
-                          <span>{item.min_threshold} {item.unit}</span>
-                        </div>
-                        {item.cost_per_unit && (
-                          <div className="flex items-center justify-between text-[11px] text-slate-400">
-                            <span>Cost per unit:</span>
-                            <span className="text-slate-300 font-semibold">{formatINR(item.cost_per_unit)}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Stock Increment / Decrement actions */}
-                    <div className="flex items-center gap-2 pt-2 border-t border-slate-800">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        disabled={item.quantity <= 0}
-                        onClick={() => {
-                          updateInventoryStock(item.id, -1);
-                          toast.info(`Consumed 1 ${item.unit} of ${item.name}`);
-                        }}
-                        className="flex-1 text-xs h-8 gap-1"
-                      >
-                        <Minus className="h-3 w-3" /> Dispense 1
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          updateInventoryStock(item.id, 5);
-                          toast.success(`Restocked +5 ${item.unit} to ${item.name}`);
-                        }}
-                        className="flex-1 text-xs h-8 bg-indigo-600 hover:bg-indigo-500 gap-1"
-                      >
-                        <Plus className="h-3 w-3" /> Restock +5
-                      </Button>
-                    </div>
-                  </Card>
-                );
-              })}
           </div>
         </div>
       )}
@@ -1189,7 +1490,6 @@ export default function ManagerDashboardPage() {
             </Button>
           </div>
 
-          {/* Rent Status Table */}
           <div className="glass-card overflow-hidden border-slate-800">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
@@ -1300,7 +1600,6 @@ export default function ManagerDashboardPage() {
       ------------------------------------------------------------- */}
       {activeTab === 'sop' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* SOP Checklist */}
           <Card className="glass-card border-slate-800">
             <CardHeader className="pb-3 border-b border-slate-800">
               <div className="flex items-center justify-between">
@@ -1344,7 +1643,6 @@ export default function ManagerDashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Visitor Log & Entry Form */}
           <Card className="glass-card border-slate-800">
             <CardHeader className="pb-3 border-b border-slate-800">
               <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
@@ -1393,7 +1691,6 @@ export default function ManagerDashboardPage() {
                 </div>
               </form>
 
-              {/* Today's Visitors Table */}
               <div className="space-y-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   Today's Gate Register
@@ -1439,6 +1736,287 @@ export default function ManagerDashboardPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* -------------------------------------------------------------
+          MODAL: REQUEST REQUIRED INVENTORY (URGENT / NORMAL PRIORITY)
+      ------------------------------------------------------------- */}
+      {showAddRequestModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-5 shadow-2xl space-y-4 animate-in fade-in">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <ShoppingCart className="h-4 w-4 text-rose-400" />
+                Add Required Inventory Requisition
+              </h3>
+              <button
+                onClick={() => setShowAddRequestModal(false)}
+                className="text-slate-400 hover:text-white text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateInventoryRequest} className="space-y-3.5 text-xs">
+              <div>
+                <label className="text-slate-400 block mb-1">Required Item Name *</label>
+                <Input
+                  required
+                  placeholder="e.g. Commercial 19kg LPG Cylinders, 9W LED Bulbs"
+                  value={reqItemName}
+                  onChange={(e) => setReqItemName(e.target.value)}
+                  className="bg-slate-950 border-slate-800 text-xs"
+                />
+              </div>
+
+              {/* Priority Selector: URGENT vs NORMAL */}
+              <div>
+                <label className="text-slate-300 font-bold block mb-1.5 flex items-center gap-1.5">
+                  Need Priority *
+                  <span className="text-[11px] text-slate-500 font-normal">(Select operational urgency level)</span>
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div
+                    onClick={() => setReqPriority('urgent')}
+                    className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center gap-3 ${
+                      reqPriority === 'urgent'
+                        ? 'bg-rose-950/40 border-rose-500 text-white shadow-md shadow-rose-900/20 ring-1 ring-rose-500'
+                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="p-2 rounded-lg bg-rose-500/20 text-rose-400">
+                      <AlertTriangle className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-rose-400 block text-xs">🚨 URGENT NEED</span>
+                      <span className="text-[10px] text-slate-400">Critical / Emergency supply (Mess, plumbing, electrical breakdown)</span>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => setReqPriority('normal')}
+                    className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center gap-3 ${
+                      reqPriority === 'normal'
+                        ? 'bg-blue-950/40 border-blue-500 text-white shadow-md shadow-blue-900/20 ring-1 ring-blue-500'
+                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
+                      <Package className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-blue-400 block text-xs">📦 NORMAL NEED</span>
+                      <span className="text-[10px] text-slate-400">Regular weekly / monthly replenish stock buffer</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="text-slate-400 block mb-1">Category</label>
+                  <select
+                    value={reqCategory}
+                    onChange={(e: any) => setReqCategory(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white"
+                  >
+                    <option value="kitchen">Kitchen / Mess</option>
+                    <option value="cleaning">Cleaning</option>
+                    <option value="electrical">Electrical</option>
+                    <option value="plumbing">Plumbing</option>
+                    <option value="linen">Linen & Bedsheets</option>
+                    <option value="safety">Safety & Medical</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-slate-400 block mb-1">Quantity Needed</label>
+                  <Input
+                    required
+                    type="number"
+                    min="1"
+                    value={reqQty}
+                    onChange={(e) => setReqQty(e.target.value)}
+                    className="bg-slate-950 border-slate-800 text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-400 block mb-1">Unit</label>
+                  <Input
+                    placeholder="cylinders / pcs / kg"
+                    value={reqUnit}
+                    onChange={(e) => setReqUnit(e.target.value)}
+                    className="bg-slate-950 border-slate-800 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-slate-400 block mb-1">Estimated Budget (INR)</label>
+                  <Input
+                    type="number"
+                    placeholder="e.g. 1850"
+                    value={reqEstimatedCost}
+                    onChange={(e) => setReqEstimatedCost(e.target.value)}
+                    className="bg-slate-950 border-slate-800 text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-400 block mb-1">Target Branch</label>
+                  <Input
+                    disabled
+                    value={activeBranch.name}
+                    className="bg-slate-950 border-slate-800 text-xs text-slate-400"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-slate-400 block mb-1">Reason / Operational Justification *</label>
+                <textarea
+                  required
+                  rows={2}
+                  placeholder="Explain why this item is needed and how soon..."
+                  value={reqReason}
+                  onChange={(e) => setReqReason(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowAddRequestModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  size="sm"
+                  className={reqPriority === 'urgent' ? 'bg-rose-600 hover:bg-rose-500' : 'bg-indigo-600 hover:bg-indigo-500'}
+                >
+                  Submit {reqPriority.toUpperCase()} Requisition
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* -------------------------------------------------------------
+          MODAL: ADD NEW ON-SITE STOCK SKU
+      ------------------------------------------------------------- */}
+      {showAddInventoryModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Boxes className="h-4 w-4 text-indigo-400" />
+                Add Consumable to Current Stock
+              </h3>
+              <button
+                onClick={() => setShowAddInventoryModal(false)}
+                className="text-slate-400 hover:text-white text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateInventory} className="space-y-3 text-xs">
+              <div>
+                <label className="text-slate-400 block mb-1">Item Name</label>
+                <Input
+                  required
+                  placeholder="e.g. 16A Geyser Switches"
+                  value={invName}
+                  onChange={(e) => setInvName(e.target.value)}
+                  className="bg-slate-950 border-slate-800 text-xs"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-slate-400 block mb-1">Category</label>
+                  <select
+                    value={invCategory}
+                    onChange={(e: any) => setInvCategory(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white"
+                  >
+                    <option value="cleaning">Cleaning</option>
+                    <option value="electrical">Electrical</option>
+                    <option value="plumbing">Plumbing</option>
+                    <option value="kitchen">Kitchen / Mess</option>
+                    <option value="linen">Linen & Bedsheets</option>
+                    <option value="safety">Safety & Medical</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-slate-400 block mb-1">Unit</label>
+                  <Input
+                    placeholder="pcs / jars / kg"
+                    value={invUnit}
+                    onChange={(e) => setInvUnit(e.target.value)}
+                    className="bg-slate-950 border-slate-800 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="text-slate-400 block mb-1">Initial Qty</label>
+                  <Input
+                    type="number"
+                    value={invQty}
+                    onChange={(e) => setInvQty(e.target.value)}
+                    className="bg-slate-950 border-slate-800 text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-400 block mb-1">Min Threshold</label>
+                  <Input
+                    type="number"
+                    value={invMinThreshold}
+                    onChange={(e) => setInvMinThreshold(e.target.value)}
+                    className="bg-slate-950 border-slate-800 text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-400 block mb-1">Cost / Unit</label>
+                  <Input
+                    type="number"
+                    value={invCost}
+                    onChange={(e) => setInvCost(e.target.value)}
+                    className="bg-slate-950 border-slate-800 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowAddInventoryModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" size="sm" className="bg-indigo-600 hover:bg-indigo-500">
+                  Save to Inventory
+                </Button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
@@ -1724,116 +2302,6 @@ export default function ManagerDashboardPage() {
                 </Button>
                 <Button type="submit" size="sm" className="bg-emerald-600 hover:bg-emerald-500">
                   Generate Receipt & Sync
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* -------------------------------------------------------------
-          MODAL: ADD NEW INVENTORY ITEM
-      ------------------------------------------------------------- */}
-      {showAddInventoryModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Boxes className="h-4 w-4 text-indigo-400" />
-                Add Consumable / Inventory Item
-              </h3>
-              <button
-                onClick={() => setShowAddInventoryModal(false)}
-                className="text-slate-400 hover:text-white text-sm"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateInventory} className="space-y-3 text-xs">
-              <div>
-                <label className="text-slate-400 block mb-1">Item Name</label>
-                <Input
-                  required
-                  placeholder="e.g. 16A Geyser Switches"
-                  value={invName}
-                  onChange={(e) => setInvName(e.target.value)}
-                  className="bg-slate-950 border-slate-800 text-xs"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-slate-400 block mb-1">Category</label>
-                  <select
-                    value={invCategory}
-                    onChange={(e: any) => setInvCategory(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white"
-                  >
-                    <option value="cleaning">Cleaning</option>
-                    <option value="electrical">Electrical</option>
-                    <option value="plumbing">Plumbing</option>
-                    <option value="kitchen">Kitchen / Mess</option>
-                    <option value="linen">Linen & Bedsheets</option>
-                    <option value="safety">Safety & Medical</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-slate-400 block mb-1">Unit</label>
-                  <Input
-                    placeholder="pcs / jars / kg"
-                    value={invUnit}
-                    onChange={(e) => setInvUnit(e.target.value)}
-                    className="bg-slate-950 border-slate-800 text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <label className="text-slate-400 block mb-1">Initial Qty</label>
-                  <Input
-                    type="number"
-                    value={invQty}
-                    onChange={(e) => setInvQty(e.target.value)}
-                    className="bg-slate-950 border-slate-800 text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-slate-400 block mb-1">Min Threshold</label>
-                  <Input
-                    type="number"
-                    value={invMinThreshold}
-                    onChange={(e) => setInvMinThreshold(e.target.value)}
-                    className="bg-slate-950 border-slate-800 text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-slate-400 block mb-1">Cost / Unit</label>
-                  <Input
-                    type="number"
-                    value={invCost}
-                    onChange={(e) => setInvCost(e.target.value)}
-                    className="bg-slate-950 border-slate-800 text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setShowAddInventoryModal(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" size="sm" className="bg-indigo-600 hover:bg-indigo-500">
-                  Save to Inventory
                 </Button>
               </div>
             </form>

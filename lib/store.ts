@@ -20,6 +20,9 @@ import {
   StaffAttendanceStatus,
   InventoryItem,
   InventoryCategory,
+  InventoryRequest,
+  InventoryNeedPriority,
+  InventoryRequestStatus,
 } from '@/types/database';
 import {
   isSupabaseConfigured,
@@ -60,6 +63,7 @@ import {
   INITIAL_NOTICES,
   INITIAL_STAFF_ATTENDANCE,
   INITIAL_INVENTORY_ITEMS,
+  INITIAL_INVENTORY_REQUESTS,
   getTodayDateStr,
 } from '@/lib/data/initial-data';
 
@@ -84,6 +88,7 @@ export function usePGStore() {
   const [tiffinOrders, setTiffinOrders] = useState<TiffinOrder[]>(INITIAL_TIFFIN_ORDERS);
   const [staffAttendance, setStaffAttendance] = useState<StaffAttendance[]>(INITIAL_STAFF_ATTENDANCE);
   const [inventory, setInventory] = useState<InventoryItem[]>(INITIAL_INVENTORY_ITEMS);
+  const [inventoryRequests, setInventoryRequests] = useState<InventoryRequest[]>(INITIAL_INVENTORY_REQUESTS);
   const [syncStatus, setSyncStatus] = useState<'local' | 'syncing' | 'synced' | 'error'>('local');
   const [isLiveDB, setIsLiveDB] = useState<boolean>(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
@@ -172,6 +177,9 @@ export function usePGStore() {
 
       const savedInventory = localStorage.getItem('pgos_inventory');
       if (savedInventory) setInventory(JSON.parse(savedInventory));
+
+      const savedInvReqs = localStorage.getItem('pgos_inventory_requests');
+      if (savedInvReqs) setInventoryRequests(JSON.parse(savedInvReqs));
     } catch {
       // LocalStorage not available or parse error
     }
@@ -501,6 +509,74 @@ export function usePGStore() {
     return updated;
   };
 
+  // Inventory Requisition / Required Supplies Actions
+  const addInventoryRequest = (
+    newReq: Omit<InventoryRequest, 'id' | 'created_at' | 'status'>
+  ) => {
+    const req: InventoryRequest = {
+      ...newReq,
+      id: `req-${Date.now()}`,
+      status: 'pending',
+      created_at: new Date().toISOString(),
+    };
+    const updated = [req, ...inventoryRequests];
+    setInventoryRequests(updated);
+    saveToStorage('pgos_inventory_requests', updated);
+    return req;
+  };
+
+  const updateInventoryRequestStatus = (
+    requestId: string,
+    status: InventoryRequestStatus
+  ) => {
+    const targetReq = inventoryRequests.find((r) => r.id === requestId);
+    const updated = inventoryRequests.map((r) =>
+      r.id === requestId
+        ? {
+            ...r,
+            status,
+            procured_at: status === 'procured' ? new Date().toISOString() : r.procured_at,
+          }
+        : r
+    );
+    setInventoryRequests(updated);
+    saveToStorage('pgos_inventory_requests', updated);
+
+    // If status is marked 'procured', automatically add to the active inventory stock!
+    if (status === 'procured' && targetReq) {
+      const existingItem = inventory.find(
+        (item) =>
+          item.property_id === targetReq.property_id &&
+          item.name.toLowerCase() === targetReq.item_name.toLowerCase()
+      );
+      if (existingItem) {
+        updateInventoryStock(existingItem.id, targetReq.quantity);
+      } else {
+        addInventoryItem({
+          property_id: targetReq.property_id,
+          name: targetReq.item_name,
+          category: targetReq.category,
+          quantity: targetReq.quantity,
+          unit: targetReq.unit,
+          min_threshold: Math.max(2, Math.floor(targetReq.quantity / 2)),
+          cost_per_unit: targetReq.estimated_cost
+            ? Math.round(targetReq.estimated_cost / targetReq.quantity)
+            : undefined,
+          notes: `Procured from requisition ${targetReq.id}`,
+        });
+      }
+    }
+
+    return updated;
+  };
+
+  const deleteInventoryRequest = (requestId: string) => {
+    const updated = inventoryRequests.filter((r) => r.id !== requestId);
+    setInventoryRequests(updated);
+    saveToStorage('pgos_inventory_requests', updated);
+    return updated;
+  };
+
   // Tiffin Box Management Actions
   const requestTiffin = (params: {
     tenant_id: string;
@@ -777,5 +853,10 @@ export function usePGStore() {
     updateInventoryStock,
     addInventoryItem,
     deleteInventoryItem,
+    // Inventory Requisitions / Required Supplies
+    inventoryRequests,
+    addInventoryRequest,
+    updateInventoryRequestStatus,
+    deleteInventoryRequest,
   };
 }
