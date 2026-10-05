@@ -51,12 +51,12 @@ export default function MessOverviewPage() {
 
         <Link href="/mess/tiffin">
           <Button size="sm" className="bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-500 hover:to-indigo-500 text-white font-bold text-xs gap-1.5 shadow-lg shadow-amber-600/20">
-            <Package className="h-4 w-4" /> Tiffin Box Hub &amp; Returns
+            <Package className="h-4 w-4" /> Tiffin Hub &amp; Returns
           </Button>
         </Link>
       </div>
 
-      {/* Daily Student Tiffin Box Hub Spotlight Banner */}
+      {/* Daily Student Tiffin Hub Spotlight Banner */}
       <Card className="glass-card border-amber-500/30 bg-gradient-to-r from-amber-950/30 via-slate-900 to-indigo-950/30 p-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-3.5">
@@ -65,13 +65,13 @@ export default function MessOverviewPage() {
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-base font-bold text-white">Daily Student Tiffin Box Hub</h3>
+                <h3 className="text-base font-bold text-white">Daily Student Tiffin Service</h3>
                 <Badge variant="warning" className="text-[10px]">
                   {totalTiffinsOptedToday} Opted In Today
                 </Badge>
                 {pendingTiffinReturns.length > 0 && (
                   <Badge variant="danger" className="text-[10px]">
-                    {pendingTiffinReturns.length} Boxes Out
+                    {pendingTiffinReturns.length} Pending Return
                   </Badge>
                 )}
               </div>
