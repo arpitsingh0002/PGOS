@@ -144,10 +144,13 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Tenant Portal Link */}
-        <div className="text-center mt-6">
-          <Link href="/tenant/login" className="text-xs text-slate-400 hover:text-emerald-400 inline-flex items-center gap-1.5 transition-colors">
-            Are you a tenant? Open Tenant Portal &rarr;
+        {/* Tenant / Student Portal Links */}
+        <div className="text-center mt-6 flex flex-col items-center gap-2">
+          <Link href="/student-login" className="text-xs text-cyan-400 hover:text-cyan-300 font-medium inline-flex items-center gap-1.5 transition-colors">
+            🎓 Are you a student or resident? Open Student Portal &rarr;
+          </Link>
+          <Link href="/tenant/login" className="text-[11px] text-slate-500 hover:text-emerald-400 inline-flex items-center gap-1.5 transition-colors">
+            Mobile OTP Quick Access &rarr;
           </Link>
         </div>
       </div>
