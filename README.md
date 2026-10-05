@@ -1,69 +1,99 @@
 # 🚀 PGOS — Modern PG, Hostel & Co-living Operating System
 
-PGOS is an enterprise-grade, multi-tenant SaaS platform engineered specifically for Indian PG (Paying Guest), hostel, and co-living operators. Built with **Next.js 14 (App Router)**, **TypeScript**, **Tailwind CSS**, and **Supabase (PostgreSQL with Row Level Security)**, fully optimized for standalone deployment on **Render**.
+PGOS is an enterprise-grade, multi-tenant SaaS platform engineered specifically for Indian PG (Paying Guest), hostel, and co-living operators. Built with **Next.js 14 (App Router)**, **TypeScript**, **Tailwind CSS**, and **Supabase (PostgreSQL with Row Level Security)**, fully optimized for standalone deployment on **Render** or **Vercel**.
 
 ---
 
 ## 🌟 Key Modules & Capabilities
 
-1. **Multi-Property & Multi-Building Hierarchy**:
-   - Manage multiple branches across cities (Bengaluru, Gurugram, Pune, Hyderabad, etc.).
-   - Full tree structure: `Property` &rarr; `Buildings/Blocks` &rarr; `Rooms` &rarr; `Beds`.
+### 1. 🛡️ Property Manager Operations Command Center (`/manager`)
+- **Daily Staff Attendance Tracker**:
+  - 1-click status controls for every staff member (**Present**, **Half Day**, **Absent**, **On Leave**).
+  - Shift time logging (`08:00 AM - 08:00 PM`), salary tracking, and direct phone/WhatsApp dialers.
+  - Subordinate staff onboarding modal (cleaners, security, cooks, caretakers).
+- **Complaints & Maintenance Dispatch**:
+  - Filter tickets by status (`New`, `In Progress`, `Resolved`) and priority (**Urgent**, **High**, **Medium**, **Low**).
+  - Front-desk intake modal for logging complaints reported verbally at reception.
+  - Inline ticket progression with mandatory resolution notes upon closing.
+- **Required Supplies & Inventory Indents**:
+  - Submit procurement requests with **Need Priority** tags:
+    - 🚨 **URGENT NEED**: Emergency supplies (LPG gas cylinders, water pump capacitors, geyser heating coils) with pulsing alert banners.
+    - 📦 **NORMAL NEED**: Routine replenishment (cleaning phenyl, spare tap washers, bedsheets).
+  - 1-click **"Mark Received"** action that automatically increments active on-site stock.
+- **Student & Resident Directory**:
+  - Live allocation directory: Room number, Bed ID, Institution/Company, and Monthly Rent.
+  - Immediate access to Parent/Guardian Emergency Contacts with 1-click call and WhatsApp reminders.
+- **Rent Collection & Cash Desk**:
+  - Expected vs Collected vs Overdue monthly balance tracker.
+  - Record in-person cash or UPI payments with instant receipt generation.
+- **Shift SOP Checklist & Main Gate Visitor Passbook**:
+  - Daily manager shift SOP checklist (water tank inspection, mess audit, cash reconciliation, night gate lockup).
+  - Digital visitor register with check-in timestamps and 1-click checkout.
 
-2. **Interactive Visual Bed Grid Matrix**:
-   - Live color status for every bed slot:
-     - 🟢 **Available** (Ready for check-in)
-     - 🔴 **Occupied** (Linked to active resident)
-     - 🟡 **Reserved** (Booking advance paid)
-     - ⚫ **Maintenance** (Under repair / cleaning)
-   - 1-click bed drawer with occupant info and allocation controls.
+---
 
-3. **Per-Building Mess & Dining System**:
-   - 4-Meal Daily Cycles: Breakfast, Lunch, High Tea & Snacks, Dinner.
-   - Mon&ndash;Sun menu editor synced directly to resident portals.
-   - Daily resident meal attendance headcount to prevent food waste.
-   - Pantry bulk grocery purchase ledger and monthly cost per resident analytics.
+### 2. 📦 Owner Central Inventory & Supplies Audit (`/inventory`)
+- Central multi-branch stock monitoring across 6 categories (Cleaning, Electrical, Plumbing, Mess/Kitchen, Linens, Safety).
+- Emergency shortage alert banner highlighting urgent requisitions submitted by branch managers.
+- Multi-branch requisition review with 1-click **"Approve"** and **"Mark Procured"** controls.
+- Real-time stock valuation and minimum buffer threshold alerts.
 
-4. **Automated Rent Collection & Invoicing**:
-   - 1-Click **Bulk Invoicing** on the 1st of every month across all occupied beds.
-   - Printable & downloadable digital payment receipts (`window.print()` PDF ready).
-   - UPI QR code payments and automated WhatsApp rent due alerts.
+---
 
-5. **Resident Lifecycle & Move-out Settlements**:
-   - Onboarding with Aadhaar/PAN KYC, deposit tracking, and bed allocation.
-   - 6-Tab Tenant Profiles: Overview, Payment history, Complaints, Statement Ledger, Document vault, Activity timeline.
-   - Checkout wizard with automated deductions (painting, damages, electricity) and net deposit refund calculation.
+### 3. 🍱 Per-Building Mess & Student Tiffin Box Logistics (`/mess`)
+- **4-Meal Daily Cycles**: Breakfast, Lunch, High Tea & Snacks, Dinner.
+- **Daily Student Tiffin Dispatch Hub** (`/mess/tiffin`):
+  - Students opt-in for afternoon lunchbox delivery before the 9:00 AM kitchen cutoff.
+  - Kitchen packing sheets grouped by college/institution batches.
+  - Evening return tracking counter to prevent lost tiffin containers.
 
-6. **Maintenance & Complaints Kanban Board**:
-   - 4-Stage visual workflow: `NEW` &rarr; `ASSIGNED` &rarr; `IN PROGRESS` &rarr; `RESOLVED`.
-   - Priority SLA timers (Urgent &lt;2h, High, Medium, Low).
-   - Technician assignment and resolution notes.
+---
 
-7. **Staff Management & Task Delegation**:
-   - Team directory (Managers, Wardens, Chefs, Cleaners, Electricians).
-   - Staff Kanban task board with due dates and completion tags.
+### 4. 🏢 Multi-Property & Visual Bed Grid Matrix
+- Manage multiple branches across cities (Bengaluru, Gurugram, Pune, Hyderabad, etc.).
+- Full hierarchy: `Property` &rarr; `Buildings/Blocks` &rarr; `Rooms` &rarr; `Beds`.
+- Interactive visual bed grid with real-time status:
+  - 🟢 **Available** (Ready for check-in)
+  - 🔴 **Occupied** (Linked to active resident)
+  - 🟡 **Reserved** (Booking advance paid)
+  - ⚫ **Maintenance** (Under repair / sanitization)
 
-8. **Resident Mobile App (PWA)**:
-   - Dedicated portal at `/tenant/dashboard` with mobile bottom navigation.
-   - Today's menu, 1-click UPI pay, complaint lodging, and notice board.
+---
 
-9. **AI Operations Query Assistant**:
-   - Fast AI endpoint answering natural language queries: "Which beds are vacant?", "Who owes rent?", "What is this month's NOI?".
+### 5. 💳 Automated Rent Invoicing & Payments
+- 1-Click **Bulk Invoicing** on the 1st of every month across all occupied beds.
+- Printable & downloadable digital payment receipts (`window.print()` PDF ready).
+- UPI QR code payments and automated WhatsApp rent due alerts.
 
-10. **Public Property Marketplace Profile**:
-    - High-converting listing page at `/pg/[id]` with room sharing rates, amenities, and visit booking lead generation.
+---
+
+### 6. 📱 Resident Mobile App & Dual Authentication (`/tenant/dashboard`, `/login`)
+- **Dual-Mode Login**: Owner/Operator credentials vs Student/Resident room login.
+- Dedicated mobile PWA at `/tenant/dashboard`:
+  - Today's mess menu & tiffin opt-in.
+  - 1-click UPI rent payment.
+  - Digital maintenance complaint ticketing.
+  - Emergency contact numbers and digital notice board.
+
+---
+
+### 7. 📊 Live Business Analytics & RevPAB (`/analytics`)
+- Dynamic RevPAB (Revenue Per Available Bed) and Occupancy Rate trendlines.
+- Financial forecasting: Net Operating Income (NOI), expense categorization, and collection efficiency.
+- Synchronized with live database state via central singleton store.
 
 ---
 
 ## 🏗️ Tech Stack
 
-- **Framework**: Next.js 14 (App Router, Server Actions & Standalone output)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS + Custom Glassmorphism design system
-- **Database & Auth**: Supabase PostgreSQL with full Row-Level Security (RLS)
+- **Framework**: Next.js 14 (App Router, Standalone output)
+- **Language**: TypeScript (Strict typing, 0 compile errors)
+- **Styling**: Tailwind CSS + Curated Glassmorphism Design System
+- **Database & Auth**: Supabase PostgreSQL with Row-Level Security (RLS)
+- **State Management**: Dual-engine singleton store (`lib/store.ts`) with live Supabase sync + offline fallback
 - **Charts**: Recharts
 - **Icons**: Lucide React
-- **Notifications**: Sonner
+- **Toasts**: Sonner
 
 ---
 
@@ -72,7 +102,7 @@ PGOS is an enterprise-grade, multi-tenant SaaS platform engineered specifically 
 1. Create a free project at [supabase.com](https://supabase.com).
 2. Open the **SQL Editor** tab.
 3. Paste the contents of [`supabase/schema.sql`](./supabase/schema.sql) and click **Run**.
-4. All 27 tables, enums, triggers (including automatic receipt number generation), and RLS policies are created automatically.
+4. Optional: Run [`supabase/seed.sql`](./supabase/seed.sql) to populate sample properties, rooms, tenants, inventory, and staff rosters.
 
 ---
 
@@ -86,37 +116,37 @@ cd PGOS
 # 2. Install dependencies
 npm install
 
-# 3. Configure environment (Optional — runs out of the box with dynamic fallback engine)
+# 3. Configure environment variables (Optional — runs out-of-the-box with fallback mock data)
 cp .env.example .env.local
 
 # 4. Start development server
 npm run dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000) to view the application:
+Visit the core routes at `http://localhost:3000`:
 - **Landing Showcase**: [http://localhost:3000/](http://localhost:3000/)
-- **Owner / Admin Dashboard**: [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
-- **Daily Student Tiffin Hub & Returns**: [http://localhost:3000/mess/tiffin](http://localhost:3000/mess/tiffin)
+- **Owner / HQ Dashboard**: [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
+- **Manager Operations Portal**: [http://localhost:3000/manager](http://localhost:3000/manager)
+- **Owner Central Inventory Audit**: [http://localhost:3000/inventory](http://localhost:3000/inventory)
+- **Daily Student Tiffin Logistics**: [http://localhost:3000/mess/tiffin](http://localhost:3000/mess/tiffin)
 - **Tenant Resident Mobile Portal**: [http://localhost:3000/tenant/dashboard](http://localhost:3000/tenant/dashboard)
-- **Live Business Analytics & RevPAB**: [http://localhost:3000/analytics](http://localhost:3000/analytics)
-- **Public PG Marketplace Listing**: [http://localhost:3000/pg/prop-1](http://localhost:3000/pg/prop-1)
+- **Live Business Analytics**: [http://localhost:3000/analytics](http://localhost:3000/analytics)
+- **Dual-Auth Portal Login**: [http://localhost:3000/login](http://localhost:3000/login)
 
 ---
 
-## 🌐 Deploying to Render (Step-by-Step)
+## 🌐 Deploying to Render / Vercel
 
 ### Step 1: Push Repository to GitHub
 ```bash
-git init
 git add .
-git commit -m "feat: complete PGOS multi-property platform"
-git remote add origin https://github.com/your-username/pgos.git
-git push -u origin main
+git commit -m "feat: complete PGOS platform"
+git push origin main
 ```
 
 ### Step 2: Create Web Service on Render
 1. Go to [render.com](https://render.com) and click **New +** &rarr; **Web Service**.
-2. Connect your GitHub repository `pgos`.
+2. Connect your GitHub repository `PGOS`.
 3. Configure settings:
    - **Name**: `pgos`
    - **Region**: Singapore (lowest latency for India)
@@ -126,7 +156,6 @@ git push -u origin main
    - **Plan**: Free or Starter
 
 ### Step 3: Add Environment Variables in Render
-In Render Dashboard &rarr; **Environment**:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
@@ -134,14 +163,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 NODE_VERSION=20.11.0
 ```
 
-### Step 4: Configure Supabase Auth Redirects
-In Supabase &rarr; **Authentication** &rarr; **URL Configuration**:
-- **Site URL**: `https://pgos.onrender.com`
-- **Redirect URLs**:
-  - `https://pgos.onrender.com/**`
-  - `http://localhost:3000/**`
-
 ---
 
 ## 📄 License
-MIT License. Built for hostel and PG entrepreneurs.
+MIT License. Built for hostel, PG, and co-living entrepreneurs.
