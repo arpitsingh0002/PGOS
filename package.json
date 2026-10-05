@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "build": "next build && node scripts/prepare-standalone.js",
+    "start": "node scripts/start-production.js",
+    "start:standalone": "node .next/standalone/server.js",
+    "start:next": "next start -H 0.0.0.0",
     "lint": "next lint"
   },
   "dependencies": {

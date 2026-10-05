@@ -6,12 +6,23 @@ services:
     region: singapore
     buildCommand: npm install && npm run build
     startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
     envVars:
       - key: NODE_VERSION
         value: 20.11.0
+      - key: HOSTNAME
+        value: 0.0.0.0
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_TELEMETRY_DISABLED
+        value: 1
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=460
       - key: NEXT_PUBLIC_SUPABASE_URL
         sync: false
       - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
+
