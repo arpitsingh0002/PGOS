@@ -20,6 +20,7 @@ import {
   Sparkles,
   Smartphone,
   ExternalLink,
+  Shield,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePGStore } from '@/lib/store';
@@ -57,6 +58,7 @@ export function Sidebar() {
       badge: pendingTiffinsCount > 0 ? `${pendingTiffinsCount}` : undefined,
       badgeColor: 'bg-amber-500/20 text-amber-300',
     },
+    { name: 'Manager Ops', href: '/manager', icon: Shield },
     { name: 'Staff', href: '/staff', icon: UserCheck },
     { name: 'Tasks', href: '/tasks', icon: CheckSquare },
     { name: 'Notices', href: '/notices', icon: Bell },
