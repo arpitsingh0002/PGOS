@@ -588,6 +588,8 @@ export async function upsertTiffinOrderDB(order: TiffinOrder): Promise<boolean> 
       date: order.date,
       delivery_time: order.delivery_time,
       status: order.status,
+      meal_type: order.meal_type || 'lunch',
+      box_number: order.box_number || null,
       notes: order.notes,
       verified_by: order.verified_by,
       verified_at: order.verified_at,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Property,
   Building,
@@ -1373,48 +1373,95 @@ export function usePGStore() {
     saveToStorage('pgos_tenants', updated);
   };
 
-  // Aggregates & Metrics
-  const totalProperties = properties.length;
-  const totalBuildings = buildings.length;
-  const totalRooms = rooms.length;
-  const totalBeds = beds.length;
-  const occupiedBeds = beds.filter((b) => b.status === 'occupied').length;
-  const vacantBeds = beds.filter((b) => b.status === 'available').length;
-  const reservedBeds = beds.filter((b) => b.status === 'reserved').length;
-  const maintenanceBeds = beds.filter((b) => b.status === 'maintenance').length;
-  const occupancyRate = totalBeds > 0 ? Math.round((occupiedBeds / totalBeds) * 100) : 0;
+  // Aggregates & Metrics (Optimized with useMemo)
+  const {
+    totalProperties,
+    totalBuildings,
+    totalRooms,
+    totalBeds,
+    occupiedBeds,
+    vacantBeds,
+    reservedBeds,
+    maintenanceBeds,
+    occupancyRate,
+  } = useMemo(() => {
+    const totalProperties = properties.length;
+    const totalBuildings = buildings.length;
+    const totalRooms = rooms.length;
+    const totalBeds = beds.length;
+    const occupiedBeds = beds.filter((b) => b.status === 'occupied').length;
+    const vacantBeds = beds.filter((b) => b.status === 'available').length;
+    const reservedBeds = beds.filter((b) => b.status === 'reserved').length;
+    const maintenanceBeds = beds.filter((b) => b.status === 'maintenance').length;
+    const occupancyRate = totalBeds > 0 ? Math.round((occupiedBeds / totalBeds) * 100) : 0;
+    return {
+      totalProperties,
+      totalBuildings,
+      totalRooms,
+      totalBeds,
+      occupiedBeds,
+      vacantBeds,
+      reservedBeds,
+      maintenanceBeds,
+      occupancyRate,
+    };
+  }, [properties.length, buildings.length, rooms.length, beds]);
 
-  const currentMonthRevenue = payments
-    .filter((p) => p.status === 'paid')
-    .reduce((sum, p) => sum + p.amount, 0);
+  const {
+    currentMonthRevenue,
+    currentMonthExpenses,
+    netOperatingIncome,
+    pendingPayments,
+    pendingRentTotal,
+  } = useMemo(() => {
+    const currentMonthRevenue = payments
+      .filter((p) => p.status === 'paid')
+      .reduce((sum, p) => sum + p.amount, 0);
 
-  const currentMonthExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-  const netOperatingIncome = currentMonthRevenue - currentMonthExpenses;
+    const currentMonthExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+    const netOperatingIncome = currentMonthRevenue - currentMonthExpenses;
 
-  const pendingPayments = payments.filter((p) => p.status === 'pending');
-  const pendingRentTotal = pendingPayments.reduce((sum, p) => sum + p.amount, 0);
+    const pendingPayments = payments.filter((p) => p.status === 'pending');
+    const pendingRentTotal = pendingPayments.reduce((sum, p) => sum + p.amount, 0);
+    return {
+      currentMonthRevenue,
+      currentMonthExpenses,
+      netOperatingIncome,
+      pendingPayments,
+      pendingRentTotal,
+    };
+  }, [payments, expenses]);
 
-  // Tiffin Metrics & College Categorization
-  const todayStr = getTodayDateStr();
-  const todayTiffins = tiffinOrders.filter((t) => t.date === todayStr);
-  const totalTiffinsOptedToday = todayTiffins.length;
+  // Tiffin Metrics & College Categorization (Optimized with useMemo)
+  const { todayTiffins, totalTiffinsOptedToday, tiffinsByCollege, pendingTiffinReturns } = useMemo(() => {
+    const todayStr = getTodayDateStr();
+    const todayTiffins = tiffinOrders.filter((t) => t.date === todayStr);
+    const totalTiffinsOptedToday = todayTiffins.length;
 
-  // Group students by their college for kitchen packing logistics
-  const collegeMap: Record<string, TiffinOrder[]> = {};
-  todayTiffins.forEach((o) => {
-    const college = o.college_name || 'Unassigned College / Institution';
-    if (!collegeMap[college]) collegeMap[college] = [];
-    collegeMap[college].push(o);
-  });
+    // Group students by their college for kitchen packing logistics
+    const collegeMap: Record<string, TiffinOrder[]> = {};
+    todayTiffins.forEach((o) => {
+      const college = o.college_name || 'Unassigned College / Institution';
+      if (!collegeMap[college]) collegeMap[college] = [];
+      collegeMap[college].push(o);
+    });
 
-  const tiffinsByCollege = Object.entries(collegeMap).map(([college, orders]) => ({
-    college,
-    count: orders.length,
-    orders,
-  }));
+    const tiffinsByCollege = Object.entries(collegeMap).map(([college, orders]) => ({
+      college,
+      count: orders.length,
+      orders,
+    }));
 
-  // Pending students who have opted for tiffin but NOT returned the box
-  const pendingTiffinReturns = tiffinOrders.filter((t) => t.status !== 'returned');
+    // Pending students who have opted for tiffin but NOT returned the box
+    const pendingTiffinReturns = tiffinOrders.filter((t) => t.status !== 'returned');
+
+    return {
+      todayTiffins,
+      totalTiffinsOptedToday,
+      tiffinsByCollege,
+      pendingTiffinReturns,
+    };
+  }, [tiffinOrders]);
 
   return {
     isClient,
