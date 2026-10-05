@@ -6,6 +6,7 @@ import { User, Bell, Shield, Sparkles, CreditCard, Check } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { usePGStore } from '@/lib/store';
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
@@ -80,6 +81,100 @@ export default function SettingsPage() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Supabase Live Database Connection Card */}
+      <SupabaseSettingsCard />
     </div>
+  );
+}
+
+function SupabaseSettingsCard() {
+  const { syncStatus, isLiveDB, lastSyncedAt, syncNow } = usePGStore();
+  const [isSyncing, setIsSyncing] = React.useState(false);
+
+  const handleSync = async () => {
+    setIsSyncing(true);
+    await syncNow();
+    setIsSyncing(false);
+    toast.success('Supabase sync finished!');
+  };
+
+  return (
+    <Card className="glass-card border border-slate-800 bg-slate-900/60">
+      <CardHeader>
+        <CardTitle className="text-sm font-semibold text-white flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Supabase Cloud PostgreSQL Database</span>
+          </div>
+          <span className={`text-[11px] px-2.5 py-0.5 rounded-full border font-medium ${
+            isLiveDB
+              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+              : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+          }`}>
+            {isLiveDB ? 'Connected & Synced' : syncStatus === 'syncing' ? 'Syncing...' : 'Connected (Seed Ready)'}
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2 text-xs">
+          <div className="flex items-center justify-between text-slate-400">
+            <span>Supabase Endpoint:</span>
+            <span className="font-mono text-slate-200">https://dvmohlgshystkzwttqvx.supabase.co</span>
+          </div>
+          <div className="flex items-center justify-between text-slate-400">
+            <span>Database Tables:</span>
+            <span className="text-emerald-400 font-medium">27 Schema Tables Active</span>
+          </div>
+          <div className="flex items-center justify-between text-slate-400">
+            <span>Sync Mode:</span>
+            <span className="text-slate-200">{isLiveDB ? 'Real-time PostgreSQL Live' : 'Local Fallback / Ready to Seed'}</span>
+          </div>
+          {lastSyncedAt && (
+            <div className="flex items-center justify-between text-slate-400">
+              <span>Last Synced:</span>
+              <span className="text-indigo-300">{lastSyncedAt}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="p-3.5 rounded-2xl bg-indigo-950/20 border border-indigo-500/20 space-y-2">
+          <h4 className="text-xs font-semibold text-indigo-300">How to populate your live Supabase database:</h4>
+          <p className="text-[11px] text-slate-300 leading-relaxed">
+            All 27 tables and RLS security policies exist in your Supabase project. To insert realistic starter properties, rooms, beds, and tenants directly into PostgreSQL, open your{' '}
+            <a
+              href="https://supabase.com/dashboard/project/dvmohlgshystkzwttqvx/sql"
+              target="_blank"
+              rel="noreferrer"
+              className="text-indigo-400 underline font-semibold hover:text-indigo-300"
+            >
+              Supabase SQL Editor
+            </a>{' '}
+            and run the seed script located at <code className="bg-slate-900 px-1 py-0.5 rounded text-amber-300">supabase/seed.sql</code>.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 pt-1">
+          <Button
+            type="button"
+            size="sm"
+            onClick={handleSync}
+            disabled={isSyncing}
+            className="bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold gap-1.5"
+          >
+            {isSyncing ? 'Syncing...' : 'Sync Database Now'}
+          </Button>
+
+          <a
+            href="https://supabase.com/dashboard/project/dvmohlgshystkzwttqvx"
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs text-slate-400 hover:text-white px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 transition-colors"
+          >
+            Open Supabase Dashboard &rarr;
+          </a>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

@@ -16,6 +16,25 @@ import {
   Notice,
   PropertyFeatures,
 } from '@/types/database';
+import {
+  isSupabaseConfigured,
+  fetchLiveDatabaseState,
+  insertPropertyDB,
+  insertBuildingDB,
+  insertRoomDB,
+  updateBedStatusDB,
+  insertTenantDB,
+  checkoutTenantDB,
+  insertPaymentDB,
+  insertExpenseDB,
+  insertComplaintDB,
+  updateComplaintDB,
+  insertStaffDB,
+  insertTaskDB,
+  updateTaskStatusDB,
+  insertNoticeDB,
+  updateFeatureFlagDB,
+} from '@/lib/supabase/db';
 
 // -------------------------------------------------------------
 // INITIAL SEED DATA
@@ -746,8 +765,50 @@ export function usePGStore() {
   const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
   const [notices, setNotices] = useState<Notice[]>(INITIAL_NOTICES);
   const [featureFlags, setFeatureFlags] = useState<Record<string, PropertyFeatures>>(INITIAL_FEATURES);
+  const [syncStatus, setSyncStatus] = useState<'local' | 'syncing' | 'synced' | 'error'>('local');
+  const [isLiveDB, setIsLiveDB] = useState<boolean>(false);
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
 
-  // Hydrate from localStorage once on client
+  // Sync state with live Supabase database
+  const syncWithSupabase = async () => {
+    if (!isSupabaseConfigured()) {
+      setSyncStatus('local');
+      setIsLiveDB(false);
+      return;
+    }
+
+    try {
+      setSyncStatus('syncing');
+      const live = await fetchLiveDatabaseState();
+      if (live && live.hasData) {
+        if (live.properties.length > 0) setProperties(live.properties);
+        if (live.buildings.length > 0) setBuildings(live.buildings);
+        if (live.rooms.length > 0) setRooms(live.rooms);
+        if (live.beds.length > 0) setBeds(live.beds);
+        if (live.tenants.length > 0) setTenants(live.tenants);
+        if (live.payments.length > 0) setPayments(live.payments);
+        if (live.expenses.length > 0) setExpenses(live.expenses);
+        if (live.complaints.length > 0) setComplaints(live.complaints);
+        if (live.staff.length > 0) setStaff(live.staff);
+        if (live.tasks.length > 0) setTasks(live.tasks);
+        if (live.notices.length > 0) setNotices(live.notices);
+        if (live.messMenus.length > 0) setMessMenus(live.messMenus);
+        if (Object.keys(live.featureFlags).length > 0) setFeatureFlags(live.featureFlags);
+        setSyncStatus('synced');
+        setIsLiveDB(true);
+        setLastSyncedAt(new Date().toLocaleTimeString());
+      } else {
+        // Connected to Supabase, but database tables currently have 0 rows
+        setSyncStatus('local');
+        setIsLiveDB(false);
+      }
+    } catch (err) {
+      console.warn('[usePGStore] Supabase sync error:', err);
+      setSyncStatus('error');
+    }
+  };
+
+  // Hydrate from localStorage once on client and then sync with Supabase
   useEffect(() => {
     setIsClient(true);
     try {
@@ -780,6 +841,9 @@ export function usePGStore() {
     } catch {
       // LocalStorage not available or parse error
     }
+
+    // Connect to Supabase live database
+    syncWithSupabase();
   }, []);
 
   // Save changes
@@ -809,6 +873,7 @@ export function usePGStore() {
     const updated = [prop, ...properties];
     setProperties(updated);
     saveToStorage('pgos_properties', updated);
+    insertPropertyDB(prop).catch(console.warn);
     return prop;
   };
 
@@ -825,6 +890,7 @@ export function usePGStore() {
     const updated = [...buildings, bld];
     setBuildings(updated);
     saveToStorage('pgos_buildings', updated);
+    insertBuildingDB(bld).catch(console.warn);
     return bld;
   };
 
@@ -839,6 +905,7 @@ export function usePGStore() {
     const updatedRooms = [...rooms, room];
     setRooms(updatedRooms);
     saveToStorage('pgos_rooms', updatedRooms);
+    insertRoomDB(room).catch(console.warn);
 
     // Auto-create beds based on total_beds
     const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -866,6 +933,7 @@ export function usePGStore() {
     const updated = beds.map((b) => (b.id === bedId ? { ...b, status } : b));
     setBeds(updated);
     saveToStorage('pgos_beds', updated);
+    updateBedStatusDB(bedId, status).catch(console.warn);
   };
 
   // Tenant Actions
@@ -880,6 +948,7 @@ export function usePGStore() {
     const updatedTenants = [tenant, ...tenants];
     setTenants(updatedTenants);
     saveToStorage('pgos_tenants', updatedTenants);
+    insertTenantDB(tenant).catch(console.warn);
 
     // Mark bed as occupied
     updateBedStatus(tenant.bed_id, 'occupied');
@@ -894,6 +963,7 @@ export function usePGStore() {
     );
     setTenants(updatedTenants);
     saveToStorage('pgos_tenants', updatedTenants);
+    checkoutTenantDB(tenantId).catch(console.warn);
 
     // Free the bed
     if (target.bed_id) {
@@ -913,6 +983,7 @@ export function usePGStore() {
     const updated = [pay, ...payments];
     setPayments(updated);
     saveToStorage('pgos_payments', updated);
+    insertPaymentDB(pay).catch(console.warn);
     return pay;
   };
 
@@ -926,6 +997,7 @@ export function usePGStore() {
     const updated = [exp, ...expenses];
     setExpenses(updated);
     saveToStorage('pgos_expenses', updated);
+    insertExpenseDB(exp).catch(console.warn);
     return exp;
   };
 
@@ -940,6 +1012,7 @@ export function usePGStore() {
     const updated = [cmp, ...complaints];
     setComplaints(updated);
     saveToStorage('pgos_complaints', updated);
+    insertComplaintDB(cmp).catch(console.warn);
     return cmp;
   };
 
@@ -949,6 +1022,7 @@ export function usePGStore() {
     );
     setComplaints(updated);
     saveToStorage('pgos_complaints', updated);
+    updateComplaintDB(id, status, resolution_notes).catch(console.warn);
   };
 
   // Staff & Tasks
@@ -957,6 +1031,7 @@ export function usePGStore() {
     const updated = [...staff, member];
     setStaff(updated);
     saveToStorage('pgos_staff', updated);
+    insertStaffDB(member).catch(console.warn);
     return member;
   };
 
@@ -965,6 +1040,7 @@ export function usePGStore() {
     const updated = [task, ...tasks];
     setTasks(updated);
     saveToStorage('pgos_tasks', updated);
+    insertTaskDB(task).catch(console.warn);
     return task;
   };
 
@@ -972,6 +1048,7 @@ export function usePGStore() {
     const updated = tasks.map((t) => (t.id === id ? { ...t, status } : t));
     setTasks(updated);
     saveToStorage('pgos_tasks', updated);
+    updateTaskStatusDB(id, status).catch(console.warn);
   };
 
   // Notices
@@ -980,6 +1057,7 @@ export function usePGStore() {
     const updated = [notice, ...notices];
     setNotices(updated);
     saveToStorage('pgos_notices', updated);
+    insertNoticeDB(notice).catch(console.warn);
     return notice;
   };
 
@@ -1001,6 +1079,7 @@ export function usePGStore() {
     };
     setFeatureFlags(updated);
     saveToStorage('pgos_features', updated);
+    updateFeatureFlagDB(propId, feature, val).catch(console.warn);
   };
 
   // Aggregates & Metrics
@@ -1039,6 +1118,11 @@ export function usePGStore() {
     tasks,
     notices,
     featureFlags,
+    // Database Sync State
+    syncStatus,
+    isLiveDB,
+    lastSyncedAt,
+    syncNow: syncWithSupabase,
     // Metrics
     totalProperties,
     totalBuildings,

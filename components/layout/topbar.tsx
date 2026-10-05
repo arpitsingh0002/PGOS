@@ -14,14 +14,25 @@ import {
   Sparkles,
   CheckCircle2,
   ExternalLink,
+  Database,
+  RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePGStore } from '@/lib/store';
+import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 
 export function Topbar() {
   const router = useRouter();
-  const { properties, notices, pendingPayments } = usePGStore();
+  const {
+    properties,
+    notices,
+    pendingPayments,
+    syncStatus,
+    isLiveDB,
+    lastSyncedAt,
+    syncNow,
+  } = usePGStore();
   const [selectedPropId, setSelectedPropId] = React.useState<string>(properties[0]?.id || 'prop-1');
   const [showNotifications, setShowNotifications] = React.useState(false);
   const [showUserMenu, setShowUserMenu] = React.useState(false);
@@ -116,6 +127,26 @@ export function Topbar() {
           </Button>
         </div>
 
+        {/* Supabase Database Sync Status Pill */}
+        <button
+          onClick={() => {
+            syncNow();
+            toast.info('Synchronizing with Supabase...');
+          }}
+          title={lastSyncedAt ? `Last synced at ${lastSyncedAt}. Click to refresh.` : 'Click to refresh from Supabase'}
+          className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium border transition-colors ${
+            isLiveDB
+              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
+              : syncStatus === 'syncing'
+              ? 'bg-amber-500/10 text-amber-400 border-amber-500/30 animate-pulse'
+              : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200 hover:border-slate-700'
+          }`}
+        >
+          <span className={`h-1.5 w-1.5 rounded-full ${isLiveDB ? 'bg-emerald-400 animate-pulse' : syncStatus === 'syncing' ? 'bg-amber-400' : 'bg-slate-400'}`} />
+          <span>{isLiveDB ? 'Supabase Live' : syncStatus === 'syncing' ? 'Syncing...' : 'Local Cache'}</span>
+          <RefreshCw className={`h-3 w-3 opacity-60 ml-0.5 ${syncStatus === 'syncing' ? 'animate-spin' : ''}`} />
+        </button>
+
         {/* Notifications Dropdown */}
         <div className="relative">
           <button
@@ -189,9 +220,15 @@ export function Topbar() {
                 Public PG Page
               </Link>
               <button
-                onClick={() => {
+                onClick={async () => {
                   setShowUserMenu(false);
-                  toast.success('Logged out successfully');
+                  try {
+                    const supabase = createClient();
+                    await supabase.auth.signOut();
+                  } catch (e) {
+                    console.warn('Sign out error:', e);
+                  }
+                  toast.success('Signed out successfully');
                   router.push('/login');
                 }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-xs text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors mt-1"

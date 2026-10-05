@@ -7,6 +7,9 @@ import { Mail, Lock, User, Phone, ArrowRight, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
+import { createClient } from '@/lib/supabase/client';
+import { isSupabaseConfigured } from '@/lib/supabase/db';
+
 export default function SignupPage() {
   const router = useRouter();
   const [formData, setFormData] = React.useState({
@@ -18,14 +21,67 @@ export default function SignupPage() {
   });
   const [isLoading, setIsLoading] = React.useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
+    if (isSupabaseConfigured()) {
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase.auth.signUp({
+          email: formData.email.trim(),
+          password: formData.password,
+          options: {
+            data: {
+              full_name: formData.fullName,
+              phone: formData.phone,
+              business_name: formData.businessName,
+            },
+          },
+        });
+
+        if (error) {
+          toast.error(error.message || 'Signup failed');
+          setIsLoading(false);
+          return;
+        }
+
+        if (data?.user) {
+          // Attempt inserting profile into owners table
+          try {
+            await supabase.from('owners').upsert({
+              id: data.user.id,
+              email: formData.email.trim(),
+              full_name: formData.fullName,
+              phone: formData.phone,
+              business_name: formData.businessName || 'PG Operations',
+            });
+          } catch (e) {
+            console.warn('[Signup] owners table upsert notice:', e);
+          }
+
+          if (data.session) {
+            toast.success('Account created! Welcome to PGOS.');
+            router.push('/dashboard');
+            return;
+          } else {
+            toast.success('Account created! Please check your email to confirm registration or sign in.');
+            router.push('/login');
+            return;
+          }
+        }
+      } catch (err: any) {
+        toast.error(err.message || 'Error communicating with Supabase');
+        setIsLoading(false);
+        return;
+      }
+    }
+
     setTimeout(() => {
       setIsLoading(false);
-      toast.success('Account created! Welcome to PGOS.');
+      toast.success('Account created! Welcome to PGOS (Demo Mode).');
       router.push('/dashboard');
-    }, 700);
+    }, 500);
   };
 
   return (

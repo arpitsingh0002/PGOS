@@ -8,22 +8,55 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
+import { createClient } from '@/lib/supabase/client';
+import { isSupabaseConfigured } from '@/lib/supabase/db';
+
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = React.useState('owner@pgos.demo');
-  const [password, setPassword] = React.useState('password123');
+  const [email, setEmail] = React.useState('owner@pgos.com');
+  const [password, setPassword] = React.useState('Password@123456');
   const [isLoading, setIsLoading] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Mock / Supabase login simulation
+    if (isSupabaseConfigured()) {
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+
+        if (error) {
+          if (error.message.includes('Email not confirmed')) {
+            toast.error('Email not confirmed in Supabase yet. Please check your inbox or use 1-Click Demo Access.');
+          } else {
+            toast.error(error.message || 'Invalid email or password.');
+          }
+          setIsLoading(false);
+          return;
+        }
+
+        if (data?.user) {
+          toast.success(`Welcome back, ${data.user.email}!`);
+          router.push('/dashboard');
+          return;
+        }
+      } catch (err: any) {
+        toast.error(err.message || 'Error communicating with Supabase');
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    // Fallback simulation
     setTimeout(() => {
       setIsLoading(false);
-      toast.success('Welcome back, Owner!');
+      toast.success('Welcome back, Owner (Demo Mode)!');
       router.push('/dashboard');
-    }, 600);
+    }, 400);
   };
 
   return (
