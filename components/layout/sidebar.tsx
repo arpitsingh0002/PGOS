@@ -21,16 +21,18 @@ import {
   Smartphone,
   ExternalLink,
   Shield,
+  Boxes,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePGStore } from '@/lib/store';
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { pendingPayments, complaints, pendingTiffinReturns } = usePGStore();
+  const { pendingPayments, complaints, pendingTiffinReturns, inventory } = usePGStore();
   const openComplaintsCount = complaints.filter((c) => c.status !== 'resolved').length;
   const pendingRentCount = pendingPayments.length;
   const pendingTiffinsCount = pendingTiffinReturns.length;
+  const lowStockCount = (inventory || []).filter((i) => i.quantity <= i.min_threshold).length;
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -59,6 +61,13 @@ export function Sidebar() {
       badgeColor: 'bg-amber-500/20 text-amber-300',
     },
     { name: 'Manager Ops', href: '/manager', icon: Shield },
+    {
+      name: 'Inventory',
+      href: '/inventory',
+      icon: Boxes,
+      badge: lowStockCount > 0 ? `${lowStockCount} Low` : undefined,
+      badgeColor: 'bg-amber-500/20 text-amber-300',
+    },
     { name: 'Staff', href: '/staff', icon: UserCheck },
     { name: 'Tasks', href: '/tasks', icon: CheckSquare },
     { name: 'Notices', href: '/notices', icon: Bell },

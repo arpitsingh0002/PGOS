@@ -328,3 +328,34 @@ export interface TiffinOrder {
   verified_at?: string;
   created_at: string;
 }
+
+export type StaffAttendanceStatus = 'present' | 'absent' | 'half_day' | 'leave';
+
+export interface StaffAttendance {
+  id: string;
+  staff_id: string;
+  property_id: string;
+  date: string; // YYYY-MM-DD
+  status: StaffAttendanceStatus;
+  check_in_time?: string;
+  check_out_time?: string;
+  notes?: string;
+  // Computed / Relations
+  staff_name?: string;
+  staff_role?: string;
+}
+
+export type InventoryCategory = 'cleaning' | 'linen' | 'electrical' | 'plumbing' | 'kitchen' | 'safety' | 'other';
+
+export interface InventoryItem {
+  id: string;
+  property_id: string;
+  name: string;
+  category: InventoryCategory;
+  quantity: number;
+  unit: string; // 'liters', 'pcs', 'kg', 'cylinders', 'boxes', 'rolls'
+  min_threshold: number;
+  cost_per_unit?: number;
+  last_restocked: string;
+  notes?: string;
+}
