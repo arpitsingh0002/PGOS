@@ -76,25 +76,30 @@ PGOS is an enterprise-grade, multi-tenant SaaS platform engineered specifically 
 
 ---
 
-## 🚀 Local Development
+## 🚀 Quick Start (Local Setup)
 
 ```bash
-# 1. Install dependencies
+# 1. Clone the repository
+git clone https://github.com/arpitsingh0002/PGOS.git
+cd PGOS
+
+# 2. Install dependencies
 npm install
 
-# 2. Configure environment
+# 3. Configure environment (Optional — runs out of the box with dynamic fallback engine)
 cp .env.example .env.local
-# Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-# 3. Start development server
+# 4. Start development server
 npm run dev
 ```
 
 Visit [http://localhost:3000](http://localhost:3000) to view the application:
-- **Landing Page**: `/`
-- **Owner Dashboard**: `/dashboard`
-- **Tenant Portal**: `/tenant/dashboard`
-- **Public PG Profile**: `/pg/prop-1`
+- **Landing Showcase**: [http://localhost:3000/](http://localhost:3000/)
+- **Owner / Admin Dashboard**: [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
+- **Daily Student Tiffin Hub & Returns**: [http://localhost:3000/mess/tiffin](http://localhost:3000/mess/tiffin)
+- **Tenant Resident Mobile Portal**: [http://localhost:3000/tenant/dashboard](http://localhost:3000/tenant/dashboard)
+- **Live Business Analytics & RevPAB**: [http://localhost:3000/analytics](http://localhost:3000/analytics)
+- **Public PG Marketplace Listing**: [http://localhost:3000/pg/prop-1](http://localhost:3000/pg/prop-1)
 
 ---
 
