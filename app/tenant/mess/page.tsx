@@ -5,6 +5,7 @@ import { UtensilsCrossed, Sparkles, Check, Clock } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { usePGStore } from '@/lib/store';
+import { TiffinHubCard } from '@/components/tenant/tiffin-hub-card';
 
 export default function TenantMessPage() {
   const { messMenus } = usePGStore();
@@ -20,6 +21,9 @@ export default function TenantMessPage() {
         <h1 className="text-lg font-bold text-white tracking-tight">Mess & Meal Timetable</h1>
         <p className="text-xs text-slate-400 mt-0.5">Freshly prepared buffet schedule</p>
       </div>
+
+      {/* Daily Packed Tiffin Service Opt-In */}
+      <TiffinHubCard />
 
       {/* Days Selector */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1">

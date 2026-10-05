@@ -21,6 +21,7 @@ import { Modal } from '@/components/ui/modal';
 import { usePGStore } from '@/lib/store';
 import { formatINR, formatDate } from '@/lib/utils/format';
 import { toast } from 'sonner';
+import { TiffinHubCard } from '@/components/tenant/tiffin-hub-card';
 
 export default function TenantDashboardPage() {
   const { tenants, messMenus, notices, complaints, payments } = usePGStore();
@@ -95,6 +96,9 @@ export default function TenantDashboardPage() {
           </Button>
         </div>
       </div>
+
+      {/* Daily Student Tiffin Box Hub (College Route & Delivery Selector) */}
+      <TiffinHubCard />
 
       {/* Today's Mess Menu Card */}
       <Card className="glass-card p-4">

@@ -26,9 +26,10 @@ import { usePGStore } from '@/lib/store';
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { pendingPayments, complaints } = usePGStore();
+  const { pendingPayments, complaints, pendingTiffinReturns } = usePGStore();
   const openComplaintsCount = complaints.filter((c) => c.status !== 'resolved').length;
   const pendingRentCount = pendingPayments.length;
+  const pendingTiffinsCount = pendingTiffinReturns.length;
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -49,7 +50,13 @@ export function Sidebar() {
       badge: openComplaintsCount > 0 ? `${openComplaintsCount}` : undefined,
       badgeColor: 'bg-amber-500/20 text-amber-300',
     },
-    { name: 'Mess & Food', href: '/mess', icon: UtensilsCrossed },
+    {
+      name: 'Mess & Food',
+      href: '/mess',
+      icon: UtensilsCrossed,
+      badge: pendingTiffinsCount > 0 ? `${pendingTiffinsCount}` : undefined,
+      badgeColor: 'bg-amber-500/20 text-amber-300',
+    },
     { name: 'Staff', href: '/staff', icon: UserCheck },
     { name: 'Tasks', href: '/tasks', icon: CheckSquare },
     { name: 'Notices', href: '/notices', icon: Bell },

@@ -13,6 +13,7 @@ import {
   Notice,
   MessMenu,
   PropertyFeatures,
+  TiffinOrder,
 } from '@/types/database';
 
 /**
@@ -545,6 +546,79 @@ export async function updateFeatureFlagDB(
     return true;
   } catch (err) {
     console.warn('[Supabase DB] updateFeatureFlagDB failed:', err);
+    return false;
+  }
+}
+
+// -------------------------------------------------------------
+// TIFFIN BOX MANAGEMENT OPERATIONS
+// -------------------------------------------------------------
+
+export async function fetchTiffinOrdersDB(): Promise<TiffinOrder[]> {
+  if (!isSupabaseConfigured()) return [];
+  const supabase = createClient();
+  try {
+    const { data, error } = await supabase
+      .from('tiffin_orders')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) {
+      return [];
+    }
+    return (data as TiffinOrder[]) || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function upsertTiffinOrderDB(order: TiffinOrder): Promise<boolean> {
+  if (!isSupabaseConfigured()) return false;
+  const supabase = createClient();
+  try {
+    const { error } = await supabase.from('tiffin_orders').upsert({
+      id: ensureUUID(order.id),
+      property_id: ensureUUID(order.property_id),
+      building_id: order.building_id ? ensureUUID(order.building_id) : null,
+      tenant_id: ensureUUID(order.tenant_id),
+      tenant_name: order.tenant_name,
+      room_number: order.room_number,
+      bed_number: order.bed_number,
+      phone: order.phone,
+      college_name: order.college_name,
+      date: order.date,
+      delivery_time: order.delivery_time,
+      status: order.status,
+      notes: order.notes,
+      verified_by: order.verified_by,
+      verified_at: order.verified_at,
+      created_at: order.created_at || new Date().toISOString(),
+    });
+    if (error) {
+      console.warn('[Supabase DB] upsertTiffinOrderDB warning:', error.message);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.warn('[Supabase DB] upsertTiffinOrderDB failed:', err);
+    return false;
+  }
+}
+
+export async function deleteTiffinOrderDB(id: string): Promise<boolean> {
+  if (!isSupabaseConfigured()) return false;
+  const supabase = createClient();
+  try {
+    const { error } = await supabase
+      .from('tiffin_orders')
+      .delete()
+      .eq('id', ensureUUID(id));
+    if (error) {
+      console.warn('[Supabase DB] deleteTiffinOrderDB warning:', error.message);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.warn('[Supabase DB] deleteTiffinOrderDB failed:', err);
     return false;
   }
 }

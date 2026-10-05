@@ -65,6 +65,28 @@ export default function TenantProfilePage() {
         </div>
       </Card>
 
+      {/* College & Academic Details (Used for Mess & Tiffin Batching) */}
+      <Card className="glass-card p-4 space-y-2.5 text-xs">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+          <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider block">
+            Academic Information
+          </span>
+          <Badge variant="outline" className="text-[10px]">Tiffin Routing</Badge>
+        </div>
+        <div className="flex items-center justify-between pb-1.5 border-b border-slate-800/60">
+          <span className="text-slate-400">College / Institute</span>
+          <span className="font-semibold text-white text-right max-w-[200px] truncate">
+            {currentTenant?.college_name || 'BMS College of Engineering'}
+          </span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-slate-400">Course / Branch</span>
+          <span className="font-medium text-slate-300">
+            {currentTenant?.course || 'B.Tech CSE (3rd Year)'}
+          </span>
+        </div>
+      </Card>
+
       {/* Emergency Contact */}
       <Card className="glass-card p-4 space-y-2 text-xs">
         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">

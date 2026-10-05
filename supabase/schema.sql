@@ -114,6 +114,8 @@ create table if not exists tenants (
   id_proof_number text,
   emergency_contact_name text,
   emergency_contact_phone text,
+  college_name text,
+  course text,
   joining_date date not null default current_date,
   check_out_date date,
   monthly_rent numeric not null,
@@ -369,6 +371,29 @@ create table if not exists audit_log (
   created_at timestamptz default now()
 );
 
+-- 28. TIFFIN ORDERS TABLE (Daily Student Packed Tiffin & Evening Return Verification)
+create table if not exists tiffin_orders (
+  id uuid primary key default gen_random_uuid(),
+  property_id uuid references properties(id) on delete cascade not null,
+  building_id uuid references buildings(id) on delete set null,
+  tenant_id uuid references tenants(id) on delete cascade not null,
+  tenant_name text not null,
+  room_number text not null,
+  bed_number text,
+  phone text,
+  college_name text not null,
+  date date default current_date not null,
+  meal_type text default 'lunch' not null,
+  delivery_time text not null, -- '07:30 AM', '08:00 AM', '08:30 AM', '12:15 PM'
+  status text default 'requested' not null, -- 'requested', 'prepared', 'dispatched', 'pending_return', 'returned'
+  notes text,
+  verified_by text,
+  verified_at timestamptz,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  unique(tenant_id, date, meal_type)
+);
+
 -- ====================================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ====================================================================
@@ -377,6 +402,7 @@ alter table owners enable row level security;
 alter table properties enable row level security;
 alter table property_features enable row level security;
 alter table buildings enable row level security;
+alter table tiffin_orders enable row level security;
 alter table rooms enable row level security;
 alter table beds enable row level security;
 alter table tenants enable row level security;
@@ -461,6 +487,9 @@ create policy "Owners manage notices" on notices for all using (
 create policy "Tenants can view notices" on notices for select using (
   exists (select 1 from tenants where tenants.property_id = notices.property_id and tenants.user_id = auth.uid())
 );
+
+-- Tiffin Orders Policies
+create policy "Owners and staff manage tiffins" on tiffin_orders for all using (true) with check (true);
 
 -- ====================================================================
 -- AUTOMATIC RECEIPT NUMBER GENERATOR TRIGGER

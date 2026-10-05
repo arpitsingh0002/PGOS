@@ -36,6 +36,12 @@ BEGIN
   ) THEN
     CREATE POLICY "Public can view mess menus" ON mess_menus FOR SELECT USING (true);
   END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'tiffin_orders' AND policyname = 'Public can manage tiffins'
+  ) THEN
+    CREATE POLICY "Public can manage tiffins" ON tiffin_orders FOR ALL USING (true) WITH CHECK (true);
+  END IF;
 END $$;
 
 -- 2. SEED OWNER PROFILE
@@ -115,11 +121,13 @@ BEGIN
   ON CONFLICT (id) DO NOTHING;
 
   -- 8. INSERT TENANTS
-  INSERT INTO tenants (id, property_id, building_id, room_id, bed_id, full_name, phone, email, monthly_rent, security_deposit, agreement_status, status)
+  INSERT INTO tenants (id, property_id, building_id, room_id, bed_id, full_name, phone, email, college_name, course, monthly_rent, security_deposit, agreement_status, status)
   VALUES
-    (v_tenant1_id, v_prop1_id, v_bld1_id, v_room101_id, v_bed101a_id, 'Aarav Sharma', '+91 98111 22334', 'aarav.sharma@techcorp.com', 8500, 17000, 'signed', 'active'),
-    (v_tenant2_id, v_prop1_id, v_bld1_id, v_room101_id, v_bed101b_id, 'Rahul Verma', '+91 98333 44556', 'rahul.verma@startup.io', 8500, 17000, 'signed', 'active')
-  ON CONFLICT (id) DO NOTHING;
+    (v_tenant1_id, v_prop1_id, v_bld1_id, v_room101_id, v_bed101a_id, 'Aarav Sharma', '+91 98111 22334', 'aarav.sharma@techcorp.com', 'BMS College of Engineering', 'B.Tech CSE (3rd Year)', 8500, 17000, 'signed', 'active'),
+    (v_tenant2_id, v_prop1_id, v_bld1_id, v_room101_id, v_bed101b_id, 'Rahul Verma', '+91 98333 44556', 'rahul.verma@startup.io', 'PES University (RR Campus)', 'B.Tech AI & Data Science', 8500, 17000, 'signed', 'active')
+  ON CONFLICT (id) DO UPDATE SET
+    college_name = EXCLUDED.college_name,
+    course = EXCLUDED.course;
 
   -- 9. INSERT PAYMENTS
   INSERT INTO payments (property_id, tenant_id, amount, payment_type, for_month, status, payment_mode, receipt_number)
@@ -170,5 +178,12 @@ BEGIN
     (v_bld1_id, 'Monday', 'Masala Dosa, Sambar, Coconut Chutney, Filter Coffee / Tea', 'Steamed Rice, Dal Makhani, Paneer Butter Masala, Roti, Salad, Curd', 'Veg Cutlet, Mint Sauce, Hot Masala Chai', 'Phulka, Aloo Gobi Matar, Tadka Dal, Jeera Rice, Gulab Jamun', 'Pure cow milk dairy used'),
     (v_bld1_id, 'Tuesday', 'Poha with Peanuts, Boiled Sprouts, Sev, Tea / Coffee', 'Rajma Chawal, Mix Veg Curry, Chapati, Papad, Buttermilk', 'Onion Pakoda, Ginger Tea', 'Butter Naan, Kadai Paneer, Yellow Dal Fry, Steamed Rice, Ice Cream', 'Special ice cream night')
   ON CONFLICT (building_id, day_of_week) DO NOTHING;
+
+  -- 16. INSERT SAMPLE TIFFIN ORDERS (Categorized by College)
+  INSERT INTO tiffin_orders (property_id, building_id, tenant_id, tenant_name, room_number, bed_number, phone, college_name, date, meal_type, delivery_time, status, notes)
+  VALUES
+    (v_prop1_id, v_bld1_id, v_tenant1_id, 'Aarav Sharma', '101', 'Bed A', '+91 98111 22334', 'BMS College of Engineering', current_date, 'lunch', '08:00 AM', 'pending_return', 'Extra roti requested'),
+    (v_prop1_id, v_bld1_id, v_tenant2_id, 'Rahul Verma', '101', 'Bed B', '+91 98333 44556', 'PES University (RR Campus)', current_date, 'lunch', '07:30 AM', 'pending_return', 'Pack curd separately')
+  ON CONFLICT (tenant_id, date, meal_type) DO NOTHING;
 
 END $$;

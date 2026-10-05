@@ -104,6 +104,8 @@ export interface Tenant {
   full_name: string;
   phone: string;
   email?: string;
+  college_name?: string;
+  course?: string;
   id_proof_type?: string;
   id_proof_number?: string;
   emergency_contact_name?: string;
@@ -303,4 +305,26 @@ export interface VacancyLead {
   sharing_preference: string;
   status: 'inquiry' | 'visited' | 'converted' | 'lost';
   notes?: string;
+}
+
+export type TiffinStatus = 'requested' | 'prepared' | 'dispatched' | 'returned' | 'pending_return';
+
+export interface TiffinOrder {
+  id: string;
+  property_id: string;
+  building_id?: string;
+  tenant_id: string;
+  tenant_name: string;
+  room_number?: string;
+  bed_number?: string;
+  phone?: string;
+  college_name: string;
+  date: string; // YYYY-MM-DD
+  delivery_time: string; // e.g. "07:30 AM", "08:15 AM", "12:30 PM"
+  status: TiffinStatus;
+  meal_type?: 'lunch' | 'breakfast_pack' | 'dinner_pack';
+  notes?: string;
+  verified_by?: string;
+  verified_at?: string;
+  created_at: string;
 }

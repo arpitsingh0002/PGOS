@@ -12,6 +12,8 @@ import {
   Sparkles,
   Clock,
   CheckCircle2,
+  Package,
+  GraduationCap,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,7 +22,14 @@ import { usePGStore } from '@/lib/store';
 import { formatINR } from '@/lib/utils/format';
 
 export default function MessOverviewPage() {
-  const { buildings, properties, messMenus } = usePGStore();
+  const {
+    buildings,
+    properties,
+    messMenus,
+    totalTiffinsOptedToday,
+    tiffinsByCollege,
+    pendingTiffinReturns,
+  } = usePGStore();
   const messBuildings = buildings.filter((b) => b.has_mess);
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -39,7 +48,59 @@ export default function MessOverviewPage() {
             Weekly 4-meal cycle planner, daily resident attendance and grocery cost analytics
           </p>
         </div>
+
+        <Link href="/mess/tiffin">
+          <Button size="sm" className="bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-500 hover:to-indigo-500 text-white font-bold text-xs gap-1.5 shadow-lg shadow-amber-600/20">
+            <Package className="h-4 w-4" /> Tiffin Box Hub &amp; Returns
+          </Button>
+        </Link>
       </div>
+
+      {/* Daily Student Tiffin Box Hub Spotlight Banner */}
+      <Card className="glass-card border-amber-500/30 bg-gradient-to-r from-amber-950/30 via-slate-900 to-indigo-950/30 p-5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-amber-500/20 to-orange-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center flex-shrink-0 shadow-lg">
+              <Package className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-base font-bold text-white">Daily Student Tiffin Box Hub</h3>
+                <Badge variant="warning" className="text-[10px]">
+                  {totalTiffinsOptedToday} Opted In Today
+                </Badge>
+                {pendingTiffinReturns.length > 0 && (
+                  <Badge variant="danger" className="text-[10px]">
+                    {pendingTiffinReturns.length} Boxes Out
+                  </Badge>
+                )}
+              </div>
+              <p className="text-xs text-slate-300 mt-1 max-w-xl">
+                Lunches categorized by student college routes • Evening container return verification with auto-clear and overdue reminders
+              </p>
+              <div className="flex items-center gap-4 text-xs text-slate-400 mt-2 flex-wrap">
+                <span className="flex items-center gap-1 text-slate-300">
+                  <GraduationCap className="h-3.5 w-3.5 text-indigo-400" />
+                  <strong className="text-white">{tiffinsByCollege.length}</strong> Colleges Covered
+                </span>
+                <span>&bull;</span>
+                <span className="flex items-center gap-1 text-slate-300">
+                  <Clock className="h-3.5 w-3.5 text-amber-400" />
+                  Evening Return Deadline: <strong className="text-amber-300">8:30 PM</strong>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-start md:self-center">
+            <Link href="/mess/tiffin">
+              <Button size="sm" className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs gap-1.5 shadow-md shadow-indigo-600/25">
+                Manage Tiffins &amp; Returns <ChevronRight className="h-3.5 w-3.5" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </Card>
 
       {/* Today's Live Menu Spotlight Banner */}
       <Card className="glass-card border-indigo-500/30 bg-gradient-to-br from-indigo-950/30 via-slate-900 to-slate-950 p-6">

@@ -15,6 +15,7 @@ import {
   Task,
   Notice,
   PropertyFeatures,
+  TiffinOrder,
 } from '@/types/database';
 import {
   isSupabaseConfigured,
@@ -34,6 +35,9 @@ import {
   updateTaskStatusDB,
   insertNoticeDB,
   updateFeatureFlagDB,
+  fetchTiffinOrdersDB,
+  upsertTiffinOrderDB,
+  deleteTiffinOrderDB,
 } from '@/lib/supabase/db';
 
 // -------------------------------------------------------------
@@ -306,6 +310,8 @@ const INITIAL_TENANTS: Tenant[] = [
     full_name: 'Aarav Sharma',
     phone: '9876543210',
     email: 'aarav.sharma@gmail.com',
+    college_name: 'BMS College of Engineering',
+    course: 'B.Tech Computer Science',
     id_proof_type: 'Aadhaar',
     id_proof_number: '8921-4456-9901',
     emergency_contact_name: 'Rajesh Sharma (Father)',
@@ -330,6 +336,8 @@ const INITIAL_TENANTS: Tenant[] = [
     full_name: 'Rohan Mehta',
     phone: '9822334455',
     email: 'rohan.m@techcorp.io',
+    college_name: 'PES University (Ring Road)',
+    course: 'B.Tech AI & Data Science',
     id_proof_type: 'PAN',
     id_proof_number: 'ABCDE1234F',
     emergency_contact_name: 'Sunita Mehta (Mother)',
@@ -354,6 +362,8 @@ const INITIAL_TENANTS: Tenant[] = [
     full_name: 'Pooja Hegde',
     phone: '9740112299',
     email: 'pooja.h@designworks.com',
+    college_name: 'Christ University (Central Campus)',
+    course: 'BBA Finance & Marketing',
     id_proof_type: 'Passport',
     id_proof_number: 'V8829103',
     emergency_contact_name: 'Karan Hegde (Brother)',
@@ -378,6 +388,8 @@ const INITIAL_TENANTS: Tenant[] = [
     full_name: 'Sneha Rao',
     phone: '9988776655',
     email: 'sneha.rao@fintech.co',
+    college_name: 'RV College of Engineering',
+    course: 'B.Tech Electronics & Comm.',
     id_proof_type: 'Aadhaar',
     id_proof_number: '7721-3312-5509',
     joining_date: '2025-02-10',
@@ -390,6 +402,158 @@ const INITIAL_TENANTS: Tenant[] = [
     building_name: 'Tower A',
     room_number: '102',
     bed_number: 'Bed A',
+  },
+  {
+    id: 'ten-5',
+    property_id: 'prop-1',
+    building_id: 'bld-1',
+    room_id: 'room-102',
+    bed_id: 'bed-102-b',
+    full_name: 'Vikram Sethi',
+    phone: '9811223344',
+    email: 'vikram.sethi@gmail.com',
+    college_name: 'BMS College of Engineering',
+    course: 'B.Tech Mechanical Engineering',
+    id_proof_type: 'Aadhaar',
+    id_proof_number: '4455-6677-8899',
+    joining_date: '2025-02-15',
+    monthly_rent: 7500,
+    security_deposit: 15000,
+    agreement_status: 'signed',
+    status: 'active',
+    created_at: '2025-02-15T10:00:00Z',
+    property_name: 'Royal Palms Luxury Living',
+    building_name: 'Tower A',
+    room_number: '102',
+    bed_number: 'Bed B',
+  },
+  {
+    id: 'ten-6',
+    property_id: 'prop-1',
+    building_id: 'bld-1',
+    room_id: 'room-202',
+    bed_id: 'bed-202-a',
+    full_name: 'Rahul Verma',
+    phone: '9833445566',
+    email: 'rahul.verma@pes.edu',
+    college_name: 'PES University (Ring Road)',
+    course: 'B.Tech Computer Science',
+    id_proof_type: 'Aadhaar',
+    id_proof_number: '1122-3344-5566',
+    joining_date: '2025-02-18',
+    monthly_rent: 6500,
+    security_deposit: 13000,
+    agreement_status: 'signed',
+    status: 'active',
+    created_at: '2025-02-18T10:00:00Z',
+    property_name: 'Royal Palms Luxury Living',
+    building_name: 'Tower A',
+    room_number: '202',
+    bed_number: 'Bed A',
+  },
+];
+
+// Initial Daily Tiffin Orders (Linked to College & Delivery Slots)
+const getTodayDateStr = () => new Date().toISOString().split('T')[0];
+
+const INITIAL_TIFFIN_ORDERS: TiffinOrder[] = [
+  {
+    id: 'tif-1',
+    property_id: 'prop-1',
+    building_id: 'bld-1',
+    tenant_id: 'ten-1',
+    tenant_name: 'Aarav Sharma',
+    room_number: '101',
+    bed_number: 'Bed A',
+    phone: '9876543210',
+    college_name: 'BMS College of Engineering',
+    date: getTodayDateStr(),
+    delivery_time: '08:00 AM',
+    status: 'requested',
+    meal_type: 'lunch',
+    notes: 'Please pack 3 chapattis with paneer curry',
+    created_at: `${getTodayDateStr()}T06:30:00Z`,
+  },
+  {
+    id: 'tif-2',
+    property_id: 'prop-1',
+    building_id: 'bld-1',
+    tenant_id: 'ten-2',
+    tenant_name: 'Rohan Mehta',
+    room_number: '101',
+    bed_number: 'Bed B',
+    phone: '9822334455',
+    college_name: 'PES University (Ring Road)',
+    date: getTodayDateStr(),
+    delivery_time: '08:30 AM',
+    status: 'pending_return',
+    meal_type: 'lunch',
+    notes: 'No spicy food',
+    created_at: `${getTodayDateStr()}T06:45:00Z`,
+  },
+  {
+    id: 'tif-3',
+    property_id: 'prop-1',
+    building_id: 'bld-1',
+    tenant_id: 'ten-3',
+    tenant_name: 'Pooja Hegde',
+    room_number: '201',
+    bed_number: 'Bed A',
+    phone: '9740112299',
+    college_name: 'Christ University (Central Campus)',
+    date: getTodayDateStr(),
+    delivery_time: '07:45 AM',
+    status: 'pending_return',
+    meal_type: 'lunch',
+    created_at: `${getTodayDateStr()}T06:15:00Z`,
+  },
+  {
+    id: 'tif-4',
+    property_id: 'prop-1',
+    building_id: 'bld-1',
+    tenant_id: 'ten-5',
+    tenant_name: 'Vikram Sethi',
+    room_number: '102',
+    bed_number: 'Bed B',
+    phone: '9811223344',
+    college_name: 'BMS College of Engineering',
+    date: getTodayDateStr(),
+    delivery_time: '08:00 AM',
+    status: 'pending_return',
+    meal_type: 'lunch',
+    created_at: `${getTodayDateStr()}T06:50:00Z`,
+  },
+  {
+    id: 'tif-5',
+    property_id: 'prop-1',
+    building_id: 'bld-1',
+    tenant_id: 'ten-4',
+    tenant_name: 'Sneha Rao',
+    room_number: '102',
+    bed_number: 'Bed A',
+    phone: '9988776655',
+    college_name: 'RV College of Engineering',
+    date: getTodayDateStr(),
+    delivery_time: '08:15 AM',
+    status: 'pending_return',
+    meal_type: 'lunch',
+    created_at: `${getTodayDateStr()}T07:00:00Z`,
+  },
+  {
+    id: 'tif-6',
+    property_id: 'prop-1',
+    building_id: 'bld-1',
+    tenant_id: 'ten-6',
+    tenant_name: 'Rahul Verma',
+    room_number: '202',
+    bed_number: 'Bed A',
+    phone: '9833445566',
+    college_name: 'PES University (Ring Road)',
+    date: getTodayDateStr(),
+    delivery_time: '08:30 AM',
+    status: 'pending_return',
+    meal_type: 'lunch',
+    created_at: `${getTodayDateStr()}T07:10:00Z`,
   },
 ];
 
@@ -765,6 +929,7 @@ export function usePGStore() {
   const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
   const [notices, setNotices] = useState<Notice[]>(INITIAL_NOTICES);
   const [featureFlags, setFeatureFlags] = useState<Record<string, PropertyFeatures>>(INITIAL_FEATURES);
+  const [tiffinOrders, setTiffinOrders] = useState<TiffinOrder[]>(INITIAL_TIFFIN_ORDERS);
   const [syncStatus, setSyncStatus] = useState<'local' | 'syncing' | 'synced' | 'error'>('local');
   const [isLiveDB, setIsLiveDB] = useState<boolean>(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
@@ -779,7 +944,11 @@ export function usePGStore() {
 
     try {
       setSyncStatus('syncing');
-      const live = await fetchLiveDatabaseState();
+      const [live, liveTiffins] = await Promise.all([
+        fetchLiveDatabaseState(),
+        fetchTiffinOrdersDB(),
+      ]);
+
       if (live && live.hasData) {
         if (live.properties.length > 0) setProperties(live.properties);
         if (live.buildings.length > 0) setBuildings(live.buildings);
@@ -794,10 +963,12 @@ export function usePGStore() {
         if (live.notices.length > 0) setNotices(live.notices);
         if (live.messMenus.length > 0) setMessMenus(live.messMenus);
         if (Object.keys(live.featureFlags).length > 0) setFeatureFlags(live.featureFlags);
+        if (liveTiffins && liveTiffins.length > 0) setTiffinOrders(liveTiffins);
         setSyncStatus('synced');
         setIsLiveDB(true);
         setLastSyncedAt(new Date().toLocaleTimeString());
       } else {
+        if (liveTiffins && liveTiffins.length > 0) setTiffinOrders(liveTiffins);
         // Connected to Supabase, but database tables currently have 0 rows
         setSyncStatus('local');
         setIsLiveDB(false);
@@ -838,6 +1009,9 @@ export function usePGStore() {
 
       const savedFeatures = localStorage.getItem('pgos_features');
       if (savedFeatures) setFeatureFlags(JSON.parse(savedFeatures));
+
+      const savedTiffins = localStorage.getItem('pgos_tiffins');
+      if (savedTiffins) setTiffinOrders(JSON.parse(savedTiffins));
     } catch {
       // LocalStorage not available or parse error
     }
@@ -1082,6 +1256,102 @@ export function usePGStore() {
     updateFeatureFlagDB(propId, feature, val).catch(console.warn);
   };
 
+  // Tiffin Box Management Actions
+  const requestTiffin = (params: {
+    tenant_id: string;
+    tenant_name: string;
+    room_number?: string;
+    bed_number?: string;
+    phone?: string;
+    college_name: string;
+    delivery_time: string;
+    notes?: string;
+    meal_type?: 'lunch' | 'breakfast_pack' | 'dinner_pack';
+    property_id?: string;
+    building_id?: string;
+  }) => {
+    const today = getTodayDateStr();
+    const existingIndex = tiffinOrders.findIndex(
+      (t) => t.tenant_id === params.tenant_id && t.date === today
+    );
+
+    let updated: TiffinOrder[];
+    let targetOrder: TiffinOrder;
+
+    if (existingIndex >= 0) {
+      targetOrder = {
+        ...tiffinOrders[existingIndex],
+        college_name: params.college_name,
+        delivery_time: params.delivery_time,
+        notes: params.notes ?? tiffinOrders[existingIndex].notes,
+        meal_type: params.meal_type || 'lunch',
+        status: 'requested',
+      };
+      updated = [...tiffinOrders];
+      updated[existingIndex] = targetOrder;
+    } else {
+      targetOrder = {
+        id: `tif-${Date.now()}`,
+        property_id: params.property_id || properties[0]?.id || 'prop-1',
+        building_id: params.building_id || 'bld-1',
+        tenant_id: params.tenant_id,
+        tenant_name: params.tenant_name,
+        room_number: params.room_number,
+        bed_number: params.bed_number,
+        phone: params.phone,
+        college_name: params.college_name,
+        date: today,
+        delivery_time: params.delivery_time,
+        status: 'requested',
+        meal_type: params.meal_type || 'lunch',
+        notes: params.notes,
+        created_at: new Date().toISOString(),
+      };
+      updated = [targetOrder, ...tiffinOrders];
+    }
+
+    setTiffinOrders(updated);
+    saveToStorage('pgos_tiffins', updated);
+    upsertTiffinOrderDB(targetOrder).catch(console.warn);
+
+    // Also persist student's college into their tenant record if updated
+    if (params.college_name) {
+      const updatedTenants = tenants.map((t) =>
+        t.id === params.tenant_id ? { ...t, college_name: params.college_name } : t
+      );
+      setTenants(updatedTenants);
+      saveToStorage('pgos_tenants', updatedTenants);
+    }
+
+    return targetOrder;
+  };
+
+  const cancelTiffin = (tenantId: string) => {
+    const today = getTodayDateStr();
+    const target = tiffinOrders.find((t) => t.tenant_id === tenantId && t.date === today);
+    if (!target) return;
+    const updated = tiffinOrders.filter((t) => t.id !== target.id);
+    setTiffinOrders(updated);
+    saveToStorage('pgos_tiffins', updated);
+    deleteTiffinOrderDB(target.id).catch(console.warn);
+  };
+
+  const verifyReturnTiffin = (orderId: string, staffName: string = 'Mess Warden') => {
+    // When staff verifies in the evening, the data is automatically deleted from active pending queue
+    const target = tiffinOrders.find((t) => t.id === orderId);
+    if (!target) return;
+    const updated = tiffinOrders.filter((t) => t.id !== orderId);
+    setTiffinOrders(updated);
+    saveToStorage('pgos_tiffins', updated);
+    deleteTiffinOrderDB(orderId).catch(console.warn);
+  };
+
+  const updateTenantCollege = (tenantId: string, college_name: string) => {
+    const updated = tenants.map((t) => (t.id === tenantId ? { ...t, college_name } : t));
+    setTenants(updated);
+    saveToStorage('pgos_tenants', updated);
+  };
+
   // Aggregates & Metrics
   const totalProperties = properties.length;
   const totalBuildings = buildings.length;
@@ -1102,6 +1372,28 @@ export function usePGStore() {
 
   const pendingPayments = payments.filter((p) => p.status === 'pending');
   const pendingRentTotal = pendingPayments.reduce((sum, p) => sum + p.amount, 0);
+
+  // Tiffin Metrics & College Categorization
+  const todayStr = getTodayDateStr();
+  const todayTiffins = tiffinOrders.filter((t) => t.date === todayStr);
+  const totalTiffinsOptedToday = todayTiffins.length;
+
+  // Group students by their college for kitchen packing logistics
+  const collegeMap: Record<string, TiffinOrder[]> = {};
+  todayTiffins.forEach((o) => {
+    const college = o.college_name || 'Unassigned College / Institution';
+    if (!collegeMap[college]) collegeMap[college] = [];
+    collegeMap[college].push(o);
+  });
+
+  const tiffinsByCollege = Object.entries(collegeMap).map(([college, orders]) => ({
+    college,
+    count: orders.length,
+    orders,
+  }));
+
+  // Pending students who have opted for tiffin but NOT returned the box
+  const pendingTiffinReturns = tiffinOrders.filter((t) => t.status !== 'returned');
 
   return {
     isClient,
@@ -1138,6 +1430,16 @@ export function usePGStore() {
     netOperatingIncome,
     pendingPayments,
     pendingRentTotal,
+    // Tiffin System
+    tiffinOrders,
+    todayTiffins,
+    totalTiffinsOptedToday,
+    tiffinsByCollege,
+    pendingTiffinReturns,
+    requestTiffin,
+    cancelTiffin,
+    verifyReturnTiffin,
+    updateTenantCollege,
     // Operations
     addProperty,
     addBuilding,
