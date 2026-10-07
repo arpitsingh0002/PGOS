@@ -19,13 +19,22 @@ export default function TenantLoginPage() {
       toast.error('Enter a valid 10-digit mobile number');
       return;
     }
-    toast.success('OTP sent: 1234');
+    toast.success(`Verification code sent to +91 ${phone}`);
     setStep('otp');
   };
 
   const handleVerifyOtp = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success('Logged in as Aarav Sharma!');
+    if (!otp.trim()) {
+      toast.error('Please enter the 4-digit verification code');
+      return;
+    }
+    toast.success('Welcome back, Aarav Sharma!');
+    router.push('/tenant/dashboard');
+  };
+
+  const handleDemoBypass = () => {
+    toast.success('Demo login successful: Welcome back, Aarav Sharma!');
     router.push('/tenant/dashboard');
   };
 
@@ -62,15 +71,17 @@ export default function TenantLoginPage() {
                 Get Verification Code <ArrowRight className="h-4 w-4" />
               </Button>
 
+              <div className="relative my-2 text-center">
+                <span className="text-[11px] text-slate-500 bg-slate-900 px-2 relative z-10">or explore demo</span>
+                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px bg-slate-800" />
+              </div>
+
               <button
                 type="button"
-                onClick={() => {
-                  toast.success('Instant Resident Access Granted!');
-                  router.push('/tenant/dashboard');
-                }}
-                className="w-full py-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-xs font-semibold text-emerald-300 flex items-center justify-center gap-1.5 border border-emerald-500/20"
+                onClick={handleDemoBypass}
+                className="w-full py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-xs font-semibold text-emerald-300 flex items-center justify-center gap-1.5 border border-emerald-500/30 transition-colors"
               >
-                <Sparkles className="h-3.5 w-3.5 text-emerald-400" /> 1-Click Instant Demo Login
+                <Sparkles className="h-3.5 w-3.5 text-emerald-400" /> Use demo login (Aarav Sharma)
               </button>
             </form>
           ) : (
@@ -83,7 +94,7 @@ export default function TenantLoginPage() {
                   autoFocus
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
-                  placeholder="Enter 1234"
+                  placeholder="Enter 4-digit code"
                   className="w-full text-center tracking-widest text-lg font-bold py-2.5 rounded-xl border border-slate-700 bg-slate-950 text-white placeholder:text-slate-600 focus:border-emerald-500 focus:outline-none"
                 />
               </div>
@@ -91,6 +102,14 @@ export default function TenantLoginPage() {
               <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-sm font-semibold gap-2">
                 Verify & Enter Portal <ShieldCheck className="h-4 w-4" />
               </Button>
+
+              <button
+                type="button"
+                onClick={handleDemoBypass}
+                className="w-full py-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-xs font-semibold text-emerald-300 flex items-center justify-center gap-1.5 border border-emerald-500/20"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-emerald-400" /> Use demo login (Aarav Sharma)
+              </button>
             </form>
           )}
 

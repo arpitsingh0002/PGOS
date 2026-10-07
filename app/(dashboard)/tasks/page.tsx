@@ -30,6 +30,8 @@ export default function TasksPage() {
     { id: 'done', label: 'Completed', color: 'border-emerald-300 bg-emerald-50/70' },
   ];
 
+  const pendingCount = React.useMemo(() => tasks.filter((t) => t.status !== 'done').length, [tasks]);
+
   const handleMove = (taskId: string, newStatus: Task['status']) => {
     updateTaskStatus(taskId, newStatus);
     toast.success(`Task marked as ${newStatus.toUpperCase()}`);
@@ -42,7 +44,7 @@ export default function TasksPage() {
           <h1 className="text-2xl font-bold tracking-tight text-slate-950 flex items-center gap-2">
             Staff Task Board
             <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-950 border border-indigo-300">
-              {tasks.filter((t) => t.status !== 'done').length} Pending
+              {pendingCount} Pending
             </span>
           </h1>
           <p className="text-xs font-semibold text-slate-700 mt-1">

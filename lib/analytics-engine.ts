@@ -45,13 +45,24 @@ export async function getPortfolioRawState(): Promise<PortfolioRawState> {
         fetchTiffinOrdersDB(),
       ]);
 
-      if (liveState && liveState.properties && liveState.properties.length > 0) {
+      const isCompleteLiveDataset = Boolean(
+        liveState &&
+        liveState.hasData &&
+        liveState.properties &&
+        liveState.properties.length >= 2 &&
+        liveState.tenants &&
+        liveState.tenants.length > 0 &&
+        liveState.staff &&
+        liveState.staff.length > 0
+      );
+
+      if (isCompleteLiveDataset && liveState) {
         return {
           properties: liveState.properties,
-          buildings: liveState.buildings || INITIAL_BUILDINGS,
-          rooms: liveState.rooms || INITIAL_ROOMS,
-          beds: liveState.beds || INITIAL_BEDS,
-          tenants: liveState.tenants || INITIAL_TENANTS,
+          buildings: liveState.buildings.length > 0 ? liveState.buildings : INITIAL_BUILDINGS,
+          rooms: liveState.rooms.length > 0 ? liveState.rooms : INITIAL_ROOMS,
+          beds: liveState.beds.length > 0 ? liveState.beds : INITIAL_BEDS,
+          tenants: liveState.tenants,
           payments: liveState.payments && liveState.payments.length > 0 ? liveState.payments : INITIAL_PAYMENTS,
           expenses: liveState.expenses && liveState.expenses.length > 0 ? liveState.expenses : INITIAL_EXPENSES,
           tiffinOrders: liveTiffins && liveTiffins.length > 0 ? liveTiffins : INITIAL_TIFFIN_ORDERS,
@@ -93,7 +104,7 @@ export function computeOccupancyAnalytics(state: PortfolioRawState) {
   const maintenanceBeds = beds.filter((b) => b.status === 'maintenance').length;
 
   const overallOccupancyRate =
-    totalBeds > 0 ? Math.round((occupiedBeds / totalBeds) * 1000) / 10 : 0;
+    totalBeds > 0 ? Math.round((occupiedBeds / totalBeds) * 100) : 0;
 
   // Branch / Property breakdown
   const branchBreakdown = properties.map((prop) => {

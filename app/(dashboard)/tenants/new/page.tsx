@@ -22,26 +22,89 @@ function TenantFormContent() {
 
   const { properties, buildings, rooms, beds, addTenant } = usePGStore();
 
-  const [propertyId, setPropertyId] = React.useState(prePropId || properties[0]?.id || 'prop-1');
-  const [buildingId, setBuildingId] = React.useState(preBldId || buildings[0]?.id || 'bld-1');
-  const [roomId, setRoomId] = React.useState(preRoomId || rooms[0]?.id || 'room-101');
-  const [bedId, setBedId] = React.useState(preBedId || beds.find((b) => b.status === 'available')?.id || beds[0]?.id);
-
-  // Available beds for selected room
-  const availableBeds = beds.filter((b) => b.room_id === roomId && (b.status === 'available' || b.id === preBedId));
-  const selectedBedObj = beds.find((b) => b.id === bedId);
+  const [propertyId, setPropertyId] = React.useState<string>(prePropId || '');
+  const [buildingId, setBuildingId] = React.useState<string>(preBldId || '');
+  const [roomId, setRoomId] = React.useState<string>(preRoomId || '');
+  const [bedId, setBedId] = React.useState<string>(preBedId || '');
+  const [errors, setErrors] = React.useState<Record<string, string>>({});
 
   const [fullName, setFullName] = React.useState('');
   const [phone, setPhone] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [joiningDate, setJoiningDate] = React.useState(() => new Date().toISOString().split('T')[0]);
-  const [monthlyRent, setMonthlyRent] = React.useState(selectedBedObj?.monthly_rent || 8500);
+  const [monthlyRent, setMonthlyRent] = React.useState(8500);
   const [securityDeposit, setSecurityDeposit] = React.useState(17000);
   const [emergencyName, setEmergencyName] = React.useState('');
   const [emergencyPhone, setEmergencyPhone] = React.useState('');
   const [idProofType, setIdProofType] = React.useState('Aadhaar');
   const [idProofNumber, setIdProofNumber] = React.useState('');
   const [agreementStatus, setAgreementStatus] = React.useState<'signed' | 'pending'>('signed');
+
+  // Available cascades
+  const availableBuildings = React.useMemo(() => {
+    return properties.length > 0 && propertyId
+      ? buildings.filter((b) => b.property_id === propertyId)
+      : [];
+  }, [buildings, properties, propertyId]);
+
+  const availableRooms = React.useMemo(() => {
+    if (!propertyId) return [];
+    if (buildingId) {
+      return rooms.filter((r) => r.building_id === buildingId);
+    }
+    return rooms.filter((r) => r.property_id === propertyId);
+  }, [rooms, propertyId, buildingId]);
+
+  // Only free beds (or pre-selected bed)
+  const availableBeds = React.useMemo(() => {
+    if (!roomId) return [];
+    return beds.filter((b) => b.room_id === roomId && (b.status === 'available' || b.id === preBedId));
+  }, [beds, roomId, preBedId]);
+
+  const selectedBedObj = React.useMemo(() => beds.find((b) => b.id === bedId), [beds, bedId]);
+
+  // Cascade initializers
+  React.useEffect(() => {
+    if (properties.length > 0) {
+      if (!propertyId || !properties.some((p) => p.id === propertyId)) {
+        const defaultProp = (prePropId && properties.some((p) => p.id === prePropId)) ? prePropId : properties[0].id;
+        setPropertyId(defaultProp);
+      }
+    }
+  }, [properties, propertyId, prePropId]);
+
+  React.useEffect(() => {
+    if (availableBuildings.length > 0) {
+      if (!buildingId || !availableBuildings.some((b) => b.id === buildingId)) {
+        const defaultBld = (preBldId && availableBuildings.some((b) => b.id === preBldId)) ? preBldId : availableBuildings[0].id;
+        setBuildingId(defaultBld);
+      }
+    } else {
+      setBuildingId('');
+    }
+  }, [availableBuildings, buildingId, preBldId]);
+
+  React.useEffect(() => {
+    if (availableRooms.length > 0) {
+      if (!roomId || !availableRooms.some((r) => r.id === roomId)) {
+        const defaultRoom = (preRoomId && availableRooms.some((r) => r.id === preRoomId)) ? preRoomId : availableRooms[0].id;
+        setRoomId(defaultRoom);
+      }
+    } else {
+      setRoomId('');
+    }
+  }, [availableRooms, roomId, preRoomId]);
+
+  React.useEffect(() => {
+    if (availableBeds.length > 0) {
+      if (!bedId || !availableBeds.some((b) => b.id === bedId)) {
+        const defaultBed = (preBedId && availableBeds.some((b) => b.id === preBedId)) ? preBedId : availableBeds[0].id;
+        setBedId(defaultBed);
+      }
+    } else {
+      setBedId('');
+    }
+  }, [availableBeds, bedId, preBedId]);
 
   // Update rent when bed changes
   React.useEffect(() => {
@@ -51,10 +114,58 @@ function TenantFormContent() {
     }
   }, [selectedBedObj]);
 
+  const handlePropertyChange = (newPropId: string) => {
+    setPropertyId(newPropId);
+    setErrors((prev) => ({ ...prev, propertyId: '', buildingId: '', roomId: '', bedId: '' }));
+    const blds = buildings.filter((b) => b.property_id === newPropId);
+    const firstBld = blds[0]?.id || '';
+    setBuildingId(firstBld);
+
+    const rms = firstBld ? rooms.filter((r) => r.building_id === firstBld) : rooms.filter((r) => r.property_id === newPropId);
+    const firstRm = rms[0]?.id || '';
+    setRoomId(firstRm);
+
+    const bds = firstRm ? beds.filter((b) => b.room_id === firstRm && (b.status === 'available' || b.id === preBedId)) : [];
+    setBedId(bds[0]?.id || '');
+  };
+
+  const handleBuildingChange = (newBldId: string) => {
+    setBuildingId(newBldId);
+    setErrors((prev) => ({ ...prev, buildingId: '', roomId: '', bedId: '' }));
+    const rms = rooms.filter((r) => r.building_id === newBldId);
+    const firstRm = rms[0]?.id || '';
+    setRoomId(firstRm);
+
+    const bds = firstRm ? beds.filter((b) => b.room_id === firstRm && (b.status === 'available' || b.id === preBedId)) : [];
+    setBedId(bds[0]?.id || '');
+  };
+
+  const handleRoomChange = (newRoomId: string) => {
+    setRoomId(newRoomId);
+    setErrors((prev) => ({ ...prev, roomId: '', bedId: '' }));
+    const bds = beds.filter((b) => b.room_id === newRoomId && (b.status === 'available' || b.id === preBedId));
+    setBedId(bds[0]?.id || '');
+  };
+
+  const handleBedChange = (newBedId: string) => {
+    setBedId(newBedId);
+    setErrors((prev) => ({ ...prev, bedId: '' }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !phone) {
-      toast.error('Please enter full name and mobile number');
+    const newErrors: Record<string, string> = {};
+
+    if (!fullName.trim()) newErrors.fullName = 'Full legal name is required';
+    if (!phone.trim()) newErrors.phone = 'Mobile phone number is required';
+    if (!propertyId) newErrors.propertyId = 'Property is required';
+    if (!buildingId) newErrors.buildingId = 'Building / Block is required';
+    if (!roomId) newErrors.roomId = 'Room number is required';
+    if (!bedId) newErrors.bedId = 'Assigned bed slot is required (must select an available bed)';
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      toast.error('Please complete all required fields and select an available bed.');
       return;
     }
 
@@ -68,16 +179,16 @@ function TenantFormContent() {
       building_id: buildingId,
       room_id: roomId,
       bed_id: bedId,
-      full_name: fullName,
-      phone,
-      email: email || undefined,
+      full_name: fullName.trim(),
+      phone: phone.trim(),
+      email: email.trim() || undefined,
       joining_date: joiningDate,
       monthly_rent: Number(monthlyRent),
       security_deposit: Number(securityDeposit),
       id_proof_type: idProofType,
-      id_proof_number: idProofNumber,
-      emergency_contact_name: emergencyName,
-      emergency_contact_phone: emergencyPhone,
+      id_proof_number: idProofNumber.trim(),
+      emergency_contact_name: emergencyName.trim(),
+      emergency_contact_phone: emergencyPhone.trim(),
       agreement_status: agreementStatus,
       property_name: currentProp?.name,
       building_name: currentBld?.name,
@@ -113,22 +224,30 @@ function TenantFormContent() {
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-300">Full Legal Name *</label>
               <Input
-                required
                 placeholder="e.g. Siddharth Verma"
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e) => {
+                  setFullName(e.target.value);
+                  if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: '' }));
+                }}
+                className={errors.fullName ? 'border-rose-500' : ''}
               />
+              {errors.fullName && <p className="text-xs text-rose-400 mt-1">{errors.fullName}</p>}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-300">Mobile Phone (WhatsApp) *</label>
                 <Input
-                  required
                   placeholder="9876543210"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    if (errors.phone) setErrors((prev) => ({ ...prev, phone: '' }));
+                  }}
+                  className={errors.phone ? 'border-rose-500' : ''}
                 />
+                {errors.phone && <p className="text-xs text-rose-400 mt-1">{errors.phone}</p>}
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-300">Email Address</label>
@@ -170,42 +289,54 @@ function TenantFormContent() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-300">Branch Property</label>
+                <label className="text-xs font-semibold text-slate-300">Branch Property *</label>
                 <select
                   value={propertyId}
-                  onChange={(e) => setPropertyId(e.target.value)}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white focus:outline-none"
+                  onChange={(e) => handlePropertyChange(e.target.value)}
+                  className={`w-full rounded-xl border ${errors.propertyId ? 'border-rose-500' : 'border-slate-700'} bg-slate-950 px-3 py-2 text-xs text-white focus:outline-none`}
                 >
+                  {properties.length === 0 && <option value="">No properties available</option>}
                   {properties.map((p) => (
                     <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
                 </select>
+                {errors.propertyId && <p className="text-xs text-rose-400 mt-1">{errors.propertyId}</p>}
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-300">Building / Block</label>
+                <label className="text-xs font-semibold text-slate-300">Building / Block *</label>
                 <select
                   value={buildingId}
-                  onChange={(e) => setBuildingId(e.target.value)}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white focus:outline-none"
+                  onChange={(e) => handleBuildingChange(e.target.value)}
+                  className={`w-full rounded-xl border ${errors.buildingId ? 'border-rose-500' : 'border-slate-700'} bg-slate-950 px-3 py-2 text-xs text-white focus:outline-none`}
                 >
-                  {buildings.filter((b) => b.property_id === propertyId).map((b) => (
-                    <option key={b.id} value={b.id}>{b.name}</option>
-                  ))}
+                  {availableBuildings.length === 0 ? (
+                    <option value="">No buildings found</option>
+                  ) : (
+                    availableBuildings.map((b) => (
+                      <option key={b.id} value={b.id}>{b.name}</option>
+                    ))
+                  )}
                 </select>
+                {errors.buildingId && <p className="text-xs text-rose-400 mt-1">{errors.buildingId}</p>}
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-300">Room Number</label>
+                <label className="text-xs font-semibold text-slate-300">Room Number *</label>
                 <select
                   value={roomId}
-                  onChange={(e) => setRoomId(e.target.value)}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white focus:outline-none"
+                  onChange={(e) => handleRoomChange(e.target.value)}
+                  className={`w-full rounded-xl border ${errors.roomId ? 'border-rose-500' : 'border-slate-700'} bg-slate-950 px-3 py-2 text-xs text-white focus:outline-none`}
                 >
-                  {rooms.filter((r) => r.property_id === propertyId).map((r) => (
-                    <option key={r.id} value={r.id}>Room {r.room_number}</option>
-                  ))}
+                  {availableRooms.length === 0 ? (
+                    <option value="">No rooms found</option>
+                  ) : (
+                    availableRooms.map((r) => (
+                      <option key={r.id} value={r.id}>Room {r.room_number}</option>
+                    ))
+                  )}
                 </select>
+                {errors.roomId && <p className="text-xs text-rose-400 mt-1">{errors.roomId}</p>}
               </div>
             </div>
 
@@ -213,15 +344,23 @@ function TenantFormContent() {
               <label className="text-xs font-semibold text-slate-300">Assigned Bed Slot *</label>
               <select
                 value={bedId}
-                onChange={(e) => setBedId(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-emerald-400 font-semibold focus:outline-none"
+                onChange={(e) => handleBedChange(e.target.value)}
+                className={`w-full rounded-xl border ${errors.bedId ? 'border-rose-500' : 'border-slate-700'} bg-slate-950 px-3 py-2 text-sm text-emerald-400 font-semibold focus:outline-none`}
               >
-                {beds.filter((b) => b.room_id === roomId).map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.bed_number} — Status: {b.status.toUpperCase()} ({formatINR(b.monthly_rent)}/mo)
-                  </option>
-                ))}
+                {availableBeds.length === 0 ? (
+                  <option value="">No available beds in this room</option>
+                ) : (
+                  <>
+                    <option value="">-- Select an available bed slot --</option>
+                    {availableBeds.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.bed_number} — Available ({formatINR(b.monthly_rent)}/mo)
+                      </option>
+                    ))}
+                  </>
+                )}
               </select>
+              {errors.bedId && <p className="text-xs text-rose-400 mt-1">{errors.bedId}</p>}
             </div>
           </CardContent>
         </Card>

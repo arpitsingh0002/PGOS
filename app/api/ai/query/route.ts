@@ -18,9 +18,13 @@ export async function POST(request: NextRequest) {
 
     if (cleanPrompt.includes('vacant') || cleanPrompt.includes('empty') || cleanPrompt.includes('beds') || cleanPrompt.includes('occupancy')) {
       const topBranch = occ.branch_breakdown[0];
-      answer = `Current Portfolio Occupancy is ${occ.overall_occupancy_rate}%. You have ${occ.occupied_beds} occupied beds and ${occ.vacant_beds} vacant beds across ${occ.total_properties} branches (${occ.total_rooms} rooms). ${
-        occ.maintenance_beds > 0 ? `${occ.maintenance_beds} bed is in maintenance.` : ''
-      } Top performing branch: ${topBranch?.property_name || 'Main'} at ${topBranch?.occupancy_rate || occ.overall_occupancy_rate}% occupancy.`;
+      const vacantText = `${occ.vacant_beds} vacant ${occ.vacant_beds === 1 ? 'bed' : 'beds'}`;
+      const occupiedText = `${occ.occupied_beds} occupied ${occ.occupied_beds === 1 ? 'bed' : 'beds'}`;
+      const maintText = occ.maintenance_beds > 0 
+        ? `${occ.maintenance_beds} ${occ.maintenance_beds === 1 ? 'bed is' : 'beds are'} in maintenance. ` 
+        : '';
+
+      answer = `Current Portfolio Occupancy is ${occ.overall_occupancy_rate}%. You have ${occupiedText} and ${vacantText} across ${occ.total_properties} branches (${occ.total_rooms} rooms). ${maintText}Top performing branch: ${topBranch?.property_name || 'Main'} at ${topBranch?.occupancy_rate || occ.overall_occupancy_rate}% occupancy.`;
     } else if (cleanPrompt.includes('rent') || cleanPrompt.includes('pending') || cleanPrompt.includes('due') || cleanPrompt.includes('owes') || cleanPrompt.includes('collection')) {
       const pendingTenants = state.payments
         .filter((p) => p.status === 'pending')

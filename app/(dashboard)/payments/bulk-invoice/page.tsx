@@ -15,7 +15,10 @@ export default function BulkInvoicePage() {
   const { properties, tenants, addPayment } = usePGStore();
 
   const [selectedPropId, setSelectedPropId] = React.useState(properties[0]?.id || 'prop-1');
-  const [targetMonth, setTargetMonth] = React.useState('2025-04');
+  const [targetMonth, setTargetMonth] = React.useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  });
   const [isGenerated, setIsGenerated] = React.useState(false);
 
   const activeTenants = tenants.filter(

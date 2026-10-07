@@ -110,7 +110,7 @@ export default function StudentLoginPage() {
     }
     setOtpSent(true);
     setResendTimer(30);
-    toast.success('OTP sent to +91 ' + phone + ' (Code: 1234)');
+    toast.success('Verification code sent to +91 ' + phone);
   };
 
   // Handle Verify OTP
@@ -123,7 +123,7 @@ export default function StudentLoginPage() {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      toast.success('Mobile verified! Welcome Aarav Sharma (Room 204)');
+      toast.success('Mobile verified! Welcome Aarav Sharma (Room 101)');
       router.push('/tenant/dashboard');
     }, 500);
   };
@@ -301,7 +301,7 @@ export default function StudentLoginPage() {
                       maxLength={6}
                       value={otp}
                       onChange={(e) => setOtp(e.target.value)}
-                      placeholder="1234"
+                      placeholder="Enter 4-digit OTP"
                       className="w-full text-center tracking-widest text-xl font-bold py-2.5 rounded-xl border border-cyan-500/50 bg-slate-950 text-cyan-300 placeholder:text-slate-600 focus:border-cyan-400 focus:outline-none shadow-inner"
                     />
                   </div>
@@ -323,7 +323,7 @@ export default function StudentLoginPage() {
                         type="button"
                         onClick={() => {
                           setResendTimer(30);
-                          toast.success('New OTP sent: 1234');
+                          toast.success('New verification code sent');
                         }}
                         className="text-cyan-400 hover:underline font-medium"
                       >
@@ -349,7 +349,7 @@ export default function StudentLoginPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => handleQuickLogin('Aarav Sharma', 'Room 204', 'STU-001')}
+                onClick={() => handleQuickLogin('Aarav Sharma', 'Room 101', 'STU-001')}
                 className="p-2.5 rounded-xl bg-slate-950/70 hover:bg-slate-800/90 border border-slate-800 hover:border-cyan-500/40 text-left transition-all group"
               >
                 <div className="flex items-center justify-between">
@@ -357,7 +357,7 @@ export default function StudentLoginPage() {
                     Aarav Sharma
                   </span>
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-mono">
-                    Rm 204
+                    Rm 101
                   </span>
                 </div>
                 <p className="text-[10px] text-slate-400 mt-0.5">B.Tech CSE • Royal Palms</p>

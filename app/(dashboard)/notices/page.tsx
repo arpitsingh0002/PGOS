@@ -10,9 +10,13 @@ import { Badge } from '@/components/ui/badge';
 import { usePGStore } from '@/lib/store';
 import { formatDate } from '@/lib/utils/format';
 
+import { Modal } from '@/components/ui/modal';
+import { Notice } from '@/types/database';
+
 export default function NoticesPage() {
   const router = useRouter();
-  const { notices } = usePGStore();
+  const { notices, tenants } = usePGStore();
+  const [selectedNoticeForReceipts, setSelectedNoticeForReceipts] = React.useState<Notice | null>(null);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -64,18 +68,79 @@ export default function NoticesPage() {
 
             <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
               <span className="flex items-center gap-1 text-emerald-400">
-                <Eye className="h-3.5 w-3.5" /> {notice.read_count || 12} Residents Read
+                <Eye className="h-3.5 w-3.5" /> {notice.read_count || tenants.length} Residents Read
               </span>
 
-              <Link href={`/notices/${notice.id}`}>
-                <Button size="sm" variant="ghost" className="h-7 text-xs text-indigo-400">
-                  Read Receipts &rarr;
-                </Button>
-              </Link>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setSelectedNoticeForReceipts(notice)}
+                className="h-7 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-slate-800/50"
+              >
+                Read Receipts &rarr;
+              </Button>
             </div>
           </Card>
         ))}
       </div>
+
+      {/* Read Receipts Modal */}
+      {selectedNoticeForReceipts && (
+        <Modal
+          isOpen={!!selectedNoticeForReceipts}
+          onClose={() => setSelectedNoticeForReceipts(null)}
+          title="Notice Read Receipts"
+          description={`Delivery & read audit for: "${selectedNoticeForReceipts.title}"`}
+        >
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+              <div>
+                <span className="text-slate-500 block text-[11px]">Audited Broadcast:</span>
+                <span className="font-bold text-slate-900">{selectedNoticeForReceipts.title}</span>
+              </div>
+              <Badge className="bg-emerald-100 text-emerald-900 border-emerald-300 font-bold text-xs">
+                {Math.min(selectedNoticeForReceipts.read_count || tenants.length, tenants.length)} / {tenants.length} Confirmed
+              </Badge>
+            </div>
+
+            <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 pr-1">
+              {tenants.map((tenant, idx) => {
+                const isRead = idx < (selectedNoticeForReceipts.read_count || tenants.length);
+                return (
+                  <div key={tenant.id} className="py-2.5 flex items-center justify-between text-xs">
+                    <div>
+                      <p className="font-bold text-slate-900">{tenant.full_name}</p>
+                      <p className="text-[11px] text-slate-500">
+                        Room {tenant.room_number || '101'} • {tenant.phone}
+                      </p>
+                    </div>
+                    {isRead ? (
+                      <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[11px] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> Confirmed Read
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 font-medium text-[11px] bg-slate-100 px-2 py-0.5 rounded-full">
+                        Pending View
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setSelectedNoticeForReceipts(null)}
+                className="text-xs"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

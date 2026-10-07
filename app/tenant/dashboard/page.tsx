@@ -11,13 +11,11 @@ import {
   CheckCircle2,
   Clock,
   Sparkles,
-  QrCode,
   Download,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Modal } from '@/components/ui/modal';
 import { usePGStore } from '@/lib/store';
 import { formatINR, formatDate } from '@/lib/utils/format';
 import { toast } from 'sonner';
@@ -38,18 +36,12 @@ export default function TenantDashboardPage() {
     status: 'active',
   };
 
-  const [showPayModal, setShowPayModal] = React.useState(false);
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const todayDay = days[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1];
   const todaysMenu = messMenus.find((m) => m.day_of_week === todayDay) || messMenus[0];
 
   const myComplaints = complaints.filter((c) => c.tenant_id === currentTenant.id);
   const latestNotice = notices[0];
-
-  const handleSimulatePayment = () => {
-    toast.success('UPI Payment Received! Digital Receipt Generated.');
-    setShowPayModal(false);
-  };
 
   return (
     <div className="space-y-5 animate-in fade-in duration-300">
@@ -89,10 +81,11 @@ export default function TenantDashboardPage() {
 
           <Button
             size="sm"
-            onClick={() => setShowPayModal(true)}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold gap-1.5 shadow-md shadow-emerald-600/25"
+            disabled
+            className="bg-slate-200 text-slate-500 cursor-not-allowed text-xs font-bold gap-1.5 border border-slate-300"
+            title="Online payment gateway coming soon"
           >
-            <CreditCard className="h-3.5 w-3.5" /> Pay via UPI
+            <CreditCard className="h-3.5 w-3.5" /> Pay via UPI (Disabled / Coming Soon)
           </Button>
         </div>
       </div>
@@ -159,36 +152,6 @@ export default function TenantDashboardPage() {
             View Notice Board &rarr;
           </Link>
         </Card>
-      )}
-
-      {/* Pay Modal with UPI QR */}
-      {showPayModal && (
-        <Modal
-          isOpen={showPayModal}
-          onClose={() => setShowPayModal(false)}
-          title="Instant Rent Payment via UPI"
-          description={`Amount Due: ${formatINR(currentTenant.monthly_rent)} for March 2025`}
-        >
-          <div className="space-y-4 text-center">
-            <div className="p-4 rounded-2xl bg-white text-slate-900 inline-block mx-auto shadow-md">
-              <QrCode className="h-36 w-36 mx-auto text-slate-900" />
-              <span className="text-[10px] font-mono font-bold block mt-1">UPI ID: royalpalms@okhdfcbank</span>
-            </div>
-
-            <p className="text-xs text-slate-400">
-              Scan with any UPI app (Google Pay, PhonePe, Paytm) to pay instantly.
-            </p>
-
-            <div className="flex items-center justify-center gap-2 pt-2">
-              <Button size="sm" variant="outline" onClick={() => setShowPayModal(false)} className="text-xs">
-                Cancel
-              </Button>
-              <Button size="sm" onClick={handleSimulatePayment} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs">
-                Simulate Payment Done ✓
-              </Button>
-            </div>
-          </div>
-        </Modal>
       )}
     </div>
   );

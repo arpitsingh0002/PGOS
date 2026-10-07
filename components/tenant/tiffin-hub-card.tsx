@@ -163,19 +163,12 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
   };
 
   const handleCancel = async () => {
-    if (isPast9AM && simulatedHour === null) {
-      toast.error('Tiffin orders cannot be cancelled after 9:00 AM as kitchen prep has commenced.');
-      return;
-    }
-
-    if (confirm('Are you sure you want to cancel today\'s packed tiffin?')) {
-      try {
-        await cancelTiffin(currentTenant.id, true);
-        setOptInChoice('no');
-        toast.info('Tiffin order cancelled. You can dine at the mess buffet today.');
-      } catch (err: any) {
-        toast.error(err?.message || 'Failed to cancel order.');
-      }
+    try {
+      await cancelTiffin(currentTenant.id, true);
+      setOptInChoice('no');
+      toast.info('Tiffin order cancelled. You can dine at the mess buffet today.');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to cancel order.');
     }
   };
 
@@ -491,17 +484,15 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
 
                 {/* Cancellation notice */}
                 <div className="pt-1 flex items-center justify-between text-[10px] text-slate-600 font-semibold">
-                  <span>{isPast9AM ? 'Order locked after 9:00 AM' : 'Can cancel before 9:00 AM'}</span>
-                  {!isPast9AM && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={handleCancel}
-                      className="h-7 text-[11px] font-bold text-rose-700 border-rose-300 hover:bg-rose-50 hover:border-rose-400"
-                    >
-                      <XCircle className="h-3.5 w-3.5 mr-1" /> Cancel Tiffin
-                    </Button>
-                  )}
+                  <span>Flexible cancellation enabled</span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCancel}
+                    className="h-7 text-[11px] font-bold text-rose-700 border-rose-300 hover:bg-rose-50 hover:border-rose-400"
+                  >
+                    <XCircle className="h-3.5 w-3.5 mr-1" /> Cancel Tiffin
+                  </Button>
                 </div>
               </div>
             ) : isPast9AM ? (

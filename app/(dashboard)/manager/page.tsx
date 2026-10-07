@@ -89,7 +89,7 @@ export default function ManagerDashboardPage() {
   const [selectedBranchId, setSelectedBranchId] = React.useState('prop-1');
   const activeBranch = properties.find((p) => p.id === selectedBranchId) || properties[0] || {
     id: 'prop-1',
-    name: 'Sunrise Heights PG',
+    name: 'Royal Palms Luxury Living',
     city: 'Bengaluru',
   };
 
@@ -200,8 +200,13 @@ export default function ManagerDashboardPage() {
   const todayAttendanceRecords = staffAttendance.filter(
     (a) => a.date === todayStr && (a.property_id === activeBranch.id || !a.property_id)
   );
-  const presentCount = todayAttendanceRecords.filter((a) => a.status === 'present').length;
-  const absentCount = todayAttendanceRecords.filter((a) => a.status === 'absent' || a.status === 'leave').length;
+  const branchStaffWithAttendance = branchStaff.map((member) => {
+    const record = todayAttendanceRecords.find((a) => a.staff_id === member.id);
+    const status: StaffAttendanceStatus = record?.status || 'present';
+    return { member, record, status };
+  });
+  const presentCount = branchStaffWithAttendance.filter((s) => s.status === 'present').length;
+  const absentCount = branchStaffWithAttendance.filter((s) => s.status === 'absent' || s.status === 'leave').length;
   const totalStaffCount = branchStaff.length;
 
   // Branch Inventory

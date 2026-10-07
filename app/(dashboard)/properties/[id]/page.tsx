@@ -174,71 +174,95 @@ export default function PropertyDetailPage() {
       {activeTab === 'overview' && (
         <div className="space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="glass-card">
-              <span className="text-xs text-slate-400">Total Buildings</span>
-              <p className="text-2xl font-bold text-white mt-1">{propBuildings.length}</p>
-              <span className="text-[11px] text-slate-500">{propRooms.length} Total Rooms</span>
-            </Card>
-
-            <Card className="glass-card">
-              <span className="text-xs text-slate-400">Total Beds</span>
-              <p className="text-2xl font-bold text-white mt-1">{propBeds.length}</p>
-              <span className="text-[11px] text-emerald-400">
-                {propBeds.filter((b) => b.status === 'occupied').length} Occupied
-              </span>
-            </Card>
-
-            <Card className="glass-card">
-              <span className="text-xs text-slate-400">Monthly Revenue</span>
-              <p className="text-2xl font-bold text-emerald-400 mt-1">
-                {formatINR(propPayments.reduce((s, p) => s + p.amount, 0))}
+            <Card className="p-4 bg-white border border-slate-300 shadow-sm flex flex-col justify-between">
+              <div>
+                <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider block">Total Buildings</span>
+                <p className="text-2xl font-black text-slate-950 mt-1">
+                  {propBuildings.length > 0 ? propBuildings.length : '—'}
+                </p>
+              </div>
+              <p className="text-xs font-semibold text-slate-600 mt-2">
+                {propRooms.length > 0 ? `${propRooms.length} Total Rooms` : '—'}
               </p>
-              <span className="text-[11px] text-slate-400">{propPayments.length} recorded payments</span>
             </Card>
 
-            <Card className="glass-card">
-              <span className="text-xs text-slate-400">Active Complaints</span>
-              <p className="text-2xl font-bold text-amber-400 mt-1">
-                {propComplaints.filter((c) => c.status !== 'resolved').length}
+            <Card className="p-4 bg-white border border-slate-300 shadow-sm flex flex-col justify-between">
+              <div>
+                <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider block">Total Beds</span>
+                <p className="text-2xl font-black text-slate-950 mt-1">
+                  {propBeds.length > 0 ? propBeds.length : '—'}
+                </p>
+              </div>
+              <p className="text-xs font-bold text-emerald-800 mt-2">
+                {propBeds.length > 0 ? `${propBeds.filter((b) => b.status === 'occupied').length} Occupied` : '—'}
               </p>
-              <span className="text-[11px] text-slate-400">Maintenance requests</span>
+            </Card>
+
+            <Card className="p-4 bg-white border border-slate-300 shadow-sm flex flex-col justify-between">
+              <div>
+                <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider block">Monthly Revenue</span>
+                <p className="text-2xl font-black text-emerald-800 mt-1">
+                  {propPayments.length > 0 ? formatINR(propPayments.reduce((s, p) => s + p.amount, 0)) : '—'}
+                </p>
+              </div>
+              <p className="text-xs font-semibold text-slate-600 mt-2">
+                {propPayments.length > 0 ? `${propPayments.length} recorded payments` : '0 recorded payments'}
+              </p>
+            </Card>
+
+            <Card className="p-4 bg-white border border-slate-300 shadow-sm flex flex-col justify-between">
+              <div>
+                <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider block">Active Complaints</span>
+                <p className="text-2xl font-black text-rose-700 mt-1">
+                  {propComplaints.length > 0 ? propComplaints.filter((c) => c.status !== 'resolved').length : 0}
+                </p>
+              </div>
+              <p className="text-xs font-semibold text-slate-600 mt-2">
+                {propComplaints.length > 0 ? `${propComplaints.length} Total Tickets` : 'No active tickets'}
+              </p>
             </Card>
           </div>
 
           {/* Buildings Quick Grid */}
           <Card className="glass-card">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <CardTitle className="text-base">Buildings in this Branch</CardTitle>
+              <CardTitle className="text-base text-white">Buildings in this Branch</CardTitle>
               <Button size="sm" variant="outline" onClick={() => setShowAddBuildingModal(true)} className="text-xs gap-1">
                 <Plus className="h-3.5 w-3.5" /> Add Block
               </Button>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {propBuildings.map((bld) => (
-                  <div
-                    key={bld.id}
-                    className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 hover:border-indigo-500/40 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-bold text-white">{bld.name}</h4>
-                      {bld.has_mess && (
-                        <Badge variant="default" className="text-[10px]">Mess Enabled</Badge>
-                      )}
+                {propBuildings.map((bld) => {
+                  const bldRooms = propRooms.filter((r) => r.building_id === bld.id);
+                  const bldRoomIds = new Set(bldRooms.map((r) => r.id));
+                  const bldBeds = propBeds.filter((b) => bldRoomIds.has(b.room_id));
+
+                  return (
+                    <div
+                      key={bld.id}
+                      className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 hover:border-indigo-500/40 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-bold text-white">{bld.name}</h4>
+                        {bld.has_mess && (
+                          <Badge variant="default" className="text-[10px]">Mess Enabled</Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-400 mt-1">{bld.description || `${bld.floors_count} Floors structure`}</p>
+                      <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between">
+                        <span className="text-xs text-slate-300 font-semibold">
+                          {bldRooms.length > 0 ? `${bldRooms.length} Rooms` : '—'} • {bldBeds.length > 0 ? `${bldBeds.length} Beds` : '—'}
+                        </span>
+                        <Link href={`/properties/${property.id}/buildings/${bld.id}`}>
+                          <Button size="sm" variant="ghost" className="h-7 text-xs text-indigo-400 hover:text-indigo-300">
+                            View Rooms &rarr;
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-400 mt-1">{bld.description || `${bld.floors_count} Floors structure`}</p>
-                    <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between">
-                      <span className="text-xs text-slate-300">
-                        {propRooms.filter((r) => r.building_id === bld.id).length} Rooms
-                      </span>
-                      <Link href={`/properties/${property.id}/buildings/${bld.id}`}>
-                        <Button size="sm" variant="ghost" className="h-7 text-xs text-indigo-400 hover:text-indigo-300">
-                          View Rooms &rarr;
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -402,22 +426,30 @@ export default function PropertyDetailPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 text-slate-200">
-                {propTenants.map((t) => (
-                  <tr key={t.id} className="hover:bg-slate-800/40">
-                    <td className="p-3 font-semibold text-white">{t.full_name}</td>
-                    <td className="p-3 text-slate-400">{t.phone}</td>
-                    <td className="p-3">{t.room_number || 'Room 101'}</td>
-                    <td className="p-3 font-bold text-emerald-400">{formatINR(t.monthly_rent)}</td>
-                    <td className="p-3 text-slate-400">{formatDate(t.joining_date)}</td>
-                    <td className="p-3">
-                      <Link href={`/tenants/${t.id}`}>
-                        <Button size="sm" variant="ghost" className="h-7 text-xs text-indigo-400">
-                          Profile &rarr;
-                        </Button>
-                      </Link>
+                {propTenants.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-8 text-center text-xs text-slate-400">
+                      No residents currently checked in to this property.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  propTenants.map((t) => (
+                    <tr key={t.id} className="hover:bg-slate-800/40">
+                      <td className="p-3 font-semibold text-white">{t.full_name}</td>
+                      <td className="p-3 text-slate-400">{t.phone}</td>
+                      <td className="p-3">{t.room_number || 'Room 101'}</td>
+                      <td className="p-3 font-bold text-emerald-400">{formatINR(t.monthly_rent)}</td>
+                      <td className="p-3 text-slate-400">{formatDate(t.joining_date)}</td>
+                      <td className="p-3">
+                        <Link href={`/tenants/${t.id}`}>
+                          <Button size="sm" variant="ghost" className="h-7 text-xs text-indigo-400">
+                            Profile &rarr;
+                          </Button>
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -437,30 +469,36 @@ export default function PropertyDetailPage() {
           </div>
 
           <div className="space-y-3">
-            {propComplaints.map((c) => {
-              const badge = getComplaintStatusBadge(c.status);
-              return (
-                <div key={c.id} className="p-4 rounded-xl glass-card border border-slate-800 flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-white">{c.title}</span>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full border ${badge.color}`}>
-                        {badge.label}
-                      </span>
+            {propComplaints.length === 0 ? (
+              <div className="p-8 text-center text-xs text-slate-400 bg-slate-900/40 rounded-xl border border-slate-800">
+                No active complaints or maintenance requests for this branch.
+              </div>
+            ) : (
+              propComplaints.map((c) => {
+                const badge = getComplaintStatusBadge(c.status);
+                return (
+                  <div key={c.id} className="p-4 rounded-xl glass-card border border-slate-800 flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-white">{c.title}</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full border ${badge.color}`}>
+                          {badge.label}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-1">{c.description}</p>
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        Reported by {c.tenant_name} &bull; Room {c.room_number} &bull; Priority: {c.priority}
+                      </p>
                     </div>
-                    <p className="text-xs text-slate-400 mt-1">{c.description}</p>
-                    <p className="text-[11px] text-slate-500 mt-1">
-                      Reported by {c.tenant_name} &bull; Room {c.room_number} &bull; Priority: {c.priority}
-                    </p>
+                    <Link href="/complaints">
+                      <Button size="sm" variant="secondary" className="h-8 text-xs">
+                        Update Ticket
+                      </Button>
+                    </Link>
                   </div>
-                  <Link href="/complaints">
-                    <Button size="sm" variant="secondary" className="h-8 text-xs">
-                      Update Ticket
-                    </Button>
-                  </Link>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
       )}

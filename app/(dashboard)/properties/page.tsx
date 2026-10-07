@@ -21,7 +21,7 @@ import { formatINR } from '@/lib/utils/format';
 
 export default function PropertiesPage() {
   const router = useRouter();
-  const { properties } = usePGStore();
+  const { properties, buildings, rooms, beds } = usePGStore();
   const [search, setSearch] = React.useState('');
 
   const filtered = properties.filter(
@@ -70,69 +70,97 @@ export default function PropertiesPage() {
 
       {/* Properties Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filtered.map((prop) => (
-          <Card
-            key={prop.id}
-            className="glass-card overflow-hidden p-0 flex flex-col justify-between group border-slate-300 hover:border-indigo-400 shadow-sm"
-          >
-            {/* Cover Image Banner */}
-            <div className="h-40 w-full relative overflow-hidden bg-slate-200">
-              {prop.cover_image && (
-                <img
-                  src={prop.cover_image}
-                  alt={prop.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
-              <div className="absolute top-3 right-3">
-                <span className="text-xs font-black px-2.5 py-1 rounded-lg bg-white/95 text-emerald-800 border border-emerald-300 shadow-sm backdrop-blur-md">
-                  {prop.occupancy_rate || (prop.total_beds ? Math.round(((prop.occupied_beds || 0) / prop.total_beds) * 100) : 80)}% Occupied
-                </span>
-              </div>
-              <div className="absolute bottom-3 left-4 right-4 preserve-white-text">
-                <h3 className="text-base font-extrabold text-white group-hover:text-indigo-200 transition-colors drop-shadow-md">
-                  {prop.name}
-                </h3>
-                <p className="text-xs text-white/90 flex items-center gap-1 mt-0.5 font-bold drop-shadow">
-                  <MapPin className="h-3.5 w-3.5 text-indigo-300 stroke-[2.5]" /> {prop.city}, {prop.address}
-                </p>
-              </div>
-            </div>
+        {filtered.map((prop) => {
+          const propRooms = rooms.filter((r) => r.property_id === prop.id);
+          const propRoomIds = new Set(propRooms.map((r) => r.id));
+          const propBeds = beds.filter((b) => b.property_id === prop.id || propRoomIds.has(b.room_id));
+          const propBuildings = buildings.filter((b) => b.property_id === prop.id);
 
-            {/* Metrics Body */}
-            <div className="p-5 space-y-4 flex-1">
-              <div className="grid grid-cols-3 gap-2 text-center py-2 px-3 rounded-xl bg-slate-50 border border-slate-200">
-                <div>
-                  <span className="text-[10px] text-slate-700 uppercase font-black">Buildings</span>
-                  <p className="text-sm font-black text-slate-950">{prop.buildings_count || 1}</p>
-                </div>
-                <div className="border-x border-slate-200">
-                  <span className="text-[10px] text-slate-700 uppercase font-black">Total Beds</span>
-                  <p className="text-sm font-black text-slate-950">{prop.total_beds || 10}</p>
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-700 uppercase font-black">Occupied</span>
-                  <p className="text-sm font-black text-emerald-800">{prop.occupied_beds || 8}</p>
-                </div>
-              </div>
+          const totalBeds = propBeds.length > 0 ? propBeds.length : (prop.total_beds || 0);
+          const occupiedBeds = propBeds.length > 0
+            ? propBeds.filter((b) => b.status === 'occupied').length
+            : (prop.occupied_beds || 0);
+          const vacantBeds = Math.max(0, totalBeds - occupiedBeds);
+          const occupancyRate = totalBeds > 0 ? Math.round((occupiedBeds / totalBeds) * 100) : (prop.occupancy_rate || 0);
+          const buildingsCount = propBuildings.length > 0 ? propBuildings.length : (prop.buildings_count || 1);
 
-              {/* Progress bar */}
-              <div>
-                <div className="flex items-center justify-between text-xs text-slate-700 font-bold mb-1.5">
-                  <span>Occupancy Capacity</span>
-                  <span className="font-black text-slate-950">
-                    {prop.occupied_beds || 8} / {prop.total_beds || 10} Beds ({prop.occupancy_rate || 80}%)
+          const statusLabel = occupancyRate >= 85 ? 'High Demand' : occupancyRate >= 65 ? 'Optimal' : 'Vacancies Open';
+          const statusBadgeColor = occupancyRate >= 85
+            ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+            : occupancyRate >= 65
+            ? 'bg-blue-100 text-blue-900 border-blue-300'
+            : 'bg-amber-100 text-amber-900 border-amber-300';
+
+          return (
+            <Card
+              key={prop.id}
+              className="glass-card overflow-hidden p-0 flex flex-col justify-between group border-slate-300 hover:border-indigo-400 shadow-sm"
+            >
+              {/* Cover Image Banner */}
+              <div className="h-40 w-full relative overflow-hidden bg-slate-200">
+                {prop.cover_image && (
+                  <img
+                    src={prop.cover_image}
+                    alt={prop.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
+                <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                  <span className={`text-[11px] font-black px-2 py-0.5 rounded-lg border shadow-sm backdrop-blur-md ${statusBadgeColor}`}>
+                    {statusLabel}
+                  </span>
+                  <span className="text-xs font-black px-2.5 py-1 rounded-lg bg-white/95 text-emerald-800 border border-emerald-300 shadow-sm backdrop-blur-md">
+                    {occupancyRate}% Occupied
                   </span>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden border border-slate-300/60">
-                  <div
-                    className="bg-indigo-600 h-2 rounded-full"
-                    style={{ width: `${prop.occupancy_rate || 80}%` }}
-                  />
+                <div className="absolute bottom-3 left-4 right-4 preserve-white-text">
+                  <h3 className="text-base font-extrabold text-white group-hover:text-indigo-200 transition-colors drop-shadow-md">
+                    {prop.name}
+                  </h3>
+                  <p className="text-xs text-white/90 flex items-center gap-1 mt-0.5 font-bold drop-shadow">
+                    <MapPin className="h-3.5 w-3.5 text-indigo-300 stroke-[2.5]" /> {prop.city}, {prop.address}
+                  </p>
                 </div>
               </div>
-            </div>
+
+              {/* Metrics Body */}
+              <div className="p-5 space-y-4 flex-1">
+                <div className="grid grid-cols-4 gap-1.5 text-center py-2 px-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                  <div>
+                    <span className="text-[10px] text-slate-700 uppercase font-black">Blocks</span>
+                    <p className="text-sm font-black text-slate-950">{buildingsCount}</p>
+                  </div>
+                  <div className="border-l border-slate-200">
+                    <span className="text-[10px] text-slate-700 uppercase font-black">Total Beds</span>
+                    <p className="text-sm font-black text-slate-950">{totalBeds}</p>
+                  </div>
+                  <div className="border-l border-slate-200">
+                    <span className="text-[10px] text-slate-700 uppercase font-black">Occupied</span>
+                    <p className="text-sm font-black text-emerald-800">{occupiedBeds}</p>
+                  </div>
+                  <div className="border-l border-slate-200">
+                    <span className="text-[10px] text-slate-700 uppercase font-black">Vacant</span>
+                    <p className="text-sm font-black text-indigo-700">{vacantBeds}</p>
+                  </div>
+                </div>
+
+                {/* Progress bar */}
+                <div>
+                  <div className="flex items-center justify-between text-xs text-slate-700 font-bold mb-1.5">
+                    <span>Occupancy Capacity</span>
+                    <span className="font-black text-slate-950">
+                      {occupiedBeds} / {totalBeds} Beds ({occupancyRate}%)
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden border border-slate-300/60">
+                    <div
+                      className="bg-indigo-600 h-2 rounded-full"
+                      style={{ width: `${occupancyRate}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
 
             {/* Card Footer Actions */}
             <div className="p-4 pt-3 border-t border-slate-200 flex items-center justify-between bg-slate-50/60">
@@ -151,8 +179,9 @@ export default function PropertiesPage() {
               </Link>
             </div>
           </Card>
-        ))}
-      </div>
+        );
+      })}
     </div>
-  );
+  </div>
+);
 }

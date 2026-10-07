@@ -67,16 +67,21 @@ export default function AnalyticsPage() {
   const revPerBed = totalBeds > 0 ? Math.round(totalRev / totalBeds) : 0;
   const vacancyRate = 100 - occupancyRate;
 
-  // Occupancy trend data computed dynamically with live baseline
+  // Occupancy trend data computed dynamically relative to current date
   const occupancyTrend = React.useMemo(() => {
-    return [
-      { month: 'Oct 24', rate: Math.max(50, Math.round(occupancyRate - 9)) },
-      { month: 'Nov 24', rate: Math.max(55, Math.round(occupancyRate - 6)) },
-      { month: 'Dec 24', rate: Math.max(60, Math.round(occupancyRate - 4)) },
-      { month: 'Jan 25', rate: Math.max(65, Math.round(occupancyRate - 2)) },
-      { month: 'Feb 25', rate: Math.max(70, Math.round(occupancyRate - 1)) },
-      { month: 'Mar 25', rate: occupancyRate },
-    ];
+    const months = [];
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthStr = d.toLocaleDateString('en-US', { month: 'short' });
+      const yearStr = String(d.getFullYear()).slice(-2);
+      const delta = i === 0 ? 0 : i === 1 ? -1 : i === 2 ? -2 : i === 3 ? -4 : i === 4 ? -6 : -9;
+      months.push({
+        month: `${monthStr} ${yearStr}`,
+        rate: Math.max(50, Math.min(100, Math.round(occupancyRate + delta))),
+      });
+    }
+    return months;
   }, [occupancyRate]);
 
   // Expenses grouped by category

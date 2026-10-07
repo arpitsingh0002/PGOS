@@ -22,11 +22,14 @@ function PaymentFormContent() {
 
   const [amount, setAmount] = React.useState(selectedTenant?.monthly_rent || 9500);
   const [paymentType, setPaymentType] = React.useState<'rent' | 'electricity' | 'mess' | 'deposit'>('rent');
-  const [forMonth, setForMonth] = React.useState('2025-03');
+  const [forMonth, setForMonth] = React.useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  });
   const [paymentDate, setPaymentDate] = React.useState(() => new Date().toISOString().split('T')[0]);
   const [paymentMode, setPaymentMode] = React.useState('UPI (GPay / PhonePe)');
   const [transactionRef, setTransactionRef] = React.useState('');
-  const [notes, setNotes] = React.useState('Verified in bank account');
+  const [notes, setNotes] = React.useState('');
 
   React.useEffect(() => {
     if (selectedTenant && !preTenantId) {
