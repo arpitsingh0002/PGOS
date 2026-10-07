@@ -25,9 +25,9 @@ export default function TasksPage() {
   const { tasks, staff, updateTaskStatus } = usePGStore();
 
   const columns: { id: Task['status']; label: string; color: string }[] = [
-    { id: 'todo', label: 'To Do', color: 'border-slate-800 bg-slate-950/20' },
-    { id: 'in_progress', label: 'In Progress', color: 'border-amber-500/20 bg-amber-950/10' },
-    { id: 'done', label: 'Completed', color: 'border-emerald-500/20 bg-emerald-950/10' },
+    { id: 'todo', label: 'To Do', color: 'border-slate-300 bg-slate-100/90' },
+    { id: 'in_progress', label: 'In Progress', color: 'border-amber-300 bg-amber-50/70' },
+    { id: 'done', label: 'Completed', color: 'border-emerald-300 bg-emerald-50/70' },
   ];
 
   const handleMove = (taskId: string, newStatus: Task['status']) => {
@@ -37,21 +37,21 @@ export default function TasksPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-300">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-950 flex items-center gap-2">
             Staff Task Board
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-950 border border-indigo-300">
               {tasks.filter((t) => t.status !== 'done').length} Pending
             </span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs font-semibold text-slate-700 mt-1">
             Assign housekeeping, repairs, water tank maintenance and inventory duties
           </p>
         </div>
 
         <Link href="/tasks/new">
-          <Button size="sm" className="bg-indigo-600 hover:bg-indigo-500 gap-1.5 text-xs shadow-md shadow-indigo-600/20">
+          <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold gap-1.5 text-xs shadow-md shadow-indigo-600/20">
             <Plus className="h-4 w-4" /> Create New Task
           </Button>
         </Link>
@@ -64,14 +64,14 @@ export default function TasksPage() {
           return (
             <div
               key={col.id}
-              className={`rounded-2xl border p-4 flex flex-col justify-between min-h-[500px] ${col.color}`}
+              className={`rounded-2xl border p-4 flex flex-col justify-between min-h-[500px] shadow-sm ${col.color}`}
             >
               <div>
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800/80 mb-3">
-                  <span className="text-xs font-bold text-white uppercase tracking-wider">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-300 mb-3">
+                  <span className="text-xs font-bold text-slate-950 uppercase tracking-wider">
                     {col.label}
                   </span>
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-white border border-slate-300 text-slate-900 shadow-xs">
                     {colTasks.length}
                   </span>
                 </div>
@@ -80,26 +80,26 @@ export default function TasksPage() {
                   {colTasks.map((task) => (
                     <div
                       key={task.id}
-                      className="p-4 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition-all shadow-md space-y-2.5"
+                      className="p-4 rounded-xl bg-white border border-slate-300 hover:border-indigo-400 hover:shadow-md transition-all shadow-sm space-y-2.5"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
+                        <span className="text-[10px] uppercase font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded border border-amber-300 tracking-wider">
                           {task.priority} Priority
                         </span>
                         {task.due_date && (
-                          <span className="text-[10px] text-slate-400 flex items-center gap-1">
-                            <Clock className="h-3 w-3" /> Due {formatDate(task.due_date)}
+                          <span className="text-[10px] font-bold text-slate-700 flex items-center gap-1">
+                            <Clock className="h-3 w-3 text-slate-500" /> Due {formatDate(task.due_date)}
                           </span>
                         )}
                       </div>
 
-                      <h4 className="text-xs font-semibold text-white">{task.title}</h4>
+                      <h4 className="text-xs font-bold text-slate-950">{task.title}</h4>
                       {task.description && (
-                        <p className="text-[11px] text-slate-400 line-clamp-2">{task.description}</p>
+                        <p className="text-[11px] font-medium text-slate-700 line-clamp-2">{task.description}</p>
                       )}
 
-                      <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
-                        <span className="text-indigo-300 font-medium">
+                      <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-[11px]">
+                        <span className="text-indigo-950 font-bold">
                           {task.assigned_staff_name || 'General Task'}
                         </span>
 
@@ -108,7 +108,7 @@ export default function TasksPage() {
                           {col.id !== 'todo' && (
                             <button
                               onClick={() => handleMove(task.id, 'todo')}
-                              className="text-[10px] text-slate-400 hover:text-white px-1.5 py-0.5 rounded bg-slate-800"
+                              className="text-[10px] font-bold text-slate-800 hover:text-slate-950 px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 border border-slate-300"
                             >
                               To Do
                             </button>
@@ -116,7 +116,7 @@ export default function TasksPage() {
                           {col.id !== 'in_progress' && (
                             <button
                               onClick={() => handleMove(task.id, 'in_progress')}
-                              className="text-[10px] text-amber-400 hover:text-amber-300 px-1.5 py-0.5 rounded bg-slate-800"
+                              className="text-[10px] font-bold text-amber-900 hover:text-amber-950 px-2 py-0.5 rounded bg-amber-100 hover:bg-amber-200 border border-amber-300"
                             >
                               In Progress
                             </button>
@@ -124,9 +124,9 @@ export default function TasksPage() {
                           {col.id !== 'done' && (
                             <button
                               onClick={() => handleMove(task.id, 'done')}
-                              className="text-[10px] text-emerald-400 hover:text-emerald-300 px-1.5 py-0.5 rounded bg-slate-800"
+                              className="text-[10px] font-bold text-emerald-900 hover:text-emerald-950 px-2 py-0.5 rounded bg-emerald-100 hover:bg-emerald-200 border border-emerald-300"
                             >
-                              Done &check;
+                              Done ✓
                             </button>
                           )}
                         </div>
@@ -137,7 +137,7 @@ export default function TasksPage() {
               </div>
 
               {colTasks.length === 0 && (
-                <div className="text-center py-12 text-slate-500 text-xs">
+                <div className="text-center py-12 text-slate-500 font-bold text-xs">
                   No tasks in this lane
                 </div>
               )}

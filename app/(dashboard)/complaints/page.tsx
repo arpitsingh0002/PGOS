@@ -32,10 +32,10 @@ export default function ComplaintsPage() {
   const [resolutionNotes, setResolutionNotes] = React.useState('');
 
   const columns: { id: Complaint['status']; label: string; color: string }[] = [
-    { id: 'new', label: 'New Issues', color: 'border-blue-500/30 bg-blue-950/10' },
-    { id: 'assigned', label: 'Assigned to Staff', color: 'border-purple-500/30 bg-purple-950/10' },
-    { id: 'in_progress', label: 'Work In Progress', color: 'border-amber-500/30 bg-amber-950/10' },
-    { id: 'resolved', label: 'Resolved / Closed', color: 'border-emerald-500/30 bg-emerald-950/10' },
+    { id: 'new', label: 'New Issues', color: 'border-blue-200 bg-blue-50/70' },
+    { id: 'assigned', label: 'Assigned to Staff', color: 'border-purple-200 bg-purple-50/70' },
+    { id: 'in_progress', label: 'Work In Progress', color: 'border-amber-200 bg-amber-50/70' },
+    { id: 'resolved', label: 'Resolved / Closed', color: 'border-emerald-200 bg-emerald-50/70' },
   ];
 
   const filtered = complaints.filter(
@@ -60,15 +60,15 @@ export default function ComplaintsPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-300">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+          <h1 className="text-2xl font-black tracking-tight text-slate-950 flex items-center gap-2">
             Maintenance & Complaints Board
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
               {complaints.filter((c) => c.status !== 'resolved').length} Open
             </span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs font-bold text-slate-700 mt-1">
             Kanban workflow from tenant reporting to staff assignment and closure
           </p>
         </div>
@@ -77,7 +77,7 @@ export default function ComplaintsPage() {
           <select
             value={filterPriority}
             onChange={(e) => setFilterPriority(e.target.value)}
-            className="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-white focus:outline-none"
+            className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-950 focus:outline-none cursor-pointer"
           >
             <option value="all">All Priorities</option>
             <option value="urgent">Urgent SLA</option>
@@ -87,8 +87,8 @@ export default function ComplaintsPage() {
           </select>
 
           <Link href="/complaints/new">
-            <Button size="sm" className="bg-indigo-600 hover:bg-indigo-500 gap-1.5 text-xs shadow-md shadow-indigo-600/20">
-              <Plus className="h-4 w-4" /> New Ticket
+            <Button size="sm" className="bg-slate-950 hover:bg-slate-900 text-white font-bold gap-1.5 text-xs shadow-sm">
+              <Plus className="h-4 w-4 stroke-[2.5]" /> New Ticket
             </Button>
           </Link>
         </div>
@@ -101,15 +101,15 @@ export default function ComplaintsPage() {
           return (
             <div
               key={col.id}
-              className={`rounded-2xl border p-4 flex flex-col justify-between min-h-[500px] ${col.color}`}
+              className={`rounded-2xl border p-4 flex flex-col justify-between min-h-[500px] shadow-xs ${col.color}`}
             >
               <div>
                 {/* Column Header */}
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800/80 mb-3">
-                  <span className="text-xs font-bold text-white uppercase tracking-wider">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-300/80 mb-3">
+                  <span className="text-xs font-black text-slate-950 uppercase tracking-wider">
                     {col.label}
                   </span>
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
+                  <span className="text-xs font-black px-2 py-0.5 rounded-full bg-white text-slate-900 border border-slate-300 shadow-xs">
                     {colItems.length}
                   </span>
                 </div>
@@ -118,32 +118,32 @@ export default function ComplaintsPage() {
                 <div className="space-y-3">
                   {colItems.map((item) => {
                     const priorityColors = {
-                      urgent: 'text-rose-400 bg-rose-500/10 border-rose-500/20',
-                      high: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
-                      medium: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20',
-                      low: 'text-slate-400 bg-slate-800 border-slate-700',
+                      urgent: 'text-rose-900 bg-rose-100 border-rose-300 font-black',
+                      high: 'text-amber-900 bg-amber-100 border-amber-300 font-black',
+                      medium: 'text-indigo-900 bg-indigo-100 border-indigo-300 font-black',
+                      low: 'text-slate-800 bg-slate-100 border-slate-300 font-bold',
                     };
 
                     return (
                       <div
                         key={item.id}
                         onClick={() => setSelectedComplaint(item)}
-                        className="p-3.5 rounded-xl bg-slate-900 border border-slate-800/80 hover:border-indigo-500/50 cursor-pointer shadow-md transition-all group"
+                        className="p-3.5 rounded-xl bg-white border border-slate-300 hover:border-indigo-500 cursor-pointer shadow-xs transition-all group"
                       >
                         <div className="flex items-center justify-between mb-1.5">
-                          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${priorityColors[item.priority]}`}>
+                          <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md border ${priorityColors[item.priority]}`}>
                             {item.priority}
                           </span>
-                          <span className="text-[10px] text-slate-500">{item.category}</span>
+                          <span className="text-[10px] font-bold text-slate-700">{item.category}</span>
                         </div>
 
-                        <h4 className="text-xs font-semibold text-white group-hover:text-indigo-300 line-clamp-1">
+                        <h4 className="text-xs font-bold text-slate-950 group-hover:text-indigo-700 line-clamp-1">
                           {item.title}
                         </h4>
-                        <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">{item.description}</p>
+                        <p className="text-[11px] font-semibold text-slate-700 mt-1 line-clamp-2 leading-relaxed">{item.description}</p>
 
-                        <div className="pt-2.5 mt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400">
-                          <span>Room {item.room_number || '101'}</span>
+                        <div className="pt-2.5 mt-2.5 border-t border-slate-200 flex items-center justify-between text-[10px] font-bold text-slate-800">
+                          <span>Room <strong className="text-slate-950">{item.room_number || '101'}</strong></span>
                           <span>{item.assigned_staff_name || 'Unassigned'}</span>
                         </div>
                       </div>
@@ -153,7 +153,7 @@ export default function ComplaintsPage() {
               </div>
 
               {colItems.length === 0 && (
-                <div className="text-center py-12 text-slate-500 text-xs">
+                <div className="text-center py-12 text-slate-600 font-bold text-xs">
                   No issues in this state
                 </div>
               )}
@@ -171,26 +171,26 @@ export default function ComplaintsPage() {
           description={`Room ${selectedComplaint.room_number || '101'} • Reported by ${selectedComplaint.tenant_name || 'Resident'}`}
         >
           <div className="space-y-4">
-            <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
-              <p className="text-slate-300 leading-relaxed">{selectedComplaint.description}</p>
-              <div className="flex items-center justify-between text-slate-500 pt-2 border-t border-slate-800/80 text-[11px]">
-                <span>Category: <strong className="text-white">{selectedComplaint.category}</strong></span>
-                <span>Priority: <strong className="text-amber-400 uppercase">{selectedComplaint.priority}</strong></span>
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-300 space-y-2 text-xs">
+              <p className="text-slate-900 font-medium leading-relaxed">{selectedComplaint.description}</p>
+              <div className="flex items-center justify-between text-slate-700 font-bold pt-2 border-t border-slate-200 text-[11px]">
+                <span>Category: <strong className="text-slate-950">{selectedComplaint.category}</strong></span>
+                <span>Priority: <strong className="text-amber-900 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded uppercase">{selectedComplaint.priority}</strong></span>
               </div>
             </div>
 
             {/* Change Status Buttons */}
             <div>
-              <label className="text-xs font-semibold text-slate-400 mb-2 block">Update Workflow Status</label>
+              <label className="text-xs font-bold text-slate-800 mb-2 block">Update Workflow Status</label>
               <div className="grid grid-cols-4 gap-2">
                 {(['new', 'assigned', 'in_progress', 'resolved'] as const).map((st) => (
                   <button
                     key={st}
                     onClick={() => handleQuickStatusChange(selectedComplaint.id, st)}
-                    className={`py-2 px-1 text-[11px] rounded-lg font-medium border capitalize transition-colors ${
+                    className={`py-2 px-1 text-[11px] rounded-lg font-bold border capitalize transition-colors ${
                       selectedComplaint.status === st
-                        ? 'border-indigo-500 bg-indigo-600/20 text-indigo-300 font-bold'
-                        : 'border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700'
+                        ? 'border-indigo-600 bg-indigo-100 text-indigo-950'
+                        : 'border-slate-300 bg-white text-slate-800 hover:border-slate-400'
                     }`}
                   >
                     {st.replace('_', ' ')}
@@ -202,24 +202,24 @@ export default function ComplaintsPage() {
             {/* Resolution note */}
             {selectedComplaint.status !== 'resolved' && (
               <div className="space-y-1 pt-2">
-                <label className="text-xs font-semibold text-slate-300">Resolution Notes (Upon Fix)</label>
+                <label className="text-xs font-bold text-slate-800">Resolution Notes (Upon Fix)</label>
                 <textarea
                   rows={2}
                   value={resolutionNotes}
                   onChange={(e) => setResolutionNotes(e.target.value)}
                   placeholder="e.g. Technician replaced capacitor, test verified cooling normal."
-                  className="w-full rounded-xl border border-slate-700 bg-slate-950 p-2.5 text-xs text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-300 bg-slate-50 p-2.5 text-xs font-medium text-slate-950 placeholder:text-slate-500 focus:border-indigo-600 focus:outline-none"
                 />
               </div>
             )}
 
-            <div className="pt-4 flex items-center justify-between border-t border-slate-800">
-              <Button size="sm" variant="outline" onClick={() => setSelectedComplaint(null)} className="text-xs">
+            <div className="pt-4 flex items-center justify-between border-t border-slate-200">
+              <Button size="sm" variant="outline" onClick={() => setSelectedComplaint(null)} className="text-xs font-bold border-slate-300">
                 Close
               </Button>
               {selectedComplaint.status !== 'resolved' && (
-                <Button size="sm" onClick={handleResolve} className="bg-emerald-600 hover:bg-emerald-500 text-xs gap-1.5 shadow-md shadow-emerald-600/20">
-                  <CheckCircle2 className="h-4 w-4" /> Mark Resolved
+                <Button size="sm" onClick={handleResolve} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-1.5 shadow-sm">
+                  <CheckCircle2 className="h-4 w-4 stroke-[2.5]" /> Mark Resolved
                 </Button>
               )}
             </div>

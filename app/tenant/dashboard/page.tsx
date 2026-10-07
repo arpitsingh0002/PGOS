@@ -54,43 +54,43 @@ export default function TenantDashboardPage() {
   return (
     <div className="space-y-5 animate-in fade-in duration-300">
       {/* Resident Greeting Card */}
-      <div className="p-5 rounded-3xl bg-gradient-to-br from-indigo-900/60 via-slate-900 to-slate-950 border border-indigo-500/25 shadow-xl relative overflow-hidden">
+      <div className="p-5 rounded-3xl bg-gradient-to-br from-indigo-50 via-white to-slate-50 border border-indigo-200 shadow-md relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
 
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between relative z-10">
           <div>
-            <span className="text-[11px] font-semibold text-indigo-300 tracking-wide uppercase">
+            <span className="text-[11px] font-bold text-indigo-900 tracking-wide uppercase">
               Welcome Home
             </span>
-            <h1 className="text-xl font-extrabold text-white tracking-tight mt-0.5">
+            <h1 className="text-xl font-black text-slate-950 tracking-tight mt-0.5">
               {currentTenant.full_name}
             </h1>
-            <p className="text-xs text-slate-300 mt-1 flex items-center gap-1.5">
+            <p className="text-xs font-bold text-slate-700 mt-1 flex items-center gap-1.5">
               <span>Room {currentTenant.room_number || '101'}</span>
               <span>&bull;</span>
-              <span className="text-emerald-400 font-semibold">{currentTenant.bed_number || 'Bed A'}</span>
+              <span className="text-emerald-800 font-extrabold">{currentTenant.bed_number || 'Bed A'}</span>
               <span>&bull;</span>
               <span>Tower A</span>
             </p>
           </div>
 
-          <div className="h-10 w-10 rounded-2xl bg-indigo-600/30 text-indigo-300 flex items-center justify-center font-bold text-sm border border-indigo-500/30">
+          <div className="h-10 w-10 rounded-2xl bg-indigo-100 text-indigo-950 flex items-center justify-center font-bold text-sm border border-indigo-300 shadow-xs">
             {currentTenant.full_name.slice(0, 2).toUpperCase()}
           </div>
         </div>
 
         {/* Rent Action Due Card */}
-        <div className="mt-5 p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between">
+        <div className="mt-5 p-3.5 rounded-2xl bg-white border border-slate-200 flex items-center justify-between shadow-xs">
           <div>
-            <span className="text-[10px] text-slate-400 uppercase font-semibold">Monthly Rent</span>
-            <p className="text-lg font-bold text-white">{formatINR(currentTenant.monthly_rent)}</p>
-            <span className="text-[10px] text-emerald-400">Due on 5th of every month</span>
+            <span className="text-[10px] text-slate-600 uppercase font-bold">Monthly Rent</span>
+            <p className="text-lg font-black text-slate-950">{formatINR(currentTenant.monthly_rent)}</p>
+            <span className="text-[10px] text-emerald-800 font-bold">Due on 5th of every month</span>
           </div>
 
           <Button
             size="sm"
             onClick={() => setShowPayModal(true)}
-            className="bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold gap-1.5 shadow-lg shadow-emerald-600/25"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold gap-1.5 shadow-md shadow-emerald-600/25"
           >
             <CreditCard className="h-3.5 w-3.5" /> Pay via UPI
           </Button>
@@ -101,61 +101,61 @@ export default function TenantDashboardPage() {
       <TiffinHubCard />
 
       {/* Today's Mess Menu Card */}
-      <Card className="glass-card p-4">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+      <Card className="bg-white border-slate-200 p-4 shadow-sm">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-200">
           <div className="flex items-center gap-2">
-            <UtensilsCrossed className="h-4 w-4 text-emerald-400" />
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider">Today&apos;s Menu ({todayDay})</h3>
+            <UtensilsCrossed className="h-4 w-4 text-emerald-700" />
+            <h3 className="text-xs font-bold text-slate-950 uppercase tracking-wider">Today&apos;s Menu ({todayDay})</h3>
           </div>
-          <Link href="/tenant/mess" className="text-[11px] text-indigo-400 hover:text-indigo-300">
+          <Link href="/tenant/mess" className="text-[11px] font-bold text-indigo-700 hover:text-indigo-900">
             Full Week &rarr;
           </Link>
         </div>
 
         <div className="grid grid-cols-2 gap-2 pt-3 text-xs">
-          <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/60">
-            <span className="text-[10px] text-amber-400 font-semibold block mb-0.5">Breakfast</span>
-            <p className="text-[11px] text-slate-200 line-clamp-1">{todaysMenu?.breakfast}</p>
+          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-[10px] text-amber-900 font-bold block mb-0.5">Breakfast</span>
+            <p className="text-[11px] text-slate-800 font-semibold line-clamp-1">{todaysMenu?.breakfast}</p>
           </div>
-          <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/60">
-            <span className="text-[10px] text-emerald-400 font-semibold block mb-0.5">Lunch</span>
-            <p className="text-[11px] text-slate-200 line-clamp-1">{todaysMenu?.lunch}</p>
+          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-[10px] text-emerald-900 font-bold block mb-0.5">Lunch</span>
+            <p className="text-[11px] text-slate-800 font-semibold line-clamp-1">{todaysMenu?.lunch}</p>
           </div>
-          <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/60">
-            <span className="text-[10px] text-indigo-400 font-semibold block mb-0.5">Evening Snacks</span>
-            <p className="text-[11px] text-slate-200 line-clamp-1">{todaysMenu?.snacks || 'Tea & Samosa'}</p>
+          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-[10px] text-indigo-900 font-bold block mb-0.5">Evening Snacks</span>
+            <p className="text-[11px] text-slate-800 font-semibold line-clamp-1">{todaysMenu?.snacks || 'Tea & Samosa'}</p>
           </div>
-          <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/60">
-            <span className="text-[10px] text-cyan-400 font-semibold block mb-0.5">Dinner</span>
-            <p className="text-[11px] text-slate-200 line-clamp-1">{todaysMenu?.dinner}</p>
+          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-[10px] text-cyan-900 font-bold block mb-0.5">Dinner</span>
+            <p className="text-[11px] text-slate-800 font-semibold line-clamp-1">{todaysMenu?.dinner}</p>
           </div>
         </div>
       </Card>
 
       {/* Quick App Navigation Grid */}
       <div className="grid grid-cols-2 gap-3">
-        <Link href="/tenant/complaints" className="p-3.5 rounded-2xl glass-card border border-slate-800 hover:border-indigo-500/40 block transition-colors">
-          <AlertCircle className="h-5 w-5 text-amber-400 mb-2" />
-          <h4 className="text-xs font-bold text-white">Raise Issue</h4>
-          <p className="text-[10px] text-slate-400 mt-0.5">AC, Wi-Fi or Plumbing</p>
+        <Link href="/tenant/complaints" className="p-3.5 rounded-2xl bg-white border border-slate-200 hover:border-indigo-400 block transition-all shadow-xs">
+          <AlertCircle className="h-5 w-5 text-amber-600 mb-2" />
+          <h4 className="text-xs font-bold text-slate-950">Raise Issue</h4>
+          <p className="text-[10px] text-slate-600 font-semibold mt-0.5">AC, Wi-Fi or Plumbing</p>
         </Link>
 
-        <Link href="/tenant/payments" className="p-3.5 rounded-2xl glass-card border border-slate-800 hover:border-indigo-500/40 block transition-colors">
-          <Download className="h-5 w-5 text-indigo-400 mb-2" />
-          <h4 className="text-xs font-bold text-white">Rent Receipts</h4>
-          <p className="text-[10px] text-slate-400 mt-0.5">Download past PDFs</p>
+        <Link href="/tenant/payments" className="p-3.5 rounded-2xl bg-white border border-slate-200 hover:border-indigo-400 block transition-all shadow-xs">
+          <Download className="h-5 w-5 text-indigo-700 mb-2" />
+          <h4 className="text-xs font-bold text-slate-950">Rent Receipts</h4>
+          <p className="text-[10px] text-slate-600 font-semibold mt-0.5">Download past PDFs</p>
         </Link>
       </div>
 
       {/* Latest Notice Alert */}
       {latestNotice && (
-        <Card className="glass-card p-4 border-indigo-500/30 bg-gradient-to-r from-indigo-950/20 to-slate-900">
+        <Card className="p-4 border-indigo-200 bg-indigo-50/70 shadow-xs">
           <div className="flex items-center gap-2 mb-1.5">
-            <Bell className="h-4 w-4 text-indigo-400 animate-pulse" />
-            <h4 className="text-xs font-bold text-white">{latestNotice.title}</h4>
+            <Bell className="h-4 w-4 text-indigo-700 animate-pulse" />
+            <h4 className="text-xs font-bold text-slate-950">{latestNotice.title}</h4>
           </div>
-          <p className="text-[11px] text-slate-300 line-clamp-2 leading-relaxed">{latestNotice.content}</p>
-          <Link href="/tenant/notices" className="text-[11px] text-indigo-400 hover:underline block mt-2">
+          <p className="text-[11px] text-slate-800 font-medium line-clamp-2 leading-relaxed">{latestNotice.content}</p>
+          <Link href="/tenant/notices" className="text-[11px] font-bold text-indigo-700 hover:underline block mt-2">
             View Notice Board &rarr;
           </Link>
         </Card>
@@ -183,8 +183,8 @@ export default function TenantDashboardPage() {
               <Button size="sm" variant="outline" onClick={() => setShowPayModal(false)} className="text-xs">
                 Cancel
               </Button>
-              <Button size="sm" onClick={handleSimulatePayment} className="bg-emerald-600 hover:bg-emerald-500 text-xs">
-                Simulate Payment Done &check;
+              <Button size="sm" onClick={handleSimulatePayment} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs">
+                Simulate Payment Done ✓
               </Button>
             </div>
           </div>

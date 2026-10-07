@@ -425,48 +425,48 @@ export default function ManagerDashboardPage() {
       {/* -------------------------------------------------------------
           TOP BAR: BRANCH SWITCHER, MANAGER PROFILE & HQ SYNC BANNER
       ------------------------------------------------------------- */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-slate-800">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-slate-300">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
-            <span className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <span className="p-2 rounded-xl bg-indigo-100 text-indigo-900 border border-indigo-300">
               <Shield className="h-5 w-5" />
             </span>
-            <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-950 flex items-center gap-2">
               Manager Operations Command Portal
             </h1>
-            <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs px-2.5 py-0.5 flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <Badge className="bg-emerald-100 text-emerald-950 border-emerald-300 text-xs px-2.5 py-0.5 flex items-center gap-1.5 font-bold">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
               HQ Live Sync: Connected to Owner
             </Badge>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs font-semibold text-slate-700 mt-1">
             Real-time branch control: Staff attendance, complaints resolution, supply inventory & indents, student directory & rent collection.
           </p>
         </div>
 
         {/* Branch Selector & Active Shift Info */}
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-300">
-            <Building2 className="h-3.5 w-3.5 text-indigo-400" />
-            <span className="text-slate-500 font-medium">Branch:</span>
+          <div className="flex items-center gap-2 bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-950 font-bold shadow-xs">
+            <Building2 className="h-3.5 w-3.5 text-indigo-700" />
+            <span className="text-slate-600 font-semibold">Branch:</span>
             <select
               value={selectedBranchId}
               onChange={(e) => setSelectedBranchId(e.target.value)}
-              className="bg-transparent text-white font-semibold outline-none cursor-pointer"
+              className="bg-transparent text-slate-950 font-bold outline-none cursor-pointer"
             >
               {properties.map((p) => (
-                <option key={p.id} value={p.id} className="bg-slate-900 text-white">
+                <option key={p.id} value={p.id} className="bg-white text-slate-950">
                   {p.name} ({p.city})
                 </option>
               ))}
             </select>
           </div>
 
-          <div className="flex items-center gap-2 bg-slate-900/90 border border-indigo-500/30 rounded-xl px-3 py-1.5 text-xs text-slate-300">
-            <UserCheck className="h-3.5 w-3.5 text-indigo-400" />
+          <div className="flex items-center gap-2 bg-indigo-50/70 border border-indigo-200 rounded-xl px-3 py-1.5 text-xs text-slate-950 shadow-xs">
+            <UserCheck className="h-3.5 w-3.5 text-indigo-700" />
             <div>
-              <span className="text-white font-medium">Suresh Gowda</span>
-              <span className="text-[11px] text-slate-400 ml-1.5">On Duty (08:00 AM - 08:00 PM)</span>
+              <span className="text-slate-950 font-bold">Suresh Gowda</span>
+              <span className="text-[11px] text-slate-600 font-semibold ml-1.5">On Duty (08:00 AM - 08:00 PM)</span>
             </div>
           </div>
         </div>
@@ -476,78 +476,78 @@ export default function ManagerDashboardPage() {
           KEY OPERATIONAL KPI CARDS
       ------------------------------------------------------------- */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <Card className="glass-card p-3 border-indigo-500/20 hover:border-indigo-500/40 transition-colors">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-[11px] font-medium uppercase tracking-wider">Occupancy</span>
-            <Users className="h-3.5 w-3.5 text-indigo-400" />
+        <Card className="bg-white p-3 border-slate-300 shadow-sm hover:border-indigo-400 transition-colors">
+          <div className="flex items-center justify-between text-slate-700 font-bold mb-1">
+            <span className="text-[11px] uppercase tracking-wider">Occupancy</span>
+            <Users className="h-3.5 w-3.5 text-indigo-700" />
           </div>
-          <div className="text-xl font-bold text-white">{occupancyPct}%</div>
-          <p className="text-[10px] text-slate-400 mt-0.5">{vacantBeds.length} vacant beds ready</p>
+          <div className="text-xl font-black text-slate-950">{occupancyPct}%</div>
+          <p className="text-[10px] text-slate-700 font-semibold mt-0.5">{vacantBeds.length} vacant beds ready</p>
         </Card>
 
-        <Card className="glass-card p-3 border-emerald-500/20 hover:border-emerald-500/40 transition-colors">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-[11px] font-medium uppercase tracking-wider">Staff Attendance</span>
-            <UserCheck className="h-3.5 w-3.5 text-emerald-400" />
+        <Card className="bg-white p-3 border-slate-300 shadow-sm hover:border-emerald-400 transition-colors">
+          <div className="flex items-center justify-between text-slate-700 font-bold mb-1">
+            <span className="text-[11px] uppercase tracking-wider">Staff Attendance</span>
+            <UserCheck className="h-3.5 w-3.5 text-emerald-700" />
           </div>
-          <div className="text-xl font-bold text-white">
+          <div className="text-xl font-black text-slate-950">
             {presentCount}/{totalStaffCount || 4}
           </div>
-          <p className="text-[10px] text-emerald-400 mt-0.5">
+          <p className="text-[10px] text-emerald-800 font-bold mt-0.5">
             {absentCount > 0 ? `${absentCount} absent/leave` : '100% on duty today'}
           </p>
         </Card>
 
-        <Card className="glass-card p-3 border-rose-500/20 hover:border-rose-500/40 transition-colors">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-[11px] font-medium uppercase tracking-wider">Open Complaints</span>
-            <Wrench className="h-3.5 w-3.5 text-rose-400" />
+        <Card className="bg-white p-3 border-slate-300 shadow-sm hover:border-rose-400 transition-colors">
+          <div className="flex items-center justify-between text-slate-700 font-bold mb-1">
+            <span className="text-[11px] uppercase tracking-wider">Open Complaints</span>
+            <Wrench className="h-3.5 w-3.5 text-rose-700" />
           </div>
-          <div className="text-xl font-bold text-white">{openComplaints.length}</div>
-          <p className="text-[10px] text-rose-400 mt-0.5">
+          <div className="text-xl font-black text-slate-950">{openComplaints.length}</div>
+          <p className="text-[10px] text-rose-800 font-bold mt-0.5">
             {openComplaints.filter((c) => c.priority === 'urgent' || c.priority === 'high').length} urgent tickets
           </p>
         </Card>
 
         {/* Required Inventory KPI with Urgent Alert */}
-        <Card className={`glass-card p-3 transition-colors ${
-          urgentRequests.length > 0 ? 'border-rose-500/40 bg-rose-950/10' : 'border-amber-500/20'
+        <Card className={`p-3 transition-colors bg-white shadow-sm ${
+          urgentRequests.length > 0 ? 'border-rose-400 bg-rose-50/50' : 'border-slate-300'
         }`}>
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-[11px] font-medium uppercase tracking-wider">Supplies Requisitions</span>
-            <ShoppingCart className={`h-3.5 w-3.5 ${urgentRequests.length > 0 ? 'text-rose-400' : 'text-amber-400'}`} />
+          <div className="flex items-center justify-between text-slate-700 font-bold mb-1">
+            <span className="text-[11px] uppercase tracking-wider">Supplies Requisitions</span>
+            <ShoppingCart className={`h-3.5 w-3.5 ${urgentRequests.length > 0 ? 'text-rose-700' : 'text-amber-700'}`} />
           </div>
-          <div className="text-xl font-bold text-white flex items-center gap-1.5">
+          <div className="text-xl font-black text-slate-950 flex items-center gap-1.5">
             {branchRequests.length}
             {urgentRequests.length > 0 && (
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse">
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-950 border border-rose-300 animate-pulse">
                 {urgentRequests.length} URGENT
               </span>
             )}
           </div>
-          <p className="text-[10px] text-slate-400 mt-0.5">
+          <p className="text-[10px] text-slate-700 font-semibold mt-0.5">
             {pendingRequests.length} pending owner approval
           </p>
         </Card>
 
-        <Card className="glass-card p-3 border-blue-500/20 hover:border-blue-500/40 transition-colors">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-[11px] font-medium uppercase tracking-wider">Branch Rent</span>
-            <CreditCard className="h-3.5 w-3.5 text-blue-400" />
+        <Card className="bg-white p-3 border-slate-300 shadow-sm hover:border-blue-400 transition-colors">
+          <div className="flex items-center justify-between text-slate-700 font-bold mb-1">
+            <span className="text-[11px] uppercase tracking-wider">Branch Rent</span>
+            <CreditCard className="h-3.5 w-3.5 text-blue-700" />
           </div>
-          <div className="text-xl font-bold text-white">{formatINR(totalRentCollected)}</div>
-          <p className="text-[10px] text-blue-400 mt-0.5">{formatINR(pendingRentAmount)} pending</p>
+          <div className="text-xl font-black text-slate-950">{formatINR(totalRentCollected)}</div>
+          <p className="text-[10px] text-blue-900 font-bold mt-0.5">{formatINR(pendingRentAmount)} pending</p>
         </Card>
 
-        <Card className="glass-card p-3 border-purple-500/20 hover:border-purple-500/40 transition-colors">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-[11px] font-medium uppercase tracking-wider">Daily SOP</span>
-            <CheckSquare className="h-3.5 w-3.5 text-purple-400" />
+        <Card className="bg-white p-3 border-slate-300 shadow-sm hover:border-purple-400 transition-colors">
+          <div className="flex items-center justify-between text-slate-700 font-bold mb-1">
+            <span className="text-[11px] uppercase tracking-wider">Daily SOP</span>
+            <CheckSquare className="h-3.5 w-3.5 text-purple-700" />
           </div>
-          <div className="text-xl font-bold text-white">
+          <div className="text-xl font-black text-slate-950">
             {completedChecklistCount}/{checklist.length}
           </div>
-          <p className="text-[10px] text-purple-400 mt-0.5">
+          <p className="text-[10px] text-purple-900 font-bold mt-0.5">
             {Math.round((completedChecklistCount / checklist.length) * 100)}% shift routine completed
           </p>
         </Card>
@@ -556,19 +556,19 @@ export default function ManagerDashboardPage() {
       {/* -------------------------------------------------------------
           PORTAL NAVIGATION TABS
       ------------------------------------------------------------- */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-800">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-300">
         <button
           onClick={() => setActiveTab('inventory')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all whitespace-nowrap ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
             activeTab === 'inventory'
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-              : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800'
+              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+              : 'bg-slate-100 text-slate-800 hover:text-slate-950 hover:bg-slate-200 border border-slate-300'
           }`}
         >
           <Boxes className="h-4 w-4" />
           Inventory & Supplies
           {urgentRequests.length > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white font-bold text-[10px] animate-pulse">
+            <span className="px-1.5 py-0.2 rounded-full bg-rose-600 text-white font-bold text-[10px] animate-pulse">
               {urgentRequests.length} URGENT
             </span>
           )}
@@ -576,10 +576,10 @@ export default function ManagerDashboardPage() {
 
         <button
           onClick={() => setActiveTab('attendance')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all whitespace-nowrap ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
             activeTab === 'attendance'
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-              : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800'
+              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+              : 'bg-slate-100 text-slate-800 hover:text-slate-950 hover:bg-slate-200 border border-slate-300'
           }`}
         >
           <UserCheck className="h-4 w-4" />
@@ -588,16 +588,16 @@ export default function ManagerDashboardPage() {
 
         <button
           onClick={() => setActiveTab('complaints')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all whitespace-nowrap ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
             activeTab === 'complaints'
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-              : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800'
+              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+              : 'bg-slate-100 text-slate-800 hover:text-slate-950 hover:bg-slate-200 border border-slate-300'
           }`}
         >
           <Wrench className="h-4 w-4" />
           Complaints Desk
           {openComplaints.length > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px]">
+            <span className="px-1.5 py-0.2 rounded-full bg-rose-600 text-white text-[10px] font-bold">
               {openComplaints.length}
             </span>
           )}
@@ -605,10 +605,10 @@ export default function ManagerDashboardPage() {
 
         <button
           onClick={() => setActiveTab('students')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all whitespace-nowrap ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
             activeTab === 'students'
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-              : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800'
+              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+              : 'bg-slate-100 text-slate-800 hover:text-slate-950 hover:bg-slate-200 border border-slate-300'
           }`}
         >
           <GraduationCap className="h-4 w-4" />
@@ -617,10 +617,10 @@ export default function ManagerDashboardPage() {
 
         <button
           onClick={() => setActiveTab('rent')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all whitespace-nowrap ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
             activeTab === 'rent'
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-              : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800'
+              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+              : 'bg-slate-100 text-slate-800 hover:text-slate-950 hover:bg-slate-200 border border-slate-300'
           }`}
         >
           <CreditCard className="h-4 w-4" />
@@ -629,10 +629,10 @@ export default function ManagerDashboardPage() {
 
         <button
           onClick={() => setActiveTab('sop')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all whitespace-nowrap ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
             activeTab === 'sop'
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-              : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800'
+              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+              : 'bg-slate-100 text-slate-800 hover:text-slate-950 hover:bg-slate-200 border border-slate-300'
           }`}
         >
           <ClipboardList className="h-4 w-4" />

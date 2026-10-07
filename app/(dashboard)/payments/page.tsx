@@ -51,28 +51,28 @@ export default function PaymentsPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-300">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+          <h1 className="text-2xl font-black tracking-tight text-slate-950 flex items-center gap-2">
             Rent & Payments Register
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300">
               {payments.length} Records
             </span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs font-bold text-slate-700 mt-1">
             Automate rent collection, verify UPI receipts, and dispatch digital invoices
           </p>
         </div>
 
         <div className="flex items-center gap-2.5">
           <Link href="/payments/bulk-invoice">
-            <Button size="sm" variant="secondary" className="gap-1.5 text-xs">
-              <FileSpreadsheet className="h-4 w-4 text-indigo-400" /> Bulk Invoicing
+            <Button size="sm" variant="secondary" className="gap-1.5 text-xs font-bold text-slate-900 border border-slate-300 bg-slate-100 hover:bg-slate-200">
+              <FileSpreadsheet className="h-4 w-4 text-indigo-700 stroke-[2.5]" /> Bulk Invoicing
             </Button>
           </Link>
           <Link href="/payments/new">
-            <Button size="sm" className="bg-indigo-600 hover:bg-indigo-500 gap-1.5 text-xs shadow-md shadow-indigo-600/20">
-              <Plus className="h-4 w-4" /> Record Payment
+            <Button size="sm" className="bg-slate-950 hover:bg-slate-900 text-white font-bold gap-1.5 text-xs shadow-sm">
+              <Plus className="h-4 w-4 stroke-[2.5]" /> Record Payment
             </Button>
           </Link>
         </div>
@@ -80,33 +80,33 @@ export default function PaymentsPage() {
 
       {/* Financial Quick Glance */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card className="glass-card">
+        <Card className="glass-card border-slate-300 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-400">Total Collected (Filtered)</span>
-            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-800">Total Collected (Filtered)</span>
+            <CheckCircle2 className="h-4.5 w-4.5 text-emerald-700 stroke-[2.5]" />
           </div>
-          <p className="text-2xl font-bold text-emerald-400 mt-2">{formatINR(totalCollected)}</p>
+          <p className="text-3xl font-black text-emerald-800 mt-2">{formatINR(totalCollected)}</p>
         </Card>
 
-        <Card className="glass-card">
+        <Card className="glass-card border-slate-300 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-400">Total Outstanding / Pending</span>
-            <Clock className="h-4 w-4 text-amber-400" />
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-800">Total Outstanding / Pending</span>
+            <Clock className="h-4.5 w-4.5 text-amber-700 stroke-[2.5]" />
           </div>
-          <p className="text-2xl font-bold text-amber-400 mt-2">{formatINR(totalPending)}</p>
+          <p className="text-3xl font-black text-amber-800 mt-2">{formatINR(totalPending)}</p>
         </Card>
       </div>
 
       {/* Filters Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-500" />
+          <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-700 stroke-[2.5]" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search tenant name or receipt #..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-800 bg-slate-900/80 text-sm text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none"
+            className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-300 bg-slate-50 text-sm font-semibold text-slate-950 placeholder:text-slate-600 focus:border-indigo-600 focus:outline-none"
           />
         </div>
 
@@ -114,7 +114,7 @@ export default function PaymentsPage() {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-white focus:outline-none"
+            className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-950 focus:outline-none cursor-pointer"
           >
             <option value="all">All Status</option>
             <option value="paid">Paid</option>
@@ -125,51 +125,51 @@ export default function PaymentsPage() {
       </div>
 
       {/* Payments Table */}
-      <Card className="glass-card overflow-hidden p-0 border border-slate-800/80">
+      <Card className="glass-card overflow-hidden p-0 border border-slate-300 shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="border-b border-slate-800 bg-slate-950/60 text-slate-400">
+            <thead className="border-b border-slate-200 bg-slate-100 text-slate-900">
               <tr>
-                <th className="p-4 font-semibold">Receipt #</th>
-                <th className="p-4 font-semibold">Tenant & Room</th>
-                <th className="p-4 font-semibold">Billing Cycle</th>
-                <th className="p-4 font-semibold">Amount</th>
-                <th className="p-4 font-semibold">Payment Date</th>
-                <th className="p-4 font-semibold">Mode & Ref</th>
-                <th className="p-4 font-semibold">Status</th>
-                <th className="p-4 font-semibold text-right">Receipt</th>
+                <th className="p-4 font-black">Receipt #</th>
+                <th className="p-4 font-black">Tenant & Room</th>
+                <th className="p-4 font-black">Billing Cycle</th>
+                <th className="p-4 font-black">Amount</th>
+                <th className="p-4 font-black">Payment Date</th>
+                <th className="p-4 font-black">Mode & Ref</th>
+                <th className="p-4 font-black">Status</th>
+                <th className="p-4 font-black text-right">Receipt</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 text-slate-200">
+            <tbody className="divide-y divide-slate-200 text-slate-900 font-medium">
               {filtered.map((pay) => {
                 const badge = getPaymentStatusBadge(pay.status);
                 return (
-                  <tr key={pay.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="p-4 font-mono text-indigo-400 font-medium">{pay.receipt_number}</td>
+                  <tr key={pay.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="p-4 font-mono font-bold text-indigo-700">{pay.receipt_number}</td>
                     <td className="p-4">
-                      <p className="font-semibold text-white">{pay.tenant_name || 'Resident'}</p>
-                      <p className="text-[11px] text-slate-400">{pay.room_number || 'Room 101'}</p>
+                      <p className="font-bold text-slate-950">{pay.tenant_name || 'Resident'}</p>
+                      <p className="text-[11px] font-semibold text-slate-700 mt-0.5">{pay.room_number || 'Room 101'}</p>
                     </td>
-                    <td className="p-4 font-medium text-slate-300 capitalize">{pay.for_month} &bull; {pay.payment_type}</td>
-                    <td className="p-4 font-bold text-white text-sm">{formatINR(pay.amount)}</td>
-                    <td className="p-4 text-slate-400">{formatDate(pay.payment_date)}</td>
+                    <td className="p-4 font-bold text-slate-800 capitalize">{pay.for_month} &bull; {pay.payment_type}</td>
+                    <td className="p-4 font-black text-slate-950 text-sm">{formatINR(pay.amount)}</td>
+                    <td className="p-4 font-bold text-slate-800">{formatDate(pay.payment_date)}</td>
                     <td className="p-4">
-                      <p className="text-slate-300 font-medium">{pay.payment_mode}</p>
+                      <p className="text-slate-950 font-bold">{pay.payment_mode}</p>
                       {pay.transaction_ref && (
-                        <span className="text-[10px] text-slate-500 block truncate max-w-[120px]">
+                        <span className="text-[10px] text-slate-700 font-semibold block truncate max-w-[120px]">
                           {pay.transaction_ref}
                         </span>
                       )}
                     </td>
                     <td className="p-4">
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${badge.color}`}>
+                      <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${badge.color}`}>
                         {badge.label}
                       </span>
                     </td>
                     <td className="p-4 text-right">
                       <Link href={`/payments/${pay.id}`}>
-                        <Button size="sm" variant="ghost" className="h-8 text-xs text-indigo-400 gap-1">
-                          <Printer className="h-3 w-3" /> View Receipt
+                        <Button size="sm" variant="ghost" className="h-8 text-xs font-bold text-indigo-700 hover:text-indigo-900 hover:bg-slate-100 gap-1">
+                          <Printer className="h-3.5 w-3.5 stroke-[2.2]" /> View Receipt
                         </Button>
                       </Link>
                     </td>
@@ -183,3 +183,4 @@ export default function PaymentsPage() {
     </div>
   );
 }
+

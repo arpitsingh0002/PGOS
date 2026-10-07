@@ -150,35 +150,35 @@ export default function CentralInventoryPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-300 pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-300">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <span className="p-2 rounded-xl bg-indigo-100 text-indigo-900 border border-indigo-300">
               <Boxes className="h-5 w-5" />
             </span>
-            <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-950 flex items-center gap-2">
               Property Supplies & Inventory Audit
             </h1>
-            <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs">
+            <Badge className="bg-emerald-100 text-emerald-950 border-emerald-300 text-xs font-bold">
               Live Manager Sync
             </Badge>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs font-semibold text-slate-700 mt-1">
             Centrally monitor consumables, electrical spares, plumbing fixtures, linens, and review branch procurement requests with Urgent/Normal priority.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
           <Link href="/manager">
-            <Button size="sm" variant="secondary" className="gap-1.5 text-xs">
-              <Shield className="h-4 w-4 text-indigo-400" /> Manager Portal View
+            <Button size="sm" variant="secondary" className="gap-1.5 text-xs font-bold border border-slate-300 text-slate-900 hover:bg-slate-100">
+              <Shield className="h-4 w-4 text-indigo-700" /> Manager Portal View
             </Button>
           </Link>
 
           <Button
             size="sm"
             onClick={() => setShowRequestModal(true)}
-            className="bg-rose-600 hover:bg-rose-500 text-white gap-1.5 text-xs font-bold shadow-md shadow-rose-600/20"
+            className="bg-rose-600 hover:bg-rose-700 text-white gap-1.5 text-xs font-bold shadow-md shadow-rose-600/20"
           >
             <Plus className="h-4 w-4" /> Add Required Supplies
           </Button>
@@ -186,7 +186,7 @@ export default function CentralInventoryPage() {
           <Button
             size="sm"
             onClick={() => setShowAddModal(true)}
-            className="bg-indigo-600 hover:bg-indigo-500 gap-1.5 text-xs shadow-md shadow-indigo-600/20"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold gap-1.5 text-xs shadow-md shadow-indigo-600/20"
           >
             <Plus className="h-4 w-4" /> Add Stock SKU
           </Button>
@@ -195,16 +195,16 @@ export default function CentralInventoryPage() {
 
       {/* Urgent Requisitions Alert Banner */}
       {urgentRequisitions.length > 0 && (
-        <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-3.5 flex items-center justify-between text-xs text-rose-300">
+        <div className="bg-rose-50 border border-rose-300 rounded-xl p-3.5 flex items-center justify-between text-xs text-rose-950 shadow-xs">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300">
+            <div className="p-2 rounded-lg bg-rose-100 border border-rose-300 text-rose-900">
               <Flame className="h-4 w-4 animate-bounce" />
             </div>
             <div>
-              <span className="font-bold text-sm text-white block">
+              <span className="font-bold text-sm text-rose-950 block">
                 {urgentRequisitions.length} Urgent Inventory Requisition{urgentRequisitions.length > 1 ? 's' : ''} Pending Action!
               </span>
-              <span className="text-[11px] text-rose-300/90">
+              <span className="text-[11px] text-rose-900 font-medium">
                 Branch managers have flagged critical shortages:{' '}
                 <strong>{urgentRequisitions.map((r) => `${r.item_name} (${r.quantity} ${r.unit})`).join(', ')}</strong>.
               </span>
@@ -216,7 +216,7 @@ export default function CentralInventoryPage() {
               setActiveTab('requests');
               setPriorityFilter('urgent');
             }}
-            className="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs h-8"
+            className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs h-8 shadow-sm"
           >
             Review Urgent Indents
           </Button>
@@ -225,67 +225,67 @@ export default function CentralInventoryPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="glass-card p-4 border-slate-800">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-xs font-medium uppercase tracking-wider">Required Requisitions</span>
-            <ShoppingCart className="h-4 w-4 text-rose-400" />
+        <Card className="bg-white p-4 border-slate-300 shadow-sm">
+          <div className="flex items-center justify-between text-slate-700 font-bold mb-1">
+            <span className="text-xs uppercase tracking-wider">Required Requisitions</span>
+            <ShoppingCart className="h-4 w-4 text-rose-600" />
           </div>
-          <div className="text-2xl font-bold text-white flex items-center gap-2">
+          <div className="text-2xl font-black text-slate-950 flex items-center gap-2">
             {(inventoryRequests || []).length}
             {urgentRequisitions.length > 0 && (
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse">
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-950 border border-rose-300 animate-pulse">
                 {urgentRequisitions.length} Urgent
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-400 mt-1">Pending approval & fulfillment</p>
+          <p className="text-xs font-semibold text-slate-700 mt-1">Pending approval & fulfillment</p>
         </Card>
 
-        <Card className="glass-card p-4 border-slate-800">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-xs font-medium uppercase tracking-wider">Low Stock Warnings</span>
-            <AlertTriangle className="h-4 w-4 text-amber-400" />
+        <Card className="bg-white p-4 border-slate-300 shadow-sm">
+          <div className="flex items-center justify-between text-slate-700 font-bold mb-1">
+            <span className="text-xs uppercase tracking-wider">Low Stock Warnings</span>
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
           </div>
-          <div className="text-2xl font-bold text-amber-400">{lowStockItems.length}</div>
-          <p className="text-xs text-amber-400/80 mt-1">
+          <div className="text-2xl font-black text-amber-950">{lowStockItems.length}</div>
+          <p className="text-xs font-semibold text-amber-900 mt-1">
             {lowStockItems.length > 0 ? 'Requires immediate restock' : 'All items at healthy buffers'}
           </p>
         </Card>
 
-        <Card className="glass-card p-4 border-slate-800">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-xs font-medium uppercase tracking-wider">Total Stock Valuation</span>
-            <Boxes className="h-4 w-4 text-emerald-400" />
+        <Card className="bg-white p-4 border-slate-300 shadow-sm">
+          <div className="flex items-center justify-between text-slate-700 font-bold mb-1">
+            <span className="text-xs uppercase tracking-wider">Total Stock Valuation</span>
+            <Boxes className="h-4 w-4 text-emerald-600" />
           </div>
-          <div className="text-2xl font-bold text-white">{formatINR(totalValuation)}</div>
-          <p className="text-xs text-slate-400 mt-1">{totalUnits} units on-site</p>
+          <div className="text-2xl font-black text-slate-950">{formatINR(totalValuation)}</div>
+          <p className="text-xs font-semibold text-slate-700 mt-1">{totalUnits} units on-site</p>
         </Card>
 
-        <Card className="glass-card p-4 border-slate-800">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-xs font-medium uppercase tracking-wider">Branches Monitored</span>
-            <Building2 className="h-4 w-4 text-purple-400" />
+        <Card className="bg-white p-4 border-slate-300 shadow-sm">
+          <div className="flex items-center justify-between text-slate-700 font-bold mb-1">
+            <span className="text-xs uppercase tracking-wider">Branches Monitored</span>
+            <Building2 className="h-4 w-4 text-purple-600" />
           </div>
-          <div className="text-2xl font-bold text-white">{properties.length} Properties</div>
-          <p className="text-xs text-slate-400 mt-1">Active inventory distribution hubs</p>
+          <div className="text-2xl font-black text-slate-950">{properties.length} Properties</div>
+          <p className="text-xs font-semibold text-slate-700 mt-1">Active inventory distribution hubs</p>
         </Card>
       </div>
 
       {/* Tab Switcher: Requisitions vs Current Stock */}
-      <div className="flex items-center justify-between gap-4 border-b border-slate-800 pb-2 flex-wrap">
+      <div className="flex items-center justify-between gap-4 border-b border-slate-300 pb-2 flex-wrap">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActiveTab('requests')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
               activeTab === 'requests'
                 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                : 'bg-slate-900 text-slate-400 hover:text-white'
+                : 'bg-slate-100 text-slate-800 hover:text-slate-950 border border-slate-300'
             }`}
           >
             <ShoppingCart className="h-4 w-4" />
             1. Required Supplies & Priority Indents ({(inventoryRequests || []).length})
             {urgentRequisitions.length > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white font-bold text-[10px] animate-pulse">
+              <span className="px-1.5 py-0.2 rounded-full bg-rose-600 text-white font-bold text-[10px] animate-pulse">
                 {urgentRequisitions.length} URGENT
               </span>
             )}
@@ -293,10 +293,10 @@ export default function CentralInventoryPage() {
 
           <button
             onClick={() => setActiveTab('stock')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
               activeTab === 'stock'
                 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                : 'bg-slate-900 text-slate-400 hover:text-white'
+                : 'bg-slate-100 text-slate-800 hover:text-slate-950 border border-slate-300'
             }`}
           >
             <Boxes className="h-4 w-4" />
@@ -313,14 +313,14 @@ export default function CentralInventoryPage() {
               placeholder="Search item..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 pr-3 py-1.5 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 w-44"
+              className="pl-9 pr-3 py-1.5 text-xs bg-white border border-slate-300 rounded-xl text-slate-950 font-semibold placeholder:text-slate-500 focus:outline-none focus:border-indigo-600 w-44 shadow-xs"
             />
           </div>
 
           <select
             value={selectedPropertyId}
             onChange={(e) => setSelectedPropertyId(e.target.value)}
-            className="bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none cursor-pointer"
+            className="bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-950 outline-none cursor-pointer shadow-xs"
           >
             <option value="all">All Properties</option>
             {properties.map((p) => (
@@ -334,7 +334,7 @@ export default function CentralInventoryPage() {
             <select
               value={priorityFilter}
               onChange={(e: any) => setPriorityFilter(e.target.value)}
-              className="bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none cursor-pointer"
+              className="bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-950 outline-none cursor-pointer shadow-xs"
             >
               <option value="all">All Priorities</option>
               <option value="urgent">🚨 Urgent Priority</option>
@@ -348,10 +348,10 @@ export default function CentralInventoryPage() {
           TAB 1: REQUIRED SUPPLIES & PROCUREMENT INDENTS
       ------------------------------------------------------------- */}
       {activeTab === 'requests' && (
-        <div className="glass-card overflow-hidden border-slate-800">
+        <div className="bg-white rounded-2xl overflow-hidden border border-slate-300 shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-900/80 text-slate-400 border-b border-slate-800 font-medium">
+              <thead className="bg-slate-100 text-slate-950 border-b border-slate-300 font-bold">
                 <tr>
                   <th className="py-3 px-4">Item Name</th>
                   <th className="py-3 px-4">Branch</th>
@@ -364,7 +364,7 @@ export default function CentralInventoryPage() {
                   <th className="py-3 px-4 text-right">Owner Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-slate-200">
                 {filteredRequests.map((req) => {
                   const prop = properties.find((p) => p.id === req.property_id);
                   const isUrgent = req.priority === 'urgent';
@@ -375,62 +375,62 @@ export default function CentralInventoryPage() {
                       key={req.id}
                       className={`transition-colors ${
                         isUrgent && !isProcured
-                          ? 'bg-rose-950/20 hover:bg-rose-950/30'
-                          : 'hover:bg-slate-900/40'
+                          ? 'bg-rose-50/70 hover:bg-rose-50'
+                          : 'hover:bg-slate-50'
                       }`}
                     >
                       <td className="py-3.5 px-4">
-                        <span className="font-bold text-white block text-sm">{req.item_name}</span>
-                        <span className="text-[11px] text-slate-400">
+                        <span className="font-bold text-slate-950 block text-sm">{req.item_name}</span>
+                        <span className="text-[11px] font-medium text-slate-600">
                           By {req.requested_by} • {formatDate(req.created_at)}
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4 text-slate-300">
+                      <td className="py-3.5 px-4 font-semibold text-slate-900">
                         {prop?.name || 'Sunrise Heights PG'}
                       </td>
 
                       <td className="py-3.5 px-4">
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-950 border border-slate-300">
                           {req.category}
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4 font-mono font-bold text-white text-sm">
-                        {req.quantity} <span className="text-xs font-normal text-slate-400">{req.unit}</span>
+                      <td className="py-3.5 px-4 font-mono font-bold text-slate-950 text-sm">
+                        {req.quantity} <span className="text-xs font-semibold text-slate-700">{req.unit}</span>
                       </td>
 
                       {/* Need Priority Tag */}
                       <td className="py-3.5 px-4">
                         {isUrgent ? (
-                          <Badge className="bg-rose-500/20 text-rose-300 border-rose-500/40 text-xs font-bold animate-pulse px-2.5 py-1 flex items-center gap-1.5 w-fit">
-                            <AlertTriangle className="h-3.5 w-3.5 text-rose-400" />
+                          <Badge className="bg-rose-100 text-rose-950 border-rose-300 text-xs font-bold animate-pulse px-2.5 py-1 flex items-center gap-1.5 w-fit">
+                            <AlertTriangle className="h-3.5 w-3.5 text-rose-600" />
                             URGENT NEED
                           </Badge>
                         ) : (
-                          <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 text-xs font-medium px-2.5 py-1 flex items-center gap-1.5 w-fit">
-                            <Package className="h-3.5 w-3.5 text-blue-400" />
+                          <Badge className="bg-blue-100 text-blue-950 border-blue-300 text-xs font-bold px-2.5 py-1 flex items-center gap-1.5 w-fit">
+                            <Package className="h-3.5 w-3.5 text-blue-600" />
                             NORMAL NEED
                           </Badge>
                         )}
                       </td>
 
-                      <td className="py-3.5 px-4 text-slate-300 text-xs max-w-xs truncate">
+                      <td className="py-3.5 px-4 text-slate-800 font-medium text-xs max-w-xs truncate">
                         {req.reason || '—'}
                       </td>
 
-                      <td className="py-3.5 px-4 text-white font-semibold">
+                      <td className="py-3.5 px-4 text-slate-950 font-bold">
                         {req.estimated_cost ? formatINR(req.estimated_cost) : '—'}
                       </td>
 
                       <td className="py-3.5 px-4">
                         <Badge
-                          className={`text-[10px] capitalize px-2 py-0.5 ${
+                          className={`text-[10px] font-bold capitalize px-2 py-0.5 ${
                             req.status === 'procured'
-                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                              ? 'bg-emerald-100 text-emerald-950 border-emerald-300'
                               : req.status === 'approved'
-                              ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                              : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                              ? 'bg-blue-100 text-blue-950 border-blue-300'
+                              : 'bg-amber-100 text-amber-950 border-amber-300'
                           }`}
                         >
                           {req.status === 'procured'
@@ -451,7 +451,7 @@ export default function CentralInventoryPage() {
                                 updateInventoryRequestStatus(req.id, 'approved');
                                 toast.success(`Approved requisition for ${req.item_name}!`);
                               }}
-                              className="text-[10px] h-7 px-2"
+                              className="text-[10px] h-7 px-2 font-bold border border-slate-300 text-slate-900 hover:bg-slate-100"
                             >
                               Approve
                             </Button>
@@ -466,13 +466,13 @@ export default function CentralInventoryPage() {
                                   `Procured ${req.quantity} ${req.unit} of ${req.item_name}! Stock added to branch.`
                                 );
                               }}
-                              className="text-[10px] h-7 px-2.5 bg-emerald-600 hover:bg-emerald-500 text-white"
+                              className="text-[10px] h-7 px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
                             >
                               <Check className="h-3 w-3 mr-1" /> Mark Procured
                             </Button>
                           ) : (
-                            <span className="text-[11px] text-emerald-400 font-semibold flex items-center justify-end gap-1">
-                              <CheckCircle2 className="h-3.5 w-3.5" /> Fulfilled
+                            <span className="text-[11px] text-emerald-800 font-bold flex items-center justify-end gap-1">
+                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700" /> Fulfilled
                             </span>
                           )}
                         </div>
@@ -490,10 +490,10 @@ export default function CentralInventoryPage() {
           TAB 2: ACTIVE ON-SITE STOCK TABLE
       ------------------------------------------------------------- */}
       {activeTab === 'stock' && (
-        <div className="glass-card overflow-hidden border-slate-800">
+        <div className="bg-white rounded-2xl overflow-hidden border border-slate-300 shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-900/80 text-slate-400 border-b border-slate-800 font-medium">
+              <thead className="bg-slate-100 text-slate-950 border-b border-slate-300 font-bold">
                 <tr>
                   <th className="py-3 px-4">Item Name</th>
                   <th className="py-3 px-4">Property Branch</th>
@@ -505,43 +505,43 @@ export default function CentralInventoryPage() {
                   <th className="py-3 px-4 text-right">Quick Stock Update</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-slate-200">
                 {filteredItems.map((item) => {
                   const prop = properties.find((p) => p.id === item.property_id);
                   const isLow = item.quantity <= item.min_threshold;
 
                   return (
-                    <tr key={item.id} className="hover:bg-slate-900/40 transition-colors">
+                    <tr key={item.id} className="hover:bg-slate-50 transition-colors">
                       <td className="py-3.5 px-4">
-                        <span className="font-semibold text-white block">{item.name}</span>
-                        <span className="text-[11px] text-slate-400">{item.notes || '—'}</span>
+                        <span className="font-bold text-slate-950 block text-sm">{item.name}</span>
+                        <span className="text-[11px] font-medium text-slate-600">{item.notes || '—'}</span>
                       </td>
-                      <td className="py-3.5 px-4 text-slate-300">
+                      <td className="py-3.5 px-4 font-semibold text-slate-900">
                         {prop?.name || 'Sunrise Heights PG'}
                       </td>
                       <td className="py-3.5 px-4">
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-950 border border-slate-300">
                           {item.category}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 font-mono font-bold text-white text-sm">
-                        {item.quantity} <span className="text-xs font-normal text-slate-400">{item.unit}</span>
+                      <td className="py-3.5 px-4 font-mono font-bold text-slate-950 text-sm">
+                        {item.quantity} <span className="text-xs font-semibold text-slate-700">{item.unit}</span>
                       </td>
-                      <td className="py-3.5 px-4 text-slate-400 font-mono">
+                      <td className="py-3.5 px-4 text-slate-700 font-bold font-mono">
                         Min {item.min_threshold} {item.unit}
                       </td>
                       <td className="py-3.5 px-4">
                         {isLow ? (
-                          <Badge className="bg-rose-500/10 text-rose-400 border-rose-500/20 text-[10px]">
+                          <Badge className="bg-rose-100 text-rose-950 border-rose-300 text-[10px] font-bold">
                             Low Stock
                           </Badge>
                         ) : (
-                          <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[10px]">
+                          <Badge className="bg-emerald-100 text-emerald-950 border-emerald-300 text-[10px] font-bold">
                             Adequate
                           </Badge>
                         )}
                       </td>
-                      <td className="py-3.5 px-4 text-slate-300 font-semibold">
+                      <td className="py-3.5 px-4 text-slate-950 font-bold">
                         {item.cost_per_unit ? formatINR(item.cost_per_unit) : '—'}
                       </td>
                       <td className="py-3.5 px-4 text-right">
@@ -554,7 +554,7 @@ export default function CentralInventoryPage() {
                               updateInventoryStock(item.id, -1);
                               toast.info(`Dispensed 1 ${item.unit} of ${item.name}`);
                             }}
-                            className="text-[10px] h-7 px-2"
+                            className="text-[10px] h-7 px-2 font-bold border border-slate-300 text-slate-900 hover:bg-slate-100"
                           >
                             <Minus className="h-3 w-3 mr-1" /> 1
                           </Button>
@@ -564,7 +564,7 @@ export default function CentralInventoryPage() {
                               updateInventoryStock(item.id, 5);
                               toast.success(`Restocked +5 ${item.unit} to ${item.name}`);
                             }}
-                            className="text-[10px] h-7 px-2.5 bg-indigo-600 hover:bg-indigo-500"
+                            className="text-[10px] h-7 px-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold"
                           >
                             <Plus className="h-3 w-3 mr-1" /> Restock +5
                           </Button>
@@ -581,16 +581,16 @@ export default function CentralInventoryPage() {
 
       {/* Add Stock SKU Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Boxes className="h-4 w-4 text-indigo-400" />
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-300 rounded-2xl w-full max-w-md p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+              <h3 className="text-sm font-bold text-slate-950 flex items-center gap-2">
+                <Boxes className="h-4 w-4 text-indigo-700" />
                 Add Item to Inventory Stock
               </h3>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-slate-400 hover:text-white text-sm"
+                className="text-slate-500 hover:text-slate-950 font-bold text-sm"
               >
                 ✕
               </button>
@@ -598,23 +598,23 @@ export default function CentralInventoryPage() {
 
             <form onSubmit={handleAddItem} className="space-y-3 text-xs">
               <div>
-                <label className="text-slate-400 block mb-1">Item Name</label>
+                <label className="text-slate-800 font-bold block mb-1">Item Name</label>
                 <Input
                   required
                   placeholder="e.g. 5L Liquid Handwash"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="bg-slate-950 border-slate-800 text-xs"
+                  className="bg-white border-slate-300 text-slate-950 font-semibold text-xs"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-slate-400 block mb-1">Property Branch</label>
+                  <label className="text-slate-800 font-bold block mb-1">Property Branch</label>
                   <select
                     value={propertyId}
                     onChange={(e) => setPropertyId(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white"
+                    className="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold text-slate-950"
                   >
                     {properties.map((p) => (
                       <option key={p.id} value={p.id}>
@@ -625,11 +625,11 @@ export default function CentralInventoryPage() {
                 </div>
 
                 <div>
-                  <label className="text-slate-400 block mb-1">Category</label>
+                  <label className="text-slate-800 font-bold block mb-1">Category</label>
                   <select
                     value={category}
                     onChange={(e: any) => setCategory(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white"
+                    className="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold text-slate-950"
                   >
                     <option value="cleaning">Cleaning</option>
                     <option value="electrical">Electrical</option>
@@ -644,57 +644,58 @@ export default function CentralInventoryPage() {
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="text-slate-400 block mb-1">Quantity</label>
+                  <label className="text-slate-800 font-bold block mb-1">Quantity</label>
                   <Input
                     type="number"
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
-                    className="bg-slate-950 border-slate-800 text-xs"
+                    className="bg-white border-slate-300 text-slate-950 font-semibold text-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="text-slate-400 block mb-1">Unit</label>
+                  <label className="text-slate-800 font-bold block mb-1">Unit</label>
                   <Input
                     placeholder="pcs / jars / kg"
                     value={unit}
                     onChange={(e) => setUnit(e.target.value)}
-                    className="bg-slate-950 border-slate-800 text-xs"
+                    className="bg-white border-slate-300 text-slate-950 font-semibold text-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="text-slate-400 block mb-1">Min Threshold</label>
+                  <label className="text-slate-800 font-bold block mb-1">Min Threshold</label>
                   <Input
                     type="number"
                     value={minThreshold}
                     onChange={(e) => setMinThreshold(e.target.value)}
-                    className="bg-slate-950 border-slate-800 text-xs"
+                    className="bg-white border-slate-300 text-slate-950 font-semibold text-xs"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-slate-400 block mb-1">Estimated Cost / Unit (INR)</label>
+                <label className="text-slate-800 font-bold block mb-1">Estimated Cost / Unit (INR)</label>
                 <Input
                   type="number"
                   placeholder="150"
                   value={costPerUnit}
                   onChange={(e) => setCostPerUnit(e.target.value)}
-                  className="bg-slate-950 border-slate-800 text-xs"
+                  className="bg-white border-slate-300 text-slate-950 font-semibold text-xs"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
                 <Button
                   type="button"
                   variant="secondary"
                   size="sm"
                   onClick={() => setShowAddModal(false)}
+                  className="border border-slate-300 text-slate-800 font-bold hover:bg-slate-100"
                 >
                   Cancel
                 </Button>
-                <Button type="submit" size="sm" className="bg-indigo-600 hover:bg-indigo-500">
+                <Button type="submit" size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold">
                   Save Item
                 </Button>
               </div>
@@ -705,16 +706,16 @@ export default function CentralInventoryPage() {
 
       {/* Add Requisition Modal (with Need Priority: Urgent vs Normal) */}
       {showRequestModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <ShoppingCart className="h-4 w-4 text-rose-400" />
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-300 rounded-2xl w-full max-w-lg p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+              <h3 className="text-sm font-bold text-slate-950 flex items-center gap-2">
+                <ShoppingCart className="h-4 w-4 text-rose-600" />
                 Create Procurement Indent / Required Inventory
               </h3>
               <button
                 onClick={() => setShowRequestModal(false)}
-                className="text-slate-400 hover:text-white text-sm"
+                className="text-slate-500 hover:text-slate-950 font-bold text-sm"
               >
                 ✕
               </button>
@@ -722,37 +723,37 @@ export default function CentralInventoryPage() {
 
             <form onSubmit={handleCreateRequest} className="space-y-3.5 text-xs">
               <div>
-                <label className="text-slate-400 block mb-1">Item Name *</label>
+                <label className="text-slate-800 font-bold block mb-1">Item Name *</label>
                 <Input
                   required
                   placeholder="e.g. Commercial 19kg Mess LPG Cylinders"
                   value={reqItemName}
                   onChange={(e) => setReqItemName(e.target.value)}
-                  className="bg-slate-950 border-slate-800 text-xs"
+                  className="bg-white border-slate-300 text-slate-950 font-semibold text-xs"
                 />
               </div>
 
               {/* Priority Selector */}
               <div>
-                <label className="text-slate-300 font-bold block mb-1.5 flex items-center gap-1.5">
+                <label className="text-slate-950 font-bold block mb-1.5 flex items-center gap-1.5">
                   Need Priority *
-                  <span className="text-[11px] text-slate-500 font-normal">(Select operational urgency level)</span>
+                  <span className="text-[11px] text-slate-600 font-medium">(Select operational urgency level)</span>
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <div
                     onClick={() => setReqPriority('urgent')}
                     className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center gap-3 ${
                       reqPriority === 'urgent'
-                        ? 'bg-rose-950/40 border-rose-500 text-white shadow-md shadow-rose-900/20 ring-1 ring-rose-500'
-                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+                        ? 'bg-rose-50 border-rose-500 text-rose-950 shadow-md ring-1 ring-rose-500 font-bold'
+                        : 'bg-slate-50 border-slate-300 text-slate-700 hover:border-slate-400'
                     }`}
                   >
-                    <div className="p-2 rounded-lg bg-rose-500/20 text-rose-400">
+                    <div className="p-2 rounded-lg bg-rose-100 text-rose-700">
                       <AlertTriangle className="h-4 w-4" />
                     </div>
                     <div>
-                      <span className="font-bold text-rose-400 block text-xs">🚨 URGENT NEED</span>
-                      <span className="text-[10px] text-slate-400">Emergency / Critical operational requirement</span>
+                      <span className="font-bold text-rose-900 block text-xs">🚨 URGENT NEED</span>
+                      <span className="text-[10px] text-rose-800 font-medium">Emergency / Critical operational requirement</span>
                     </div>
                   </div>
 
@@ -760,16 +761,16 @@ export default function CentralInventoryPage() {
                     onClick={() => setReqPriority('normal')}
                     className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center gap-3 ${
                       reqPriority === 'normal'
-                        ? 'bg-blue-950/40 border-blue-500 text-white shadow-md shadow-blue-900/20 ring-1 ring-blue-500'
-                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+                        ? 'bg-blue-50 border-blue-500 text-blue-950 shadow-md ring-1 ring-blue-500 font-bold'
+                        : 'bg-slate-50 border-slate-300 text-slate-700 hover:border-slate-400'
                     }`}
                   >
-                    <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
+                    <div className="p-2 rounded-lg bg-blue-100 text-blue-700">
                       <Package className="h-4 w-4" />
                     </div>
                     <div>
-                      <span className="font-bold text-blue-400 block text-xs">📦 NORMAL NEED</span>
-                      <span className="text-[10px] text-slate-400">Regular periodic replenishment</span>
+                      <span className="font-bold text-blue-900 block text-xs">📦 NORMAL NEED</span>
+                      <span className="text-[10px] text-blue-800 font-medium">Regular periodic replenishment</span>
                     </div>
                   </div>
                 </div>
@@ -777,11 +778,11 @@ export default function CentralInventoryPage() {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-slate-400 block mb-1">Target Property</label>
+                  <label className="text-slate-800 font-bold block mb-1">Target Property</label>
                   <select
                     value={reqPropId}
                     onChange={(e) => setReqPropId(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white"
+                    className="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold text-slate-950"
                   >
                     {properties.map((p) => (
                       <option key={p.id} value={p.id}>
@@ -792,11 +793,11 @@ export default function CentralInventoryPage() {
                 </div>
 
                 <div>
-                  <label className="text-slate-400 block mb-1">Category</label>
+                  <label className="text-slate-800 font-bold block mb-1">Category</label>
                   <select
                     value={reqCategory}
                     onChange={(e: any) => setReqCategory(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white"
+                    className="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold text-slate-950"
                   >
                     <option value="kitchen">Kitchen / Mess</option>
                     <option value="cleaning">Cleaning</option>
@@ -811,63 +812,64 @@ export default function CentralInventoryPage() {
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="text-slate-400 block mb-1">Quantity</label>
+                  <label className="text-slate-800 font-bold block mb-1">Quantity</label>
                   <Input
                     required
                     type="number"
                     min="1"
                     value={reqQty}
                     onChange={(e) => setReqQty(e.target.value)}
-                    className="bg-slate-950 border-slate-800 text-xs"
+                    className="bg-white border-slate-300 text-slate-950 font-semibold text-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="text-slate-400 block mb-1">Unit</label>
+                  <label className="text-slate-800 font-bold block mb-1">Unit</label>
                   <Input
                     placeholder="cylinders / pcs"
                     value={reqUnit}
                     onChange={(e) => setReqUnit(e.target.value)}
-                    className="bg-slate-950 border-slate-800 text-xs"
+                    className="bg-white border-slate-300 text-slate-950 font-semibold text-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="text-slate-400 block mb-1">Est. Cost (INR)</label>
+                  <label className="text-slate-800 font-bold block mb-1">Est. Cost (INR)</label>
                   <Input
                     type="number"
                     placeholder="1800"
                     value={reqCost}
                     onChange={(e) => setReqCost(e.target.value)}
-                    className="bg-slate-950 border-slate-800 text-xs"
+                    className="bg-white border-slate-300 text-slate-950 font-semibold text-xs"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-slate-400 block mb-1">Procurement Justification</label>
+                <label className="text-slate-800 font-bold block mb-1">Procurement Justification</label>
                 <textarea
                   rows={2}
                   placeholder="Notes for vendor purchase or delivery..."
                   value={reqReason}
                   onChange={(e) => setReqReason(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none"
+                  className="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-xs text-slate-950 font-semibold focus:outline-none focus:border-indigo-600 shadow-xs"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
                 <Button
                   type="button"
                   variant="secondary"
                   size="sm"
                   onClick={() => setShowRequestModal(false)}
+                  className="border border-slate-300 text-slate-800 font-bold hover:bg-slate-100"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   size="sm"
-                  className={reqPriority === 'urgent' ? 'bg-rose-600 hover:bg-rose-500 font-bold' : 'bg-indigo-600 hover:bg-indigo-500'}
+                  className={reqPriority === 'urgent' ? 'bg-rose-600 hover:bg-rose-700 font-bold text-white shadow-sm' : 'bg-indigo-600 hover:bg-indigo-700 font-bold text-white shadow-sm'}
                 >
                   Create {reqPriority.toUpperCase()} Indent
                 </Button>
