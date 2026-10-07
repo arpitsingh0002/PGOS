@@ -35,6 +35,7 @@ export function Topbar({ onOpenMobileMenu }: TopbarProps = {}) {
     pendingPayments,
     syncStatus,
     isLiveDB,
+    dataMode,
     lastSyncedAt,
     syncNow,
   } = usePGStore();
@@ -160,16 +161,22 @@ export function Topbar({ onOpenMobileMenu }: TopbarProps = {}) {
           }}
           title={lastSyncedAt ? `Last synced at ${lastSyncedAt}. Click to refresh.` : 'Click to refresh from Supabase'}
           className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
-            isLiveDB
+            dataMode === 'live'
               ? 'bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200'
-              : syncStatus === 'syncing'
+              : dataMode === 'loading'
               ? 'bg-amber-100 text-amber-900 border-amber-300 animate-pulse'
               : 'bg-slate-100 text-slate-800 border-slate-300 hover:text-slate-950'
           }`}
         >
-          <span className={`h-1.5 w-1.5 rounded-full ${isLiveDB ? 'bg-emerald-600 animate-pulse' : syncStatus === 'syncing' ? 'bg-amber-600' : 'bg-slate-600'}`} />
-          <span>{isLiveDB ? 'Supabase Live' : syncStatus === 'syncing' ? 'Syncing...' : 'Local Cache'}</span>
-          <RefreshCw className={`h-3 w-3 opacity-75 ml-0.5 ${syncStatus === 'syncing' ? 'animate-spin' : ''}`} />
+          <span className={`h-1.5 w-1.5 rounded-full ${
+            dataMode === 'live' 
+              ? 'bg-emerald-600 animate-pulse' 
+              : dataMode === 'loading' 
+              ? 'bg-amber-600 animate-pulse' 
+              : 'bg-blue-600'
+          }`} />
+          <span>{dataMode === 'live' ? 'Supabase Live' : dataMode === 'loading' ? 'Syncing...' : 'Demo data'}</span>
+          <RefreshCw className={`h-3 w-3 opacity-75 ml-0.5 ${dataMode === 'loading' ? 'animate-spin' : ''}`} />
         </button>
 
         {/* Notifications Dropdown */}

@@ -66,8 +66,19 @@ import {
 } from '@/lib/data/initial-data';
 
 // -------------------------------------------------------------
-// SINGLETON GLOBAL STATE DEFINITION
+// SINGLETON GLOBAL STATE DEFINITION & SYNC CONTRACT
 // -------------------------------------------------------------
+
+import {
+  OccupancyStats,
+  getOccupancyStats,
+  getPropertyOccupancyStats,
+} from '@/lib/analytics-engine';
+
+export type { OccupancyStats };
+export { getOccupancyStats, getPropertyOccupancyStats };
+
+export type DataMode = 'loading' | 'demo' | 'live';
 
 interface StoreState {
   properties: Property[];
@@ -89,6 +100,7 @@ interface StoreState {
   inventoryRequests: InventoryRequest[];
   syncStatus: 'local' | 'syncing' | 'synced' | 'error';
   isLiveDB: boolean;
+  dataMode: DataMode;
   lastSyncedAt: string | null;
 }
 
@@ -112,6 +124,7 @@ let storeState: StoreState = {
   inventoryRequests: INITIAL_INVENTORY_REQUESTS,
   syncStatus: 'local',
   isLiveDB: false,
+  dataMode: 'loading',
   lastSyncedAt: null,
 };
 
@@ -138,6 +151,18 @@ function saveToStorage(key: string, data: any) {
   }
 }
 
+function safeParseArray<T>(key: string, fallback: T[]): T[] {
+  if (typeof window === 'undefined') return fallback;
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 let isInitialized = false;
 
 function initFromLocalStorage() {
@@ -145,35 +170,21 @@ function initFromLocalStorage() {
   isInitialized = true;
 
   try {
-    const savedProps = localStorage.getItem('pgos_properties');
-    const savedBeds = localStorage.getItem('pgos_beds');
-    const savedTenants = localStorage.getItem('pgos_tenants');
-    const savedPayments = localStorage.getItem('pgos_payments');
-    const savedExpenses = localStorage.getItem('pgos_expenses');
-    const savedComplaints = localStorage.getItem('pgos_complaints');
-    const savedTasks = localStorage.getItem('pgos_tasks');
-    const savedNotices = localStorage.getItem('pgos_notices');
-    const savedFeatures = localStorage.getItem('pgos_features');
-    const savedTiffins = localStorage.getItem('pgos_tiffins');
-    const savedAttendance = localStorage.getItem('pgos_staff_attendance');
-    const savedInventory = localStorage.getItem('pgos_inventory');
-    const savedInvReqs = localStorage.getItem('pgos_inventory_requests');
-
-    // Only hydrate from storage if valid and non-empty
+    // Only hydrate from storage if array is strictly non-empty and valid.
+    // An empty array or null in storage must NEVER wipe seed state.
     updateStore({
-      properties: savedProps ? JSON.parse(savedProps) : INITIAL_PROPERTIES,
-      beds: savedBeds ? JSON.parse(savedBeds) : INITIAL_BEDS,
-      tenants: savedTenants ? JSON.parse(savedTenants) : INITIAL_TENANTS,
-      payments: savedPayments ? JSON.parse(savedPayments) : INITIAL_PAYMENTS,
-      expenses: savedExpenses ? JSON.parse(savedExpenses) : INITIAL_EXPENSES,
-      complaints: savedComplaints ? JSON.parse(savedComplaints) : INITIAL_COMPLAINTS,
-      tasks: savedTasks ? JSON.parse(savedTasks) : INITIAL_TASKS,
-      notices: savedNotices ? JSON.parse(savedNotices) : INITIAL_NOTICES,
-      featureFlags: savedFeatures ? JSON.parse(savedFeatures) : INITIAL_FEATURES,
-      tiffinOrders: savedTiffins ? JSON.parse(savedTiffins) : INITIAL_TIFFIN_ORDERS,
-      staffAttendance: savedAttendance ? JSON.parse(savedAttendance) : INITIAL_STAFF_ATTENDANCE,
-      inventory: savedInventory ? JSON.parse(savedInventory) : INITIAL_INVENTORY_ITEMS,
-      inventoryRequests: savedInvReqs ? JSON.parse(savedInvReqs) : INITIAL_INVENTORY_REQUESTS,
+      properties: safeParseArray('pgos_properties', INITIAL_PROPERTIES),
+      beds: safeParseArray('pgos_beds', INITIAL_BEDS),
+      tenants: safeParseArray('pgos_tenants', INITIAL_TENANTS),
+      payments: safeParseArray('pgos_payments', INITIAL_PAYMENTS),
+      expenses: safeParseArray('pgos_expenses', INITIAL_EXPENSES),
+      complaints: safeParseArray('pgos_complaints', INITIAL_COMPLAINTS),
+      tasks: safeParseArray('pgos_tasks', INITIAL_TASKS),
+      notices: safeParseArray('pgos_notices', INITIAL_NOTICES),
+      tiffinOrders: safeParseArray('pgos_tiffins', INITIAL_TIFFIN_ORDERS),
+      staffAttendance: safeParseArray('pgos_staff_attendance', INITIAL_STAFF_ATTENDANCE),
+      inventory: safeParseArray('pgos_inventory', INITIAL_INVENTORY_ITEMS),
+      inventoryRequests: safeParseArray('pgos_inventory_requests', INITIAL_INVENTORY_REQUESTS),
     });
   } catch (err) {
     console.warn('[usePGStore] LocalStorage parse warning:', err);
@@ -188,14 +199,15 @@ async function syncWithSupabase() {
     updateStore({
       syncStatus: 'local',
       isLiveDB: false,
+      dataMode: 'demo',
       lastSyncedAt: new Date().toLocaleTimeString(),
     });
     return;
   }
 
-  updateStore({ syncStatus: 'syncing' });
+  updateStore({ syncStatus: 'syncing', dataMode: 'loading' });
 
-  // Safety timeout promise to prevent hanging in "Syncing..." state
+  // Safety timeout promise to prevent hanging in "loading" state
   const timeoutPromise = new Promise<{ isTimeout: true }>((resolve) =>
     setTimeout(() => resolve({ isTimeout: true }), 3000)
   );
@@ -213,6 +225,7 @@ async function syncWithSupabase() {
       updateStore({
         syncStatus: 'local',
         isLiveDB: false,
+        dataMode: 'demo',
         lastSyncedAt: new Date().toLocaleTimeString(),
       });
       return;
@@ -221,44 +234,52 @@ async function syncWithSupabase() {
     const { live, liveTiffins } = result;
 
     // A live Supabase state is ONLY valid and authoritative if it has a complete core schema
-    // (properties, beds, tenants, staff, complaints). Incomplete/partial schemas cause relational corruption.
+    // (properties, rooms, beds, tenants). Incomplete/partial/empty schemas must NEVER wipe state.
     const isCompleteLiveDataset = Boolean(
       live &&
       live.hasData &&
       live.properties &&
-      live.properties.length >= 2 &&
+      Array.isArray(live.properties) &&
+      live.properties.length > 0 &&
+      live.rooms &&
+      Array.isArray(live.rooms) &&
+      live.rooms.length > 0 &&
+      live.beds &&
+      Array.isArray(live.beds) &&
+      live.beds.length > 0 &&
       live.tenants &&
-      live.tenants.length > 0 &&
-      live.staff &&
-      live.staff.length > 0
+      Array.isArray(live.tenants) &&
+      live.tenants.length > 0
     );
 
     if (isCompleteLiveDataset && live) {
       updateStore({
-        properties: live.properties,
-        buildings: live.buildings.length > 0 ? live.buildings : storeState.buildings,
-        rooms: live.rooms.length > 0 ? live.rooms : storeState.rooms,
-        beds: live.beds.length > 0 ? live.beds : storeState.beds,
-        tenants: live.tenants,
-        payments: live.payments.length > 0 ? live.payments : storeState.payments,
-        expenses: live.expenses.length > 0 ? live.expenses : storeState.expenses,
-        complaints: live.complaints,
-        staff: live.staff,
-        tasks: live.tasks.length > 0 ? live.tasks : storeState.tasks,
-        notices: live.notices.length > 0 ? live.notices : storeState.notices,
-        messMenus: live.messMenus.length > 0 ? live.messMenus : storeState.messMenus,
-        featureFlags: Object.keys(live.featureFlags).length > 0 ? live.featureFlags : storeState.featureFlags,
+        properties: live.properties.length > 0 ? live.properties : storeState.properties,
+        buildings: live.buildings && live.buildings.length > 0 ? live.buildings : storeState.buildings,
+        rooms: live.rooms && live.rooms.length > 0 ? live.rooms : storeState.rooms,
+        beds: live.beds && live.beds.length > 0 ? live.beds : storeState.beds,
+        tenants: live.tenants.length > 0 ? live.tenants : storeState.tenants,
+        payments: live.payments && live.payments.length > 0 ? live.payments : storeState.payments,
+        expenses: live.expenses && live.expenses.length > 0 ? live.expenses : storeState.expenses,
+        complaints: live.complaints && live.complaints.length > 0 ? live.complaints : storeState.complaints,
+        staff: live.staff && live.staff.length > 0 ? live.staff : storeState.staff,
+        tasks: live.tasks && live.tasks.length > 0 ? live.tasks : storeState.tasks,
+        notices: live.notices && live.notices.length > 0 ? live.notices : storeState.notices,
+        messMenus: live.messMenus && live.messMenus.length > 0 ? live.messMenus : storeState.messMenus,
+        featureFlags: Object.keys(live.featureFlags || {}).length > 0 ? live.featureFlags : storeState.featureFlags,
         tiffinOrders: liveTiffins && liveTiffins.length > 0 ? liveTiffins : storeState.tiffinOrders,
         syncStatus: 'synced',
         isLiveDB: true,
+        dataMode: 'live',
         lastSyncedAt: new Date().toLocaleTimeString(),
       });
     } else {
-      // Supabase is connected but only has 0 rows or an incomplete test dump.
-      // Settle deterministically into local verified seed data mode.
+      // Supabase is unconfigured, returned empty arrays, or lacks complete tables.
+      // Settle deterministically into 'demo' mode with full seed data intact.
       updateStore({
         syncStatus: 'local',
         isLiveDB: false,
+        dataMode: 'demo',
         lastSyncedAt: new Date().toLocaleTimeString(),
       });
     }
@@ -267,6 +288,7 @@ async function syncWithSupabase() {
     updateStore({
       syncStatus: 'local',
       isLiveDB: false,
+      dataMode: 'demo',
       lastSyncedAt: new Date().toLocaleTimeString(),
     });
   }
@@ -313,68 +335,42 @@ export function usePGStore() {
     inventoryRequests,
     syncStatus,
     isLiveDB,
+    dataMode,
     lastSyncedAt,
   } = state;
 
   // -------------------------------------------------------------
-  // SINGLE SOURCE OF TRUTH: BED-LEVEL OCCUPANCY DERIVATIONS
+  // SINGLE SOURCE OF TRUTH: BED-LEVEL OCCUPANCY SELECTOR
   // -------------------------------------------------------------
+  const occupancyStats = useMemo(() => getOccupancyStats(beds), [beds]);
+
   const {
-    totalProperties,
-    totalBuildings,
-    totalRooms,
     totalBeds,
     occupiedBeds,
     vacantBeds,
     reservedBeds,
     maintenanceBeds,
     occupancyRate,
-  } = useMemo(() => {
-    const totalProperties = properties.length;
-    const totalBuildings = buildings.length;
-    const totalRooms = rooms.length;
-    const totalBeds = beds.length;
-    const occupiedBeds = beds.filter((b) => b.status === 'occupied').length;
-    const vacantBeds = beds.filter((b) => b.status === 'available').length;
-    const reservedBeds = beds.filter((b) => b.status === 'reserved').length;
-    const maintenanceBeds = beds.filter((b) => b.status === 'maintenance').length;
-    const occupancyRate = totalBeds > 0 ? Math.round((occupiedBeds / totalBeds) * 100) : 0;
+  } = occupancyStats;
 
-    return {
-      totalProperties,
-      totalBuildings,
-      totalRooms,
-      totalBeds,
-      occupiedBeds,
-      vacantBeds,
-      reservedBeds,
-      maintenanceBeds,
-      occupancyRate,
-    };
-  }, [properties.length, buildings.length, rooms.length, beds]);
+  const totalProperties = properties.length;
+  const totalBuildings = buildings.length;
+  const totalRooms = rooms.length;
 
-  // Derived properties where each property's stats match actual beds
+  // Derived properties where each property's stats match actual beds from the single selector
   const enrichedProperties = useMemo(() => {
     return properties.map((prop) => {
-      const propRooms = rooms.filter((r) => r.property_id === prop.id);
-      const propRoomIds = new Set(propRooms.map((r) => r.id));
-      const propBeds = beds.filter((b) => b.property_id === prop.id || propRoomIds.has(b.room_id));
-
-      const bTotal = propBeds.length > 0 ? propBeds.length : (prop.total_beds || 0);
-      const bOccupied = propBeds.length > 0
-        ? propBeds.filter((b) => b.status === 'occupied').length
-        : (prop.occupied_beds || 0);
-      const bRate = bTotal > 0 ? Math.round((bOccupied / bTotal) * 100) : (prop.occupancy_rate || 0);
-
+      const stats = getPropertyOccupancyStats(prop.id, rooms, beds);
       const propBuildings = buildings.filter((b) => b.property_id === prop.id);
+      const propRooms = rooms.filter((r) => r.property_id === prop.id);
 
       return {
         ...prop,
         buildings_count: propBuildings.length || prop.buildings_count || 1,
         rooms_count: propRooms.length || prop.rooms_count || 0,
-        total_beds: bTotal,
-        occupied_beds: bOccupied,
-        occupancy_rate: bRate,
+        total_beds: stats.totalBeds,
+        occupied_beds: stats.occupiedBeds,
+        occupancy_rate: stats.occupancyRate,
       };
     });
   }, [properties, buildings, rooms, beds]);
@@ -926,11 +922,16 @@ export function usePGStore() {
     tasks,
     notices,
     featureFlags,
-    // Database Sync State
+    // Database Sync State & Contract
     syncStatus,
     isLiveDB,
+    dataMode,
     lastSyncedAt,
     syncNow: syncWithSupabase,
+    // Occupancy Single Source of Truth Selectors
+    occupancyStats,
+    getOccupancyStats,
+    getPropertyOccupancyStats,
     // Metrics
     totalProperties,
     totalBuildings,

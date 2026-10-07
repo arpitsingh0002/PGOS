@@ -31,6 +31,20 @@ export function isSupabaseConfigured(): boolean {
 }
 
 /**
+ * Validates that a fetched state contains a complete, viable operational dataset.
+ * An incomplete dataset or empty tables must never be treated as authoritative live data.
+ */
+export function isRealLiveDataset(state: any): boolean {
+  if (!state) return false;
+  return Boolean(
+    state.properties && Array.isArray(state.properties) && state.properties.length > 0 &&
+    state.rooms && Array.isArray(state.rooms) && state.rooms.length > 0 &&
+    state.beds && Array.isArray(state.beds) && state.beds.length > 0 &&
+    state.tenants && Array.isArray(state.tenants) && state.tenants.length > 0
+  );
+}
+
+/**
  * Generates a valid v4 UUID or converts existing id to valid UUID format
  */
 export function ensureUUID(id?: string): string {

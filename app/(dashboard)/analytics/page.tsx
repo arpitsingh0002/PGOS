@@ -50,6 +50,7 @@ export default function AnalyticsPage() {
     occupancyRate,
     isLiveDB,
     syncStatus,
+    getPropertyOccupancyStats,
   } = usePGStore();
 
   const [isVerifyingAPI, setIsVerifyingAPI] = React.useState(false);
@@ -111,38 +112,29 @@ export default function AnalyticsPage() {
   const activeBoardersCount = tenants.filter((t) => t.status === 'active').length || 1;
   const groceryCostPerBoarder = Math.round(groceryExpenses / activeBoardersCount);
 
-  // Dynamic Branch Breakdown
+  // Dynamic Branch Breakdown using single source of truth selector
   const dynamicBranches = React.useMemo(() => {
     return properties.map((p) => {
-      const propRooms = rooms.filter((r) => r.property_id === p.id);
-      const propRoomIds = new Set(propRooms.map((r) => r.id));
-      const propBeds = beds.filter((b) => b.property_id === p.id || propRoomIds.has(b.room_id));
-
-      const bTotal = propBeds.length > 0 ? propBeds.length : (p.total_beds || 0);
-      const bOccupied = propBeds.length > 0
-        ? propBeds.filter((b) => b.status === 'occupied').length
-        : (p.occupied_beds || 0);
-      const bVacant = Math.max(0, bTotal - bOccupied);
-      const bRate = bTotal > 0 ? Math.round((bOccupied / bTotal) * 100) : (p.occupancy_rate || 0);
+      const stats = getPropertyOccupancyStats(p.id, rooms, beds);
 
       let healthBadge: { label: string; variant: 'success' | 'warning' | 'danger' } = {
         label: 'Excellent (A+)',
         variant: 'success',
       };
-      if (bRate < 65) healthBadge = { label: 'Action Needed (C)', variant: 'danger' };
-      else if (bRate < 78) healthBadge = { label: 'Moderate (B)', variant: 'warning' };
-      else if (bRate < 88) healthBadge = { label: 'Healthy (A)', variant: 'success' };
+      if (stats.occupancyRate < 65) healthBadge = { label: 'Action Needed (C)', variant: 'danger' };
+      else if (stats.occupancyRate < 78) healthBadge = { label: 'Moderate (B)', variant: 'warning' };
+      else if (stats.occupancyRate < 88) healthBadge = { label: 'Healthy (A)', variant: 'success' };
 
       return {
         ...p,
-        computedTotal: bTotal,
-        computedOccupied: bOccupied,
-        computedVacant: bVacant,
-        computedRate: bRate,
+        computedTotal: stats.totalBeds,
+        computedOccupied: stats.occupiedBeds,
+        computedVacant: stats.vacantBeds,
+        computedRate: stats.occupancyRate,
         healthBadge,
       };
     });
-  }, [properties, rooms, beds]);
+  }, [properties, rooms, beds, getPropertyOccupancyStats]);
 
   // Test live backend analytics API
   const handleVerifyLiveAPI = async () => {

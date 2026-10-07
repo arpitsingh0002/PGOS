@@ -123,7 +123,7 @@ function PaymentFormContent() {
               <Input
                 value={forMonth}
                 onChange={(e) => setForMonth(e.target.value)}
-                placeholder="2025-03"
+                placeholder="YYYY-MM"
               />
             </div>
             <div className="space-y-1">

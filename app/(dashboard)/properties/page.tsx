@@ -21,7 +21,7 @@ import { formatINR } from '@/lib/utils/format';
 
 export default function PropertiesPage() {
   const router = useRouter();
-  const { properties, buildings, rooms, beds } = usePGStore();
+  const { properties, buildings, rooms, beds, dataMode, getPropertyOccupancyStats } = usePGStore();
   const [search, setSearch] = React.useState('');
 
   const filtered = properties.filter(
@@ -30,6 +30,22 @@ export default function PropertiesPage() {
       p.city.toLowerCase().includes(search.toLowerCase()) ||
       p.address.toLowerCase().includes(search.toLowerCase())
   );
+
+  if (dataMode === 'loading') {
+    return (
+      <div className="space-y-6 animate-pulse p-4">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+          <div className="h-8 bg-slate-200 rounded-xl w-64" />
+          <div className="h-8 bg-slate-200 rounded-xl w-32" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-80 bg-slate-200 rounded-2xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -71,17 +87,12 @@ export default function PropertiesPage() {
       {/* Properties Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filtered.map((prop) => {
-          const propRooms = rooms.filter((r) => r.property_id === prop.id);
-          const propRoomIds = new Set(propRooms.map((r) => r.id));
-          const propBeds = beds.filter((b) => b.property_id === prop.id || propRoomIds.has(b.room_id));
+          const stats = getPropertyOccupancyStats(prop.id, rooms, beds);
+          const totalBeds = stats.totalBeds;
+          const occupiedBeds = stats.occupiedBeds;
+          const vacantBeds = stats.vacantBeds;
+          const occupancyRate = stats.occupancyRate;
           const propBuildings = buildings.filter((b) => b.property_id === prop.id);
-
-          const totalBeds = propBeds.length > 0 ? propBeds.length : (prop.total_beds || 0);
-          const occupiedBeds = propBeds.length > 0
-            ? propBeds.filter((b) => b.status === 'occupied').length
-            : (prop.occupied_beds || 0);
-          const vacantBeds = Math.max(0, totalBeds - occupiedBeds);
-          const occupancyRate = totalBeds > 0 ? Math.round((occupiedBeds / totalBeds) * 100) : (prop.occupancy_rate || 0);
           const buildingsCount = propBuildings.length > 0 ? propBuildings.length : (prop.buildings_count || 1);
 
           const statusLabel = occupancyRate >= 85 ? 'High Demand' : occupancyRate >= 65 ? 'Optimal' : 'Vacancies Open';

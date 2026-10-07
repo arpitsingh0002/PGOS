@@ -54,7 +54,7 @@ export const INITIAL_PROPERTIES: Property[] = [
     contact_email: 'care@royalpalmspg.com',
     cover_image: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80',
     status: 'active',
-    created_at: '2025-01-10T10:00:00Z',
+    created_at: `${getDateDaysAgo(60)}T10:00:00Z`,
     buildings_count: 2,
     rooms_count: 8,
     total_beds: 18,
@@ -73,7 +73,7 @@ export const INITIAL_PROPERTIES: Property[] = [
     contact_email: 'hsr@siliconoasis.in',
     cover_image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80',
     status: 'active',
-    created_at: '2025-02-01T10:00:00Z',
+    created_at: `${getDateDaysAgo(45)}T10:00:00Z`,
     buildings_count: 1,
     rooms_count: 5,
     total_beds: 12,
@@ -92,7 +92,7 @@ export const INITIAL_PROPERTIES: Property[] = [
     contact_email: 'delhi@cybercitypg.com',
     cover_image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
     status: 'active',
-    created_at: '2025-02-15T10:00:00Z',
+    created_at: `${getDateDaysAgo(30)}T10:00:00Z`,
     buildings_count: 1,
     rooms_count: 6,
     total_beds: 14,
@@ -142,7 +142,7 @@ export const INITIAL_BUILDINGS: Building[] = [
     floors_count: 3,
     has_mess: true,
     description: 'Modern high-speed Wi-Fi, power backup, rooftop dining',
-    created_at: '2025-01-10T10:00:00Z',
+    created_at: `${getDateDaysAgo(60)}T10:00:00Z`,
     rooms_count: 4,
     beds_count: 10,
     occupied_count: 9,
@@ -154,7 +154,7 @@ export const INITIAL_BUILDINGS: Building[] = [
     floors_count: 2,
     has_mess: true,
     description: 'Quiet study atmosphere, AC rooms, attached balconies',
-    created_at: '2025-01-12T10:00:00Z',
+    created_at: `${getDateDaysAgo(58)}T10:00:00Z`,
     rooms_count: 4,
     beds_count: 8,
     occupied_count: 6,
@@ -166,7 +166,7 @@ export const INITIAL_BUILDINGS: Building[] = [
     floors_count: 3,
     has_mess: true,
     description: 'Adjacent to main IT parks, daily housekeeping, 3-time buffet',
-    created_at: '2025-02-01T10:00:00Z',
+    created_at: `${getDateDaysAgo(45)}T10:00:00Z`,
     rooms_count: 5,
     beds_count: 12,
     occupied_count: 11,
@@ -178,7 +178,7 @@ export const INITIAL_BUILDINGS: Building[] = [
     floors_count: 3,
     has_mess: false,
     description: 'Walking distance to Metro, fully furnished with smart TV',
-    created_at: '2025-02-15T10:00:00Z',
+    created_at: `${getDateDaysAgo(30)}T10:00:00Z`,
     rooms_count: 6,
     beds_count: 14,
     occupied_count: 10,
@@ -199,7 +199,7 @@ export const INITIAL_ROOMS: Room[] = [
     has_attached_bathroom: true,
     has_balcony: true,
     has_ac: true,
-    created_at: '2025-01-10T10:00:00Z',
+    created_at: `${getDateDaysAgo(60)}T10:00:00Z`,
   },
   {
     id: 'room-102',
@@ -213,7 +213,7 @@ export const INITIAL_ROOMS: Room[] = [
     has_attached_bathroom: true,
     has_balcony: false,
     has_ac: false,
-    created_at: '2025-01-10T10:00:00Z',
+    created_at: `${getDateDaysAgo(60)}T10:00:00Z`,
   },
   {
     id: 'room-201',
@@ -227,7 +227,7 @@ export const INITIAL_ROOMS: Room[] = [
     has_attached_bathroom: true,
     has_balcony: true,
     has_ac: true,
-    created_at: '2025-01-10T10:00:00Z',
+    created_at: `${getDateDaysAgo(60)}T10:00:00Z`,
   },
   {
     id: 'room-202',
@@ -241,7 +241,7 @@ export const INITIAL_ROOMS: Room[] = [
     has_attached_bathroom: true,
     has_balcony: false,
     has_ac: false,
-    created_at: '2025-01-10T10:00:00Z',
+    created_at: `${getDateDaysAgo(60)}T10:00:00Z`,
   },
   // Building 2 (Tower B, prop-1) - 4 rooms, 8 beds
   {
@@ -256,7 +256,7 @@ export const INITIAL_ROOMS: Room[] = [
     has_attached_bathroom: true,
     has_balcony: false,
     has_ac: true,
-    created_at: '2025-01-12T10:00:00Z',
+    created_at: `${getDateDaysAgo(58)}T10:00:00Z`,
   },
   {
     id: 'room-b102',
@@ -270,7 +270,7 @@ export const INITIAL_ROOMS: Room[] = [
     has_attached_bathroom: true,
     has_balcony: true,
     has_ac: true,
-    created_at: '2025-01-12T10:00:00Z',
+    created_at: `${getDateDaysAgo(58)}T10:00:00Z`,
   },
   {
     id: 'room-b201',
@@ -284,7 +284,7 @@ export const INITIAL_ROOMS: Room[] = [
     has_attached_bathroom: true,
     has_balcony: false,
     has_ac: true,
-    created_at: '2025-01-12T10:00:00Z',
+    created_at: `${getDateDaysAgo(58)}T10:00:00Z`,
   },
   {
     id: 'room-b202',
@@ -298,7 +298,7 @@ export const INITIAL_ROOMS: Room[] = [
     has_attached_bathroom: true,
     has_balcony: true,
     has_ac: true,
-    created_at: '2025-01-12T10:00:00Z',
+    created_at: `${getDateDaysAgo(58)}T10:00:00Z`,
   },
   // Building 3 (Main Block, prop-2) - 5 rooms, 12 beds
   {
@@ -313,7 +313,7 @@ export const INITIAL_ROOMS: Room[] = [
     has_attached_bathroom: true,
     has_balcony: true,
     has_ac: true,
-    created_at: '2025-02-01T10:00:00Z',
+    created_at: `${getDateDaysAgo(45)}T10:00:00Z`,
   },
   {
     id: 'room-so-102',
@@ -327,7 +327,7 @@ export const INITIAL_ROOMS: Room[] = [
     has_attached_bathroom: true,
     has_balcony: false,
     has_ac: true,
-    created_at: '2025-02-01T10:00:00Z',
+    created_at: `${getDateDaysAgo(45)}T10:00:00Z`,
   },
   {
     id: 'room-so-201',
@@ -341,7 +341,7 @@ export const INITIAL_ROOMS: Room[] = [
     has_attached_bathroom: true,
     has_balcony: true,
     has_ac: true,
-    created_at: '2025-02-01T10:00:00Z',
+    created_at: `${getDateDaysAgo(45)}T10:00:00Z`,
   },
   {
     id: 'room-so-202',
@@ -355,7 +355,7 @@ export const INITIAL_ROOMS: Room[] = [
     has_attached_bathroom: true,
     has_balcony: false,
     has_ac: false,
-    created_at: '2025-02-01T10:00:00Z',
+    created_at: `${getDateDaysAgo(45)}T10:00:00Z`,
   },
   {
     id: 'room-so-203',
@@ -369,7 +369,7 @@ export const INITIAL_ROOMS: Room[] = [
     has_attached_bathroom: true,
     has_balcony: true,
     has_ac: true,
-    created_at: '2025-02-01T10:00:00Z',
+    created_at: `${getDateDaysAgo(45)}T10:00:00Z`,
   },
   // Building 4 (North Wing, prop-3) - 6 rooms, 14 beds
   {
@@ -384,7 +384,7 @@ export const INITIAL_ROOMS: Room[] = [
     has_attached_bathroom: true,
     has_balcony: true,
     has_ac: true,
-    created_at: '2025-02-15T10:00:00Z',
+    created_at: `${getDateDaysAgo(30)}T10:00:00Z`,
   },
   {
     id: 'room-cc-102',
@@ -398,7 +398,7 @@ export const INITIAL_ROOMS: Room[] = [
     has_attached_bathroom: true,
     has_balcony: false,
     has_ac: true,
-    created_at: '2025-02-15T10:00:00Z',
+    created_at: `${getDateDaysAgo(30)}T10:00:00Z`,
   },
   {
     id: 'room-cc-201',
@@ -412,7 +412,7 @@ export const INITIAL_ROOMS: Room[] = [
     has_attached_bathroom: true,
     has_balcony: true,
     has_ac: true,
-    created_at: '2025-02-15T10:00:00Z',
+    created_at: `${getDateDaysAgo(30)}T10:00:00Z`,
   },
   {
     id: 'room-cc-202',
@@ -426,7 +426,7 @@ export const INITIAL_ROOMS: Room[] = [
     has_attached_bathroom: true,
     has_balcony: false,
     has_ac: true,
-    created_at: '2025-02-15T10:00:00Z',
+    created_at: `${getDateDaysAgo(30)}T10:00:00Z`,
   },
   {
     id: 'room-cc-301',
@@ -440,7 +440,7 @@ export const INITIAL_ROOMS: Room[] = [
     has_attached_bathroom: true,
     has_balcony: true,
     has_ac: false,
-    created_at: '2025-02-15T10:00:00Z',
+    created_at: `${getDateDaysAgo(30)}T10:00:00Z`,
   },
   {
     id: 'room-cc-302',
@@ -454,92 +454,92 @@ export const INITIAL_ROOMS: Room[] = [
     has_attached_bathroom: true,
     has_balcony: false,
     has_ac: false,
-    created_at: '2025-02-15T10:00:00Z',
+    created_at: `${getDateDaysAgo(30)}T10:00:00Z`,
   },
 ];
 
 export const INITIAL_BEDS: Bed[] = [
   // Prop 1 / Bld 1 / Room 101 (Double) - 2 occupied
-  { id: 'bed-101-a', property_id: 'prop-1', room_id: 'room-101', bed_number: 'Bed A', status: 'occupied', monthly_rent: 9500, created_at: '2025-01-10T10:00:00Z' },
-  { id: 'bed-101-b', property_id: 'prop-1', room_id: 'room-101', bed_number: 'Bed B', status: 'occupied', monthly_rent: 9500, created_at: '2025-01-10T10:00:00Z' },
+  { id: 'bed-101-a', property_id: 'prop-1', room_id: 'room-101', bed_number: 'Bed A', status: 'occupied', monthly_rent: 9500, created_at: `${getDateDaysAgo(60)}T10:00:00Z` },
+  { id: 'bed-101-b', property_id: 'prop-1', room_id: 'room-101', bed_number: 'Bed B', status: 'occupied', monthly_rent: 9500, created_at: `${getDateDaysAgo(60)}T10:00:00Z` },
 
   // Prop 1 / Bld 1 / Room 102 (Triple) - 2 occupied, 1 available
-  { id: 'bed-102-a', property_id: 'prop-1', room_id: 'room-102', bed_number: 'Bed A', status: 'occupied', monthly_rent: 7500, created_at: '2025-01-10T10:00:00Z' },
-  { id: 'bed-102-b', property_id: 'prop-1', room_id: 'room-102', bed_number: 'Bed B', status: 'occupied', monthly_rent: 7500, created_at: '2025-01-10T10:00:00Z' },
-  { id: 'bed-102-c', property_id: 'prop-1', room_id: 'room-102', bed_number: 'Bed C', status: 'available', monthly_rent: 7500, created_at: '2025-01-10T10:00:00Z' },
+  { id: 'bed-102-a', property_id: 'prop-1', room_id: 'room-102', bed_number: 'Bed A', status: 'occupied', monthly_rent: 7500, created_at: `${getDateDaysAgo(60)}T10:00:00Z` },
+  { id: 'bed-102-b', property_id: 'prop-1', room_id: 'room-102', bed_number: 'Bed B', status: 'occupied', monthly_rent: 7500, created_at: `${getDateDaysAgo(60)}T10:00:00Z` },
+  { id: 'bed-102-c', property_id: 'prop-1', room_id: 'room-102', bed_number: 'Bed C', status: 'available', monthly_rent: 7500, created_at: `${getDateDaysAgo(60)}T10:00:00Z` },
 
   // Prop 1 / Bld 1 / Room 201 (Single) - 1 occupied
-  { id: 'bed-201-a', property_id: 'prop-1', room_id: 'room-201', bed_number: 'Bed A', status: 'occupied', monthly_rent: 14500, created_at: '2025-01-10T10:00:00Z' },
+  { id: 'bed-201-a', property_id: 'prop-1', room_id: 'room-201', bed_number: 'Bed A', status: 'occupied', monthly_rent: 14500, created_at: `${getDateDaysAgo(60)}T10:00:00Z` },
 
   // Prop 1 / Bld 1 / Room 202 (Four Sharing) - 4 occupied
-  { id: 'bed-202-a', property_id: 'prop-1', room_id: 'room-202', bed_number: 'Bed A', status: 'occupied', monthly_rent: 6500, created_at: '2025-01-10T10:00:00Z' },
-  { id: 'bed-202-b', property_id: 'prop-1', room_id: 'room-202', bed_number: 'Bed B', status: 'occupied', monthly_rent: 6500, created_at: '2025-01-10T10:00:00Z' },
-  { id: 'bed-202-c', property_id: 'prop-1', room_id: 'room-202', bed_number: 'Bed C', status: 'occupied', monthly_rent: 6500, created_at: '2025-01-10T10:00:00Z' },
-  { id: 'bed-202-d', property_id: 'prop-1', room_id: 'room-202', bed_number: 'Bed D', status: 'occupied', monthly_rent: 6500, created_at: '2025-01-10T10:00:00Z' },
+  { id: 'bed-202-a', property_id: 'prop-1', room_id: 'room-202', bed_number: 'Bed A', status: 'occupied', monthly_rent: 6500, created_at: `${getDateDaysAgo(60)}T10:00:00Z` },
+  { id: 'bed-202-b', property_id: 'prop-1', room_id: 'room-202', bed_number: 'Bed B', status: 'occupied', monthly_rent: 6500, created_at: `${getDateDaysAgo(60)}T10:00:00Z` },
+  { id: 'bed-202-c', property_id: 'prop-1', room_id: 'room-202', bed_number: 'Bed C', status: 'occupied', monthly_rent: 6500, created_at: `${getDateDaysAgo(60)}T10:00:00Z` },
+  { id: 'bed-202-d', property_id: 'prop-1', room_id: 'room-202', bed_number: 'Bed D', status: 'occupied', monthly_rent: 6500, created_at: `${getDateDaysAgo(60)}T10:00:00Z` },
 
   // Prop 1 / Bld 2 / Room B-101 (Double) - 2 occupied
-  { id: 'bed-b101-a', property_id: 'prop-1', room_id: 'room-b101', bed_number: 'Bed A', status: 'occupied', monthly_rent: 9000, created_at: '2025-01-12T10:00:00Z' },
-  { id: 'bed-b101-b', property_id: 'prop-1', room_id: 'room-b101', bed_number: 'Bed B', status: 'occupied', monthly_rent: 9000, created_at: '2025-01-12T10:00:00Z' },
+  { id: 'bed-b101-a', property_id: 'prop-1', room_id: 'room-b101', bed_number: 'Bed A', status: 'occupied', monthly_rent: 9000, created_at: `${getDateDaysAgo(58)}T10:00:00Z` },
+  { id: 'bed-b101-b', property_id: 'prop-1', room_id: 'room-b101', bed_number: 'Bed B', status: 'occupied', monthly_rent: 9000, created_at: `${getDateDaysAgo(58)}T10:00:00Z` },
 
   // Prop 1 / Bld 2 / Room B-102 (Double) - 2 occupied
-  { id: 'bed-b102-a', property_id: 'prop-1', room_id: 'room-b102', bed_number: 'Bed A', status: 'occupied', monthly_rent: 9000, created_at: '2025-01-12T10:00:00Z' },
-  { id: 'bed-b102-b', property_id: 'prop-1', room_id: 'room-b102', bed_number: 'Bed B', status: 'occupied', monthly_rent: 9000, created_at: '2025-01-12T10:00:00Z' },
+  { id: 'bed-b102-a', property_id: 'prop-1', room_id: 'room-b102', bed_number: 'Bed A', status: 'occupied', monthly_rent: 9000, created_at: `${getDateDaysAgo(58)}T10:00:00Z` },
+  { id: 'bed-b102-b', property_id: 'prop-1', room_id: 'room-b102', bed_number: 'Bed B', status: 'occupied', monthly_rent: 9000, created_at: `${getDateDaysAgo(58)}T10:00:00Z` },
 
   // Prop 1 / Bld 2 / Room B-201 (Double) - 2 occupied
-  { id: 'bed-b201-a', property_id: 'prop-1', room_id: 'room-b201', bed_number: 'Bed A', status: 'occupied', monthly_rent: 9000, created_at: '2025-01-12T10:00:00Z' },
-  { id: 'bed-b201-b', property_id: 'prop-1', room_id: 'room-b201', bed_number: 'Bed B', status: 'occupied', monthly_rent: 9000, created_at: '2025-01-12T10:00:00Z' },
+  { id: 'bed-b201-a', property_id: 'prop-1', room_id: 'room-b201', bed_number: 'Bed A', status: 'occupied', monthly_rent: 9000, created_at: `${getDateDaysAgo(58)}T10:00:00Z` },
+  { id: 'bed-b201-b', property_id: 'prop-1', room_id: 'room-b201', bed_number: 'Bed B', status: 'occupied', monthly_rent: 9000, created_at: `${getDateDaysAgo(58)}T10:00:00Z` },
 
   // Prop 1 / Bld 2 / Room B-202 (Double) - 2 available
-  { id: 'bed-b202-a', property_id: 'prop-1', room_id: 'room-b202', bed_number: 'Bed A', status: 'available', monthly_rent: 9000, created_at: '2025-01-12T10:00:00Z' },
-  { id: 'bed-b202-b', property_id: 'prop-1', room_id: 'room-b202', bed_number: 'Bed B', status: 'available', monthly_rent: 9000, created_at: '2025-01-12T10:00:00Z' },
+  { id: 'bed-b202-a', property_id: 'prop-1', room_id: 'room-b202', bed_number: 'Bed A', status: 'available', monthly_rent: 9000, created_at: `${getDateDaysAgo(58)}T10:00:00Z` },
+  { id: 'bed-b202-b', property_id: 'prop-1', room_id: 'room-b202', bed_number: 'Bed B', status: 'available', monthly_rent: 9000, created_at: `${getDateDaysAgo(58)}T10:00:00Z` },
 
   // Prop 2 / Bld 3 / Room 101 (Double) - 2 occupied
-  { id: 'bed-so-101-a', property_id: 'prop-2', room_id: 'room-so-101', bed_number: 'Bed A', status: 'occupied', monthly_rent: 10500, created_at: '2025-02-01T10:00:00Z' },
-  { id: 'bed-so-101-b', property_id: 'prop-2', room_id: 'room-so-101', bed_number: 'Bed B', status: 'occupied', monthly_rent: 10500, created_at: '2025-02-01T10:00:00Z' },
+  { id: 'bed-so-101-a', property_id: 'prop-2', room_id: 'room-so-101', bed_number: 'Bed A', status: 'occupied', monthly_rent: 10500, created_at: `${getDateDaysAgo(45)}T10:00:00Z` },
+  { id: 'bed-so-101-b', property_id: 'prop-2', room_id: 'room-so-101', bed_number: 'Bed B', status: 'occupied', monthly_rent: 10500, created_at: `${getDateDaysAgo(45)}T10:00:00Z` },
 
   // Prop 2 / Bld 3 / Room 102 (Double) - 2 occupied
-  { id: 'bed-so-102-a', property_id: 'prop-2', room_id: 'room-so-102', bed_number: 'Bed A', status: 'occupied', monthly_rent: 10500, created_at: '2025-02-01T10:00:00Z' },
-  { id: 'bed-so-102-b', property_id: 'prop-2', room_id: 'room-so-102', bed_number: 'Bed B', status: 'occupied', monthly_rent: 10500, created_at: '2025-02-01T10:00:00Z' },
+  { id: 'bed-so-102-a', property_id: 'prop-2', room_id: 'room-so-102', bed_number: 'Bed A', status: 'occupied', monthly_rent: 10500, created_at: `${getDateDaysAgo(45)}T10:00:00Z` },
+  { id: 'bed-so-102-b', property_id: 'prop-2', room_id: 'room-so-102', bed_number: 'Bed B', status: 'occupied', monthly_rent: 10500, created_at: `${getDateDaysAgo(45)}T10:00:00Z` },
 
   // Prop 2 / Bld 3 / Room 201 (Double) - 2 occupied
-  { id: 'bed-so-201-a', property_id: 'prop-2', room_id: 'room-so-201', bed_number: 'Bed A', status: 'occupied', monthly_rent: 11000, created_at: '2025-02-01T10:00:00Z' },
-  { id: 'bed-so-201-b', property_id: 'prop-2', room_id: 'room-so-201', bed_number: 'Bed B', status: 'occupied', monthly_rent: 11000, created_at: '2025-02-01T10:00:00Z' },
+  { id: 'bed-so-201-a', property_id: 'prop-2', room_id: 'room-so-201', bed_number: 'Bed A', status: 'occupied', monthly_rent: 11000, created_at: `${getDateDaysAgo(45)}T10:00:00Z` },
+  { id: 'bed-so-201-b', property_id: 'prop-2', room_id: 'room-so-201', bed_number: 'Bed B', status: 'occupied', monthly_rent: 11000, created_at: `${getDateDaysAgo(45)}T10:00:00Z` },
 
   // Prop 2 / Bld 3 / Room 202 (Triple) - 3 occupied
-  { id: 'bed-so-202-a', property_id: 'prop-2', room_id: 'room-so-202', bed_number: 'Bed A', status: 'occupied', monthly_rent: 9000, created_at: '2025-02-01T10:00:00Z' },
-  { id: 'bed-so-202-b', property_id: 'prop-2', room_id: 'room-so-202', bed_number: 'Bed B', status: 'occupied', monthly_rent: 9000, created_at: '2025-02-01T10:00:00Z' },
-  { id: 'bed-so-202-c', property_id: 'prop-2', room_id: 'room-so-202', bed_number: 'Bed C', status: 'occupied', monthly_rent: 9000, created_at: '2025-02-01T10:00:00Z' },
+  { id: 'bed-so-202-a', property_id: 'prop-2', room_id: 'room-so-202', bed_number: 'Bed A', status: 'occupied', monthly_rent: 9000, created_at: `${getDateDaysAgo(45)}T10:00:00Z` },
+  { id: 'bed-so-202-b', property_id: 'prop-2', room_id: 'room-so-202', bed_number: 'Bed B', status: 'occupied', monthly_rent: 9000, created_at: `${getDateDaysAgo(45)}T10:00:00Z` },
+  { id: 'bed-so-202-c', property_id: 'prop-2', room_id: 'room-so-202', bed_number: 'Bed C', status: 'occupied', monthly_rent: 9000, created_at: `${getDateDaysAgo(45)}T10:00:00Z` },
 
   // Prop 2 / Bld 3 / Room 203 (Triple) - 2 occupied, 1 available
-  { id: 'bed-so-203-a', property_id: 'prop-2', room_id: 'room-so-203', bed_number: 'Bed A', status: 'occupied', monthly_rent: 9000, created_at: '2025-02-01T10:00:00Z' },
-  { id: 'bed-so-203-b', property_id: 'prop-2', room_id: 'room-so-203', bed_number: 'Bed B', status: 'occupied', monthly_rent: 9000, created_at: '2025-02-01T10:00:00Z' },
-  { id: 'bed-so-203-c', property_id: 'prop-2', room_id: 'room-so-203', bed_number: 'Bed C', status: 'available', monthly_rent: 9000, created_at: '2025-02-01T10:00:00Z' },
+  { id: 'bed-so-203-a', property_id: 'prop-2', room_id: 'room-so-203', bed_number: 'Bed A', status: 'occupied', monthly_rent: 9000, created_at: `${getDateDaysAgo(45)}T10:00:00Z` },
+  { id: 'bed-so-203-b', property_id: 'prop-2', room_id: 'room-so-203', bed_number: 'Bed B', status: 'occupied', monthly_rent: 9000, created_at: `${getDateDaysAgo(45)}T10:00:00Z` },
+  { id: 'bed-so-203-c', property_id: 'prop-2', room_id: 'room-so-203', bed_number: 'Bed C', status: 'available', monthly_rent: 9000, created_at: `${getDateDaysAgo(45)}T10:00:00Z` },
 
   // Prop 3 / Bld 4 / Room 101 (Double) - 2 occupied
-  { id: 'bed-cc-101-a', property_id: 'prop-3', room_id: 'room-cc-101', bed_number: 'Bed A', status: 'occupied', monthly_rent: 12000, created_at: '2025-02-15T10:00:00Z' },
-  { id: 'bed-cc-101-b', property_id: 'prop-3', room_id: 'room-cc-101', bed_number: 'Bed B', status: 'occupied', monthly_rent: 12000, created_at: '2025-02-15T10:00:00Z' },
+  { id: 'bed-cc-101-a', property_id: 'prop-3', room_id: 'room-cc-101', bed_number: 'Bed A', status: 'occupied', monthly_rent: 12000, created_at: `${getDateDaysAgo(30)}T10:00:00Z` },
+  { id: 'bed-cc-101-b', property_id: 'prop-3', room_id: 'room-cc-101', bed_number: 'Bed B', status: 'occupied', monthly_rent: 12000, created_at: `${getDateDaysAgo(30)}T10:00:00Z` },
 
   // Prop 3 / Bld 4 / Room 102 (Double) - 2 occupied
-  { id: 'bed-cc-102-a', property_id: 'prop-3', room_id: 'room-cc-102', bed_number: 'Bed A', status: 'occupied', monthly_rent: 12000, created_at: '2025-02-15T10:00:00Z' },
-  { id: 'bed-cc-102-b', property_id: 'prop-3', room_id: 'room-cc-102', bed_number: 'Bed B', status: 'occupied', monthly_rent: 12000, created_at: '2025-02-15T10:00:00Z' },
+  { id: 'bed-cc-102-a', property_id: 'prop-3', room_id: 'room-cc-102', bed_number: 'Bed A', status: 'occupied', monthly_rent: 12000, created_at: `${getDateDaysAgo(30)}T10:00:00Z` },
+  { id: 'bed-cc-102-b', property_id: 'prop-3', room_id: 'room-cc-102', bed_number: 'Bed B', status: 'occupied', monthly_rent: 12000, created_at: `${getDateDaysAgo(30)}T10:00:00Z` },
 
   // Prop 3 / Bld 4 / Room 201 (Double) - 2 occupied
-  { id: 'bed-cc-201-a', property_id: 'prop-3', room_id: 'room-cc-201', bed_number: 'Bed A', status: 'occupied', monthly_rent: 12500, created_at: '2025-02-15T10:00:00Z' },
-  { id: 'bed-cc-201-b', property_id: 'prop-3', room_id: 'room-cc-201', bed_number: 'Bed B', status: 'occupied', monthly_rent: 12500, created_at: '2025-02-15T10:00:00Z' },
+  { id: 'bed-cc-201-a', property_id: 'prop-3', room_id: 'room-cc-201', bed_number: 'Bed A', status: 'occupied', monthly_rent: 12500, created_at: `${getDateDaysAgo(30)}T10:00:00Z` },
+  { id: 'bed-cc-201-b', property_id: 'prop-3', room_id: 'room-cc-201', bed_number: 'Bed B', status: 'occupied', monthly_rent: 12500, created_at: `${getDateDaysAgo(30)}T10:00:00Z` },
 
   // Prop 3 / Bld 4 / Room 202 (Double) - 1 occupied, 1 available
-  { id: 'bed-cc-202-a', property_id: 'prop-3', room_id: 'room-cc-202', bed_number: 'Bed A', status: 'occupied', monthly_rent: 12500, created_at: '2025-02-15T10:00:00Z' },
-  { id: 'bed-cc-202-b', property_id: 'prop-3', room_id: 'room-cc-202', bed_number: 'Bed B', status: 'available', monthly_rent: 12500, created_at: '2025-02-15T10:00:00Z' },
+  { id: 'bed-cc-202-a', property_id: 'prop-3', room_id: 'room-cc-202', bed_number: 'Bed A', status: 'occupied', monthly_rent: 12500, created_at: `${getDateDaysAgo(30)}T10:00:00Z` },
+  { id: 'bed-cc-202-b', property_id: 'prop-3', room_id: 'room-cc-202', bed_number: 'Bed B', status: 'available', monthly_rent: 12500, created_at: `${getDateDaysAgo(30)}T10:00:00Z` },
 
   // Prop 3 / Bld 4 / Room 301 (Triple) - 2 occupied, 1 available
-  { id: 'bed-cc-301-a', property_id: 'prop-3', room_id: 'room-cc-301', bed_number: 'Bed A', status: 'occupied', monthly_rent: 10000, created_at: '2025-02-15T10:00:00Z' },
-  { id: 'bed-cc-301-b', property_id: 'prop-3', room_id: 'room-cc-301', bed_number: 'Bed B', status: 'occupied', monthly_rent: 10000, created_at: '2025-02-15T10:00:00Z' },
-  { id: 'bed-cc-301-c', property_id: 'prop-3', room_id: 'room-cc-301', bed_number: 'Bed C', status: 'available', monthly_rent: 10000, created_at: '2025-02-15T10:00:00Z' },
+  { id: 'bed-cc-301-a', property_id: 'prop-3', room_id: 'room-cc-301', bed_number: 'Bed A', status: 'occupied', monthly_rent: 10000, created_at: `${getDateDaysAgo(30)}T10:00:00Z` },
+  { id: 'bed-cc-301-b', property_id: 'prop-3', room_id: 'room-cc-301', bed_number: 'Bed B', status: 'occupied', monthly_rent: 10000, created_at: `${getDateDaysAgo(30)}T10:00:00Z` },
+  { id: 'bed-cc-301-c', property_id: 'prop-3', room_id: 'room-cc-301', bed_number: 'Bed C', status: 'available', monthly_rent: 10000, created_at: `${getDateDaysAgo(30)}T10:00:00Z` },
 
   // Prop 3 / Bld 4 / Room 302 (Triple) - 1 occupied, 2 available
-  { id: 'bed-cc-302-a', property_id: 'prop-3', room_id: 'room-cc-302', bed_number: 'Bed A', status: 'occupied', monthly_rent: 10000, created_at: '2025-02-15T10:00:00Z' },
-  { id: 'bed-cc-302-b', property_id: 'prop-3', room_id: 'room-cc-302', bed_number: 'Bed B', status: 'available', monthly_rent: 10000, created_at: '2025-02-15T10:00:00Z' },
-  { id: 'bed-cc-302-c', property_id: 'prop-3', room_id: 'room-cc-302', bed_number: 'Bed C', status: 'available', monthly_rent: 10000, created_at: '2025-02-15T10:00:00Z' },
+  { id: 'bed-cc-302-a', property_id: 'prop-3', room_id: 'room-cc-302', bed_number: 'Bed A', status: 'occupied', monthly_rent: 10000, created_at: `${getDateDaysAgo(30)}T10:00:00Z` },
+  { id: 'bed-cc-302-b', property_id: 'prop-3', room_id: 'room-cc-302', bed_number: 'Bed B', status: 'available', monthly_rent: 10000, created_at: `${getDateDaysAgo(30)}T10:00:00Z` },
+  { id: 'bed-cc-302-c', property_id: 'prop-3', room_id: 'room-cc-302', bed_number: 'Bed C', status: 'available', monthly_rent: 10000, created_at: `${getDateDaysAgo(30)}T10:00:00Z` },
 ];
 
 export const INITIAL_TENANTS: Tenant[] = [

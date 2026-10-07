@@ -31,6 +31,8 @@ export default function DashboardPage() {
   const router = useRouter();
   const {
     properties,
+    rooms,
+    beds,
     totalProperties,
     totalBuildings,
     totalRooms,
@@ -44,10 +46,32 @@ export default function DashboardPage() {
     pendingPayments,
     complaints,
     payments,
+    dataMode,
+    getPropertyOccupancyStats,
   } = usePGStore();
 
   const recentPayments = payments.slice(0, 5);
   const activeComplaints = complaints.filter((c) => c.status !== 'resolved').slice(0, 5);
+
+  if (dataMode === 'loading') {
+    return (
+      <div className="space-y-8 animate-pulse p-4">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+          <div className="h-8 bg-slate-200 rounded-xl w-64" />
+          <div className="h-8 bg-slate-200 rounded-xl w-32" />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-32 bg-slate-200 rounded-2xl" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="h-72 bg-slate-200 rounded-2xl lg:col-span-2" />
+          <div className="h-72 bg-slate-200 rounded-2xl" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
@@ -56,8 +80,12 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-950 flex items-center gap-2.5">
             Dashboard Overview
-            <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-xs">
-              Live Realtime
+            <span className={`text-xs font-black px-2.5 py-0.5 rounded-full border shadow-xs ${
+              dataMode === 'live'
+                ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                : 'bg-blue-100 text-blue-900 border-blue-300'
+            }`}>
+              {dataMode === 'live' ? 'Supabase Live' : 'Demo Mode'}
             </span>
           </h1>
           <p className="text-sm font-bold text-slate-800 mt-1">
@@ -227,9 +255,10 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
               {properties.map((prop) => {
-                const totalBedsCount = prop.total_beds ?? (prop.id === 'prop-1' ? 18 : prop.id === 'prop-2' ? 12 : 10);
-                const occupiedBedsCount = prop.occupied_beds ?? (prop.id === 'prop-1' ? 15 : prop.id === 'prop-2' ? 11 : 8);
-                const occRate = prop.occupancy_rate ?? Math.round((occupiedBedsCount / Math.max(1, totalBedsCount)) * 100);
+                const stats = getPropertyOccupancyStats(prop.id, rooms, beds);
+                const totalBedsCount = stats.totalBeds;
+                const occupiedBedsCount = stats.occupiedBeds;
+                const occRate = stats.occupancyRate;
 
                 return (
                   <Link

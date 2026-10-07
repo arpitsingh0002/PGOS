@@ -89,14 +89,14 @@ export default function SettingsPage() {
 }
 
 function SupabaseSettingsCard() {
-  const { syncStatus, isLiveDB, lastSyncedAt, syncNow } = usePGStore();
+  const { syncStatus, isLiveDB, dataMode, lastSyncedAt, syncNow } = usePGStore();
   const [isSyncing, setIsSyncing] = React.useState(false);
 
   const handleSync = async () => {
     setIsSyncing(true);
     await syncNow();
     setIsSyncing(false);
-    toast.success('Supabase sync finished!');
+    toast.success('Database synchronization finished!');
   };
 
   return (
@@ -104,15 +104,17 @@ function SupabaseSettingsCard() {
       <CardHeader>
         <CardTitle className="text-sm font-semibold text-white flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className={`h-2 w-2 rounded-full ${dataMode === 'live' ? 'bg-emerald-400 animate-pulse' : dataMode === 'loading' ? 'bg-amber-400 animate-pulse' : 'bg-blue-400'}`} />
             <span>Supabase Cloud PostgreSQL Database</span>
           </div>
           <span className={`text-[11px] px-2.5 py-0.5 rounded-full border font-medium ${
-            isLiveDB
+            dataMode === 'live'
               ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-              : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+              : dataMode === 'loading'
+              ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+              : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
           }`}>
-            {isLiveDB ? 'Connected & Synced' : syncStatus === 'syncing' ? 'Syncing...' : 'Connected (Seed Ready)'}
+            {dataMode === 'live' ? 'Connected & Synced' : dataMode === 'loading' ? 'Syncing...' : 'Demo data (Seed active)'}
           </span>
         </CardTitle>
       </CardHeader>
@@ -128,7 +130,7 @@ function SupabaseSettingsCard() {
           </div>
           <div className="flex items-center justify-between text-slate-400">
             <span>Sync Mode:</span>
-            <span className="text-slate-200">{isLiveDB ? 'Real-time PostgreSQL Live' : 'Local Fallback / Ready to Seed'}</span>
+            <span className="text-slate-200">{dataMode === 'live' ? 'Real-time PostgreSQL Live' : 'Demo data / Local Seed Mode'}</span>
           </div>
           {lastSyncedAt && (
             <div className="flex items-center justify-between text-slate-400">

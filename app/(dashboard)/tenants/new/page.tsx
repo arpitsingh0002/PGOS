@@ -20,7 +20,7 @@ function TenantFormContent() {
   const prePropId = searchParams.get('propertyId');
   const preBldId = searchParams.get('buildingId');
 
-  const { properties, buildings, rooms, beds, addTenant } = usePGStore();
+  const { properties, buildings, rooms, beds, addTenant, dataMode } = usePGStore();
 
   const [propertyId, setPropertyId] = React.useState<string>(prePropId || '');
   const [buildingId, setBuildingId] = React.useState<string>(preBldId || '');
@@ -63,7 +63,7 @@ function TenantFormContent() {
 
   const selectedBedObj = React.useMemo(() => beds.find((b) => b.id === bedId), [beds, bedId]);
 
-  // Cascade initializers
+  // Cascade initializers: automatically select rooms that actually have free bed slots
   React.useEffect(() => {
     if (properties.length > 0) {
       if (!propertyId || !properties.some((p) => p.id === propertyId)) {
@@ -87,13 +87,21 @@ function TenantFormContent() {
   React.useEffect(() => {
     if (availableRooms.length > 0) {
       if (!roomId || !availableRooms.some((r) => r.id === roomId)) {
-        const defaultRoom = (preRoomId && availableRooms.some((r) => r.id === preRoomId)) ? preRoomId : availableRooms[0].id;
+        // Find the first room in this building that actually has free beds
+        const roomWithFreeBeds = availableRooms.find((r) =>
+          beds.some((b) => b.room_id === r.id && (b.status === 'available' || b.id === preBedId))
+        );
+        const defaultRoom = preRoomId && availableRooms.some((r) => r.id === preRoomId)
+          ? preRoomId
+          : roomWithFreeBeds
+          ? roomWithFreeBeds.id
+          : availableRooms[0].id;
         setRoomId(defaultRoom);
       }
     } else {
       setRoomId('');
     }
-  }, [availableRooms, roomId, preRoomId]);
+  }, [availableRooms, roomId, preRoomId, beds, preBedId]);
 
   React.useEffect(() => {
     if (availableBeds.length > 0) {
@@ -122,10 +130,13 @@ function TenantFormContent() {
     setBuildingId(firstBld);
 
     const rms = firstBld ? rooms.filter((r) => r.building_id === firstBld) : rooms.filter((r) => r.property_id === newPropId);
-    const firstRm = rms[0]?.id || '';
-    setRoomId(firstRm);
+    const roomWithFreeBeds = rms.find((r) =>
+      beds.some((b) => b.room_id === r.id && b.status === 'available')
+    );
+    const chosenRm = roomWithFreeBeds ? roomWithFreeBeds.id : rms[0]?.id || '';
+    setRoomId(chosenRm);
 
-    const bds = firstRm ? beds.filter((b) => b.room_id === firstRm && (b.status === 'available' || b.id === preBedId)) : [];
+    const bds = chosenRm ? beds.filter((b) => b.room_id === chosenRm && b.status === 'available') : [];
     setBedId(bds[0]?.id || '');
   };
 
@@ -133,10 +144,13 @@ function TenantFormContent() {
     setBuildingId(newBldId);
     setErrors((prev) => ({ ...prev, buildingId: '', roomId: '', bedId: '' }));
     const rms = rooms.filter((r) => r.building_id === newBldId);
-    const firstRm = rms[0]?.id || '';
-    setRoomId(firstRm);
+    const roomWithFreeBeds = rms.find((r) =>
+      beds.some((b) => b.room_id === r.id && b.status === 'available')
+    );
+    const chosenRm = roomWithFreeBeds ? roomWithFreeBeds.id : rms[0]?.id || '';
+    setRoomId(chosenRm);
 
-    const bds = firstRm ? beds.filter((b) => b.room_id === firstRm && (b.status === 'available' || b.id === preBedId)) : [];
+    const bds = chosenRm ? beds.filter((b) => b.room_id === chosenRm && b.status === 'available') : [];
     setBedId(bds[0]?.id || '');
   };
 
@@ -199,6 +213,16 @@ function TenantFormContent() {
     toast.success(`Tenant ${fullName} onboarded and bed assigned!`);
     router.push(`/tenants/${created.id}`);
   };
+
+  if (dataMode === 'loading') {
+    return (
+      <div className="max-w-3xl mx-auto space-y-6 animate-pulse p-4">
+        <div className="h-8 bg-slate-200 rounded-xl w-64" />
+        <div className="h-48 bg-slate-200 rounded-2xl" />
+        <div className="h-48 bg-slate-200 rounded-2xl" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -331,9 +355,14 @@ function TenantFormContent() {
                   {availableRooms.length === 0 ? (
                     <option value="">No rooms found</option>
                   ) : (
-                    availableRooms.map((r) => (
-                      <option key={r.id} value={r.id}>Room {r.room_number}</option>
-                    ))
+                    availableRooms.map((r) => {
+                      const freeBeds = beds.filter((b) => b.room_id === r.id && (b.status === 'available' || b.id === preBedId));
+                      return (
+                        <option key={r.id} value={r.id}>
+                          Room {r.room_number} {freeBeds.length > 0 ? `(${freeBeds.length} ${freeBeds.length === 1 ? 'bed' : 'beds'} available)` : '(Full)'}
+                        </option>
+                      );
+                    })
                   )}
                 </select>
                 {errors.roomId && <p className="text-xs text-rose-400 mt-1">{errors.roomId}</p>}

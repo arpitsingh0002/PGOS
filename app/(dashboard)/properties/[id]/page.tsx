@@ -182,7 +182,7 @@ export default function PropertyDetailPage() {
                 </p>
               </div>
               <p className="text-xs font-semibold text-slate-600 mt-2">
-                {propRooms.length > 0 ? `${propRooms.length} Total Rooms` : '—'}
+                <>Total Rooms: <strong className="text-slate-900 font-bold">{propRooms.length > 0 ? propRooms.length : '—'}</strong></>
               </p>
             </Card>
 
@@ -194,7 +194,7 @@ export default function PropertyDetailPage() {
                 </p>
               </div>
               <p className="text-xs font-bold text-emerald-800 mt-2">
-                {propBeds.length > 0 ? `${propBeds.filter((b) => b.status === 'occupied').length} Occupied` : '—'}
+                <>Occupied Beds: <strong className="text-slate-900 font-bold">{propBeds.length > 0 ? propBeds.filter((b) => b.status === 'occupied').length : '—'}</strong></>
               </p>
             </Card>
 
@@ -206,7 +206,7 @@ export default function PropertyDetailPage() {
                 </p>
               </div>
               <p className="text-xs font-semibold text-slate-600 mt-2">
-                {propPayments.length > 0 ? `${propPayments.length} recorded payments` : '0 recorded payments'}
+                <>Recorded Payments: <strong className="text-slate-900 font-bold">{propPayments.length > 0 ? propPayments.length : '0'}</strong></>
               </p>
             </Card>
 
@@ -218,7 +218,7 @@ export default function PropertyDetailPage() {
                 </p>
               </div>
               <p className="text-xs font-semibold text-slate-600 mt-2">
-                {propComplaints.length > 0 ? `${propComplaints.length} Total Tickets` : 'No active tickets'}
+                <>Total Tickets: <strong className="text-slate-900 font-bold">{propComplaints.length > 0 ? propComplaints.length : '0'}</strong></>
               </p>
             </Card>
           </div>
@@ -252,7 +252,7 @@ export default function PropertyDetailPage() {
                       <p className="text-xs text-slate-400 mt-1">{bld.description || `${bld.floors_count} Floors structure`}</p>
                       <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between">
                         <span className="text-xs text-slate-300 font-semibold">
-                          {bldRooms.length > 0 ? `${bldRooms.length} Rooms` : '—'} • {bldBeds.length > 0 ? `${bldBeds.length} Beds` : '—'}
+                          <span>Rooms: <strong className="text-white">{bldRooms.length > 0 ? bldRooms.length : '—'}</strong> • Beds: <strong className="text-white">{bldBeds.length > 0 ? bldBeds.length : '—'}</strong></span>
                         </span>
                         <Link href={`/properties/${property.id}/buildings/${bld.id}`}>
                           <Button size="sm" variant="ghost" className="h-7 text-xs text-indigo-400 hover:text-indigo-300">

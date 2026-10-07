@@ -84,6 +84,7 @@ export default function ManagerDashboardPage() {
     updateComplaintStatus,
     addComplaint,
     addStaff,
+    dataMode,
   } = usePGStore();
 
   const [selectedBranchId, setSelectedBranchId] = React.useState('prop-1');
@@ -424,6 +425,23 @@ export default function ManagerDashboardPage() {
   };
 
   const completedChecklistCount = checklist.filter((c) => c.done).length;
+
+  if (dataMode === 'loading') {
+    return (
+      <div className="space-y-6 animate-pulse p-4">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+          <div className="h-8 bg-slate-200 rounded-xl w-64" />
+          <div className="h-8 bg-slate-200 rounded-xl w-32" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-28 bg-slate-200 rounded-2xl" />
+          ))}
+        </div>
+        <div className="h-96 bg-slate-200 rounded-2xl" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300 pb-12">
@@ -1416,7 +1434,7 @@ export default function ManagerDashboardPage() {
                         <td className="py-3.5 px-4">
                           <span className="font-semibold text-white block">{student.full_name}</span>
                           <span className="text-[11px] text-slate-400">
-                            Joined {student.joining_date || 'Jan 2025'}
+                            Joined {student.joining_date ? formatDate(student.joining_date) : 'Recently'}
                           </span>
                         </td>
                         <td className="py-3.5 px-4">

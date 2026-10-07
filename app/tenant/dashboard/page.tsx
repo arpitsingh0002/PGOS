@@ -31,7 +31,7 @@ export default function TenantDashboardPage() {
     bed_number: 'Bed A',
     monthly_rent: 9500,
     security_deposit: 19000,
-    joining_date: '2025-01-15',
+    joining_date: new Date(Date.now() - 60 * 86400000).toISOString().split('T')[0],
     agreement_status: 'signed',
     status: 'active',
   };
