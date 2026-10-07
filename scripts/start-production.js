@@ -7,7 +7,7 @@ const standaloneServer = path.join(root, '.next', 'standalone', 'server.js');
 
 // Ensure HOSTNAME binds to all network interfaces for Render proxy routing
 process.env.HOSTNAME = process.env.HOSTNAME || '0.0.0.0';
-process.env.PORT = process.env.PORT || '3000';
+process.env.PORT = process.env.PORT || '10000';
 
 if (fs.existsSync(standaloneServer)) {
   console.log(`🚀 [Render] Starting PGOS Standalone Server on ${process.env.HOSTNAME}:${process.env.PORT}...`);
