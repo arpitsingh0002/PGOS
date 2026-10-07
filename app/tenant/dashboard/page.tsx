@@ -17,24 +17,14 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { usePGStore } from '@/lib/store';
+import { DEMO_TENANT } from '@/lib/data/initial-data';
 import { formatINR, formatDate } from '@/lib/utils/format';
 import { toast } from 'sonner';
 import { TiffinHubCard } from '@/components/tenant/tiffin-hub-card';
 
 export default function TenantDashboardPage() {
   const { tenants, messMenus, notices, complaints, payments } = usePGStore();
-  const currentTenant = tenants[0] || {
-    id: 'ten-1',
-    full_name: 'Aarav Sharma',
-    phone: '9876543210',
-    room_number: '101',
-    bed_number: 'Bed A',
-    monthly_rent: 9500,
-    security_deposit: 19000,
-    joining_date: new Date(Date.now() - 60 * 86400000).toISOString().split('T')[0],
-    agreement_status: 'signed',
-    status: 'active',
-  };
+  const currentTenant = tenants.find((t) => t.id === DEMO_TENANT.id) || tenants[0] || DEMO_TENANT;
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const todayDay = days[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1];
@@ -44,7 +34,7 @@ export default function TenantDashboardPage() {
   const latestNotice = notices[0];
 
   return (
-    <div className="space-y-5 animate-in fade-in duration-300">
+    <div className="space-y-5 animate-in fade-in duration-300 pb-12">
       {/* Resident Greeting Card */}
       <div className="p-5 rounded-3xl bg-gradient-to-br from-indigo-50 via-white to-slate-50 border border-indigo-200 shadow-md relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />

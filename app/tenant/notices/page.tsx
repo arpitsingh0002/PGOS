@@ -11,7 +11,7 @@ export default function TenantNoticesPage() {
   const { notices } = usePGStore();
 
   return (
-    <div className="space-y-4 animate-in fade-in duration-300">
+    <div className="space-y-4 animate-in fade-in duration-300 pb-12">
       <div className="pb-2 border-b border-slate-300">
         <h1 className="text-lg font-bold text-slate-950 tracking-tight">Hostel Notice Board</h1>
         <p className="text-xs font-semibold text-slate-700 mt-0.5">Official communications from management</p>

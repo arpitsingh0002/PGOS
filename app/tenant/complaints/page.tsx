@@ -8,12 +8,13 @@ import { Badge } from '@/components/ui/badge';
 import { Modal } from '@/components/ui/modal';
 import { Input } from '@/components/ui/input';
 import { usePGStore } from '@/lib/store';
+import { DEMO_TENANT } from '@/lib/data/initial-data';
 import { formatDate, getComplaintStatusBadge } from '@/lib/utils/format';
 import { toast } from 'sonner';
 
 export default function TenantComplaintsPage() {
   const { complaints, tenants, addComplaint } = usePGStore();
-  const currentTenant = tenants[0];
+  const currentTenant = tenants.find((t) => t.id === DEMO_TENANT.id) || tenants[0] || DEMO_TENANT;
   const myComplaints = complaints.filter((c) => c.tenant_id === currentTenant?.id);
 
   const [showModal, setShowModal] = React.useState(false);
@@ -43,7 +44,7 @@ export default function TenantComplaintsPage() {
   };
 
   return (
-    <div className="space-y-4 animate-in fade-in duration-300">
+    <div className="space-y-4 animate-in fade-in duration-300 pb-12">
       <div className="flex items-center justify-between pb-2 border-b border-slate-300">
         <div>
           <h1 className="text-lg font-bold text-slate-950 tracking-tight">Maintenance & Helpdesk</h1>

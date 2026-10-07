@@ -16,7 +16,7 @@ export default function TenantMessPage() {
   const currentMenu = messMenus.find((m) => m.day_of_week === selectedDay) || messMenus[0];
 
   return (
-    <div className="space-y-4 animate-in fade-in duration-300">
+    <div className="space-y-4 animate-in fade-in duration-300 pb-12">
       <div className="pb-2 border-b border-slate-300">
         <h1 className="text-lg font-bold text-slate-950 tracking-tight">Mess & Meal Timetable</h1>
         <p className="text-xs font-semibold text-slate-700 mt-0.5">Freshly prepared buffet schedule</p>

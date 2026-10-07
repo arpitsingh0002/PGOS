@@ -48,12 +48,15 @@ export default function PropertyDetailPage() {
     addBuilding,
     addRoom,
     updateBedStatus,
+    getPropertyOccupancyStats,
   } = usePGStore();
 
   const property = properties.find((p) => p.id === propId) || properties[0];
+  const propOccupancy = getPropertyOccupancyStats(property?.id, rooms, beds);
   const propBuildings = buildings.filter((b) => b.property_id === property?.id);
   const propRooms = rooms.filter((r) => r.property_id === property?.id);
-  const propBeds = beds.filter((b) => b.property_id === property?.id);
+  const propRoomIds = new Set(propRooms.map((r) => r.id));
+  const propBeds = beds.filter((b) => b.property_id === property?.id || propRoomIds.has(b.room_id));
   const propTenants = tenants.filter((t) => t.property_id === property?.id);
   const propComplaints = complaints.filter((c) => c.property_id === property?.id);
   const propPayments = payments.filter((p) => p.property_id === property?.id);
@@ -190,11 +193,11 @@ export default function PropertyDetailPage() {
               <div>
                 <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider block">Total Beds</span>
                 <p className="text-2xl font-black text-slate-950 mt-1">
-                  {propBeds.length > 0 ? propBeds.length : '—'}
+                  {propOccupancy.totalBeds > 0 ? propOccupancy.totalBeds : '—'}
                 </p>
               </div>
               <p className="text-xs font-bold text-emerald-800 mt-2">
-                <>Occupied Beds: <strong className="text-slate-900 font-bold">{propBeds.length > 0 ? propBeds.filter((b) => b.status === 'occupied').length : '—'}</strong></>
+                <>Occupied Beds: <strong className="text-slate-900 font-bold">{propOccupancy.totalBeds > 0 ? propOccupancy.occupiedBeds : '—'}</strong></>
               </p>
             </Card>
 

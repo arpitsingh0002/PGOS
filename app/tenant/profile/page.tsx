@@ -8,13 +8,14 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { usePGStore } from '@/lib/store';
+import { DEMO_TENANT } from '@/lib/data/initial-data';
 import { formatINR, formatDate, formatPhone } from '@/lib/utils/format';
 import { toast } from 'sonner';
 
 export default function TenantProfilePage() {
   const router = useRouter();
   const { tenants } = usePGStore();
-  const currentTenant = tenants[0];
+  const currentTenant = tenants.find((t) => t.id === DEMO_TENANT.id) || tenants[0] || DEMO_TENANT;
 
   const handleLogout = () => {
     toast.success('Logged out from Tenant Portal');
@@ -22,7 +23,7 @@ export default function TenantProfilePage() {
   };
 
   return (
-    <div className="space-y-4 animate-in fade-in duration-300">
+    <div className="space-y-4 animate-in fade-in duration-300 pb-12">
       <div className="pb-2 border-b border-slate-300">
         <h1 className="text-lg font-bold text-slate-950 tracking-tight">Resident Profile</h1>
         <p className="text-xs font-semibold text-slate-700 mt-0.5">Your KYC details and stay contract</p>

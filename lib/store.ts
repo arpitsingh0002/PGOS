@@ -63,7 +63,10 @@ import {
   INITIAL_INVENTORY_ITEMS,
   INITIAL_INVENTORY_REQUESTS,
   getTodayDateStr,
+  DEMO_TENANT,
 } from '@/lib/data/initial-data';
+
+export { DEMO_TENANT };
 
 // -------------------------------------------------------------
 // SINGLETON GLOBAL STATE DEFINITION & SYNC CONTRACT
@@ -157,7 +160,39 @@ function safeParseArray<T>(key: string, fallback: T[]): T[] {
     const raw = localStorage.getItem(key);
     if (!raw) return fallback;
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : fallback;
+    if (!Array.isArray(parsed) || parsed.length === 0) return fallback;
+
+    // Validate bed records: must link to valid known rooms and have valid count
+    if (key === 'pgos_beds') {
+      const validRoomIds = new Set(INITIAL_ROOMS.map((r) => r.id));
+      const hasValidLinks = (parsed as any[]).some((b) => validRoomIds.has(b.room_id));
+      if (!hasValidLinks || parsed.length < INITIAL_BEDS.length) {
+        localStorage.removeItem('pgos_beds');
+        return fallback;
+      }
+    }
+
+    // Validate payments: purge any stale rows containing hardcoded 2025 dates
+    if (key === 'pgos_payments') {
+      const hasStale2025 = (parsed as any[]).some(
+        (p) => typeof p.for_month === 'string' && p.for_month.startsWith('2025-')
+      );
+      if (hasStale2025) {
+        localStorage.removeItem('pgos_payments');
+        return fallback;
+      }
+    }
+
+    // Validate tenants: purge any stale mock users
+    if (key === 'pgos_tenants') {
+      const hasInvalidUser = (parsed as any[]).some((t) => t.full_name === 'Test User');
+      if (hasInvalidUser) {
+        localStorage.removeItem('pgos_tenants');
+        return fallback;
+      }
+    }
+
+    return parsed;
   } catch {
     return fallback;
   }

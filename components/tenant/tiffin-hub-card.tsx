@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { usePGStore } from '@/lib/store';
+import { DEMO_TENANT } from '@/lib/data/initial-data';
 import { toast } from 'sonner';
 
 interface TiffinHubCardProps {
@@ -37,15 +38,7 @@ export function TiffinHubCard({ compact = false }: TiffinHubCardProps) {
     updateTenantCollege,
   } = usePGStore();
 
-  const currentTenant = tenants[0] || {
-    id: 'ten-1',
-    full_name: 'Aarav Sharma',
-    phone: '9876543210',
-    room_number: '101',
-    bed_number: 'Bed A',
-    college_name: 'BMS College of Engineering',
-    course: 'B.Tech CSE (3rd Year)',
-  };
+  const currentTenant = tenants.find((t) => t.id === DEMO_TENANT.id) || tenants[0] || DEMO_TENANT;
 
   const todayStr = React.useMemo(() => {
     const now = new Date();

@@ -54,7 +54,7 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-4 pb-20 overflow-y-auto">
+      <main className="flex-1 p-4 pb-36 overflow-y-auto">
         {children}
       </main>
 

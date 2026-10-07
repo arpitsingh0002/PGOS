@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Phone, ArrowRight, ShieldCheck, Sparkles, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { DEMO_TENANT } from '@/lib/data/initial-data';
 
 export default function TenantLoginPage() {
   const router = useRouter();
@@ -29,12 +30,12 @@ export default function TenantLoginPage() {
       toast.error('Please enter the 4-digit verification code');
       return;
     }
-    toast.success('Welcome back, Aarav Sharma!');
+    toast.success(`Welcome back, ${DEMO_TENANT.full_name}!`);
     router.push('/tenant/dashboard');
   };
 
   const handleDemoBypass = () => {
-    toast.success('Demo login successful: Welcome back, Aarav Sharma!');
+    toast.success(`Demo login successful: Welcome back, ${DEMO_TENANT.full_name}!`);
     router.push('/tenant/dashboard');
   };
 
