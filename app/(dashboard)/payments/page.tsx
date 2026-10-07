@@ -64,7 +64,7 @@ export default function PaymentsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <Link href="/payments/bulk-invoice">
             <Button size="sm" variant="secondary" className="gap-1.5 text-xs font-bold text-slate-900 border border-slate-300 bg-slate-100 hover:bg-slate-200">
               <FileSpreadsheet className="h-4 w-4 text-indigo-700 stroke-[2.5]" /> Bulk Invoicing
@@ -127,7 +127,7 @@ export default function PaymentsPage() {
       {/* Payments Table */}
       <Card className="glass-card overflow-hidden p-0 border border-slate-300 shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs min-w-[760px]">
             <thead className="border-b border-slate-200 bg-slate-100 text-slate-900">
               <tr>
                 <th className="p-4 font-black">Receipt #</th>

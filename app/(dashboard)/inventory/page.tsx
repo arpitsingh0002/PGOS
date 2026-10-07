@@ -195,9 +195,9 @@ export default function CentralInventoryPage() {
 
       {/* Urgent Requisitions Alert Banner */}
       {urgentRequisitions.length > 0 && (
-        <div className="bg-rose-50 border border-rose-300 rounded-xl p-3.5 flex items-center justify-between text-xs text-rose-950 shadow-xs">
+        <div className="bg-rose-50 border border-rose-300 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-rose-950 shadow-xs">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-rose-100 border border-rose-300 text-rose-900">
+            <div className="p-2 rounded-lg bg-rose-100 border border-rose-300 text-rose-900 flex-shrink-0">
               <Flame className="h-4 w-4 animate-bounce" />
             </div>
             <div>
@@ -216,7 +216,7 @@ export default function CentralInventoryPage() {
               setActiveTab('requests');
               setPriorityFilter('urgent');
             }}
-            className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs h-8 shadow-sm"
+            className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs h-8 shadow-sm flex-shrink-0 self-end sm:self-auto"
           >
             Review Urgent Indents
           </Button>
@@ -350,7 +350,7 @@ export default function CentralInventoryPage() {
       {activeTab === 'requests' && (
         <div className="bg-white rounded-2xl overflow-hidden border border-slate-300 shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs min-w-[760px]">
               <thead className="bg-slate-100 text-slate-950 border-b border-slate-300 font-bold">
                 <tr>
                   <th className="py-3 px-4">Item Name</th>
@@ -492,7 +492,7 @@ export default function CentralInventoryPage() {
       {activeTab === 'stock' && (
         <div className="bg-white rounded-2xl overflow-hidden border border-slate-300 shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs min-w-[760px]">
               <thead className="bg-slate-100 text-slate-950 border-b border-slate-300 font-bold">
                 <tr>
                   <th className="py-3 px-4">Item Name</th>

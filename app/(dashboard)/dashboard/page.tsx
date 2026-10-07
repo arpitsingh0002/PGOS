@@ -81,7 +81,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Row 1: KPI Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Total Properties & Buildings */}
         <Card className="glass-card border-slate-300 shadow-sm">
           <div className="flex items-center justify-between">
@@ -182,10 +182,10 @@ export default function DashboardPage() {
                   {pendingPayments.map((p) => (
                     <div
                       key={p.id}
-                      className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-300 hover:border-slate-400 transition-colors"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-300 hover:border-slate-400 transition-colors gap-3"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-xl bg-amber-100 text-amber-900 border border-amber-300 flex items-center justify-center font-black text-sm">
+                        <div className="h-9 w-9 rounded-xl bg-amber-100 text-amber-900 border border-amber-300 flex items-center justify-center font-black text-sm flex-shrink-0">
                           ₹
                         </div>
                         <div>
@@ -194,8 +194,8 @@ export default function DashboardPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
-                        <div className="text-right">
+                      <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200">
+                        <div className="text-left sm:text-right">
                           <p className="text-sm font-black text-amber-800">{formatINR(p.amount)}</p>
                           <span className="text-[11px] text-rose-800 bg-rose-100 border border-rose-300 font-bold px-2 py-0.5 rounded-md inline-block mt-0.5">Due now</span>
                         </div>
@@ -205,7 +205,7 @@ export default function DashboardPage() {
                           onClick={() => {
                             toast.success(`WhatsApp reminder sent to ${p.tenant_name}!`);
                           }}
-                          className="h-8 text-xs font-bold text-emerald-800 hover:text-emerald-950 border-emerald-400 bg-emerald-50 hover:bg-emerald-100 shadow-xs"
+                          className="h-8 text-xs font-bold text-emerald-800 hover:text-emerald-950 border-emerald-400 bg-emerald-50 hover:bg-emerald-100 shadow-xs flex-shrink-0"
                         >
                           Send WhatsApp
                         </Button>
@@ -287,10 +287,10 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={c.id}
-                    className="p-3.5 rounded-xl bg-slate-50 border border-slate-300 flex items-center justify-between"
+                    className="p-3.5 rounded-xl bg-slate-50 border border-slate-300 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5"
                   >
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs font-bold text-slate-950">{c.title}</span>
                         <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${badge.color}`}>
                           {badge.label}
@@ -300,7 +300,7 @@ export default function DashboardPage() {
                         Room <span className="text-slate-950 font-black">{c.room_number}</span> &bull; <span className="text-slate-950 font-bold">{c.tenant_name}</span> &bull; Priority: <span className="text-amber-900 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded uppercase font-black text-[10px]">{c.priority}</span>
                       </p>
                     </div>
-                    <Link href={`/complaints`}>
+                    <Link href={`/complaints`} className="self-end sm:self-auto">
                       <Button size="sm" variant="ghost" className="h-8 text-xs font-bold text-slate-900 hover:text-indigo-700 hover:bg-slate-100">
                         Resolve &rarr;
                       </Button>
@@ -330,7 +330,7 @@ export default function DashboardPage() {
             {recentPayments.map((p) => (
               <div
                 key={p.id}
-                className="p-3.5 rounded-xl bg-slate-50 border border-slate-300 flex items-center justify-between"
+                className="p-3.5 rounded-xl bg-slate-50 border border-slate-300 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5"
               >
                 <div>
                   <p className="text-xs font-bold text-slate-950">{p.tenant_name}</p>
@@ -338,11 +338,11 @@ export default function DashboardPage() {
                     <span className="font-mono text-slate-950 font-bold">{p.receipt_number}</span> &bull; <span className="text-slate-950 font-bold">{p.payment_mode}</span> &bull; {formatDate(p.payment_date)}
                   </p>
                 </div>
-                <div className="text-right">
+                <div className="flex items-center justify-between sm:justify-end sm:text-right gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200">
                   <p className="text-xs font-black text-emerald-800">{formatINR(p.amount)}</p>
                   <Link
                     href={`/payments/${p.id}`}
-                    className="text-xs text-indigo-700 hover:text-indigo-900 hover:underline flex items-center justify-end gap-1 mt-1 font-bold"
+                    className="text-xs text-indigo-700 hover:text-indigo-900 hover:underline flex items-center gap-1 font-bold"
                   >
                     View Receipt <ExternalLink className="h-3 w-3 stroke-[2.5]" />
                   </Link>

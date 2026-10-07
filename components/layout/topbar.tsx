@@ -16,13 +16,18 @@ import {
   ExternalLink,
   Database,
   RefreshCw,
+  Menu,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePGStore } from '@/lib/store';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 
-export function Topbar() {
+export interface TopbarProps {
+  onOpenMobileMenu?: () => void;
+}
+
+export function Topbar({ onOpenMobileMenu }: TopbarProps = {}) {
   const router = useRouter();
   const {
     properties,
@@ -68,12 +73,22 @@ export function Topbar() {
   };
 
   return (
-    <header className="h-16 flex-shrink-0 border-b border-slate-200 bg-white/90 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-20">
+    <header className="h-16 flex-shrink-0 border-b border-slate-200 bg-white/90 backdrop-blur-md px-3.5 sm:px-6 flex items-center justify-between sticky top-0 z-20">
       {/* Property Selector & Search */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4">
+        {/* Mobile Hamburger Button */}
+        <button
+          type="button"
+          onClick={onOpenMobileMenu}
+          className="md:hidden p-2 -ml-1 rounded-xl text-slate-800 hover:text-slate-950 hover:bg-slate-100 transition-colors"
+          aria-label="Open mobile menu"
+        >
+          <Menu className="h-5 w-5 stroke-[2.5]" />
+        </button>
+
         {/* Active Property Dropdown */}
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-300">
-          <Building2 className="h-4 w-4 text-indigo-700 stroke-[2.5]" />
+        <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-300 max-w-[155px] xs:max-w-[200px] sm:max-w-none">
+          <Building2 className="h-4 w-4 text-indigo-700 stroke-[2.5] flex-shrink-0" />
           <select
             value={selectedPropId}
             onChange={(e) => {
@@ -81,7 +96,7 @@ export function Topbar() {
               toast.info(`Switched to ${properties.find((p) => p.id === e.target.value)?.name}`);
             }}
             aria-label="Select Active Property"
-            className="bg-transparent text-sm font-bold text-slate-950 focus:outline-none cursor-pointer pr-2"
+            className="bg-transparent text-xs sm:text-sm font-bold text-slate-950 focus:outline-none cursor-pointer pr-1 truncate w-full"
           >
             {properties.map((p) => (
               <option key={p.id} value={p.id} className="bg-white text-slate-950 font-bold">
@@ -91,7 +106,7 @@ export function Topbar() {
           </select>
         </div>
 
-        {/* AI Quick Query Bar */}
+        {/* AI Quick Query Bar (Desktop) */}
         <button
           onClick={() => setShowAiModal(true)}
           className="hidden xl:flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-800 hover:text-slate-950 hover:border-slate-400 text-xs font-bold whitespace-nowrap transition-colors"
@@ -99,6 +114,16 @@ export function Topbar() {
           <Sparkles className="h-3.5 w-3.5 text-indigo-700 stroke-[2.5]" />
           <span>Ask PGOS AI (e.g. &ldquo;vacant beds this week&rdquo;)...</span>
           <kbd className="text-[10px] font-bold bg-slate-200 px-1.5 py-0.5 rounded text-slate-800 border border-slate-300">⌘K</kbd>
+        </button>
+
+        {/* Mobile/Tablet AI Quick Query Icon */}
+        <button
+          onClick={() => setShowAiModal(true)}
+          className="xl:hidden p-2 rounded-xl text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition-colors"
+          title="Ask PGOS AI"
+          aria-label="Open AI Assistant"
+        >
+          <Sparkles className="h-4 w-4 text-indigo-700 stroke-[2.5]" />
         </button>
       </div>
 

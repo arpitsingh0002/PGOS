@@ -100,7 +100,7 @@ export default function TenantsPage() {
       {/* Tenants Table */}
       <Card className="glass-card overflow-hidden p-0 border border-slate-300 shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs min-w-[760px]">
             <thead className="border-b border-slate-200 bg-slate-100 text-slate-900">
               <tr>
                 <th className="p-4 font-black">Tenant</th>
