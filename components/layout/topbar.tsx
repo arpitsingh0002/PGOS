@@ -16,13 +16,18 @@ import {
   ExternalLink,
   Database,
   RefreshCw,
+  Menu,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePGStore } from '@/lib/store';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 
-export function Topbar() {
+export interface TopbarProps {
+  onOpenMobileMenu?: () => void;
+}
+
+export function Topbar({ onOpenMobileMenu }: TopbarProps = {}) {
   const router = useRouter();
   const {
     properties,
@@ -30,6 +35,7 @@ export function Topbar() {
     pendingPayments,
     syncStatus,
     isLiveDB,
+    dataMode,
     lastSyncedAt,
     syncNow,
   } = usePGStore();
@@ -60,7 +66,7 @@ export function Topbar() {
       setAiResponse(data.answer || 'Query processed successfully.');
     } catch {
       setAiResponse(
-        `AI Analysis for "${aiPrompt}": Based on current occupancy (83%) across 18 beds, you have 1 vacant bed in Tower A (Bed 102-B) and 1 bed in maintenance. Pending rent is ₹7,500 from Sneha Rao.`
+        `AI Analysis for "${aiPrompt}": Based on current occupancy across active beds, you have vacant capacity in Tower A and pending rent notifications ready to dispatch.`
       );
     } finally {
       setIsAiLoading(false);
@@ -68,12 +74,22 @@ export function Topbar() {
   };
 
   return (
-    <header className="h-16 flex-shrink-0 border-b border-slate-200 bg-white/95 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-20">
+    <header className="h-16 flex-shrink-0 border-b border-slate-200 bg-white/95 backdrop-blur-md px-3.5 sm:px-6 flex items-center justify-between sticky top-0 z-20">
       {/* Property Selector & Search */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4">
+        {/* Mobile Hamburger Button */}
+        <button
+          type="button"
+          onClick={onOpenMobileMenu}
+          className="md:hidden p-2 -ml-1 rounded-xl text-slate-800 hover:text-slate-950 hover:bg-slate-100 transition-colors"
+          aria-label="Open mobile menu"
+        >
+          <Menu className="h-5 w-5 stroke-[2.5]" />
+        </button>
+
         {/* Active Property Dropdown */}
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-colors">
-          <Building2 className="h-4 w-4 text-orange-600" />
+        <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 max-w-[155px] xs:max-w-[200px] sm:max-w-none">
+          <Building2 className="h-4 w-4 text-orange-600 flex-shrink-0" />
           <select
             value={selectedPropId}
             onChange={(e) => {
@@ -81,24 +97,34 @@ export function Topbar() {
               toast.info(`Switched to ${properties.find((p) => p.id === e.target.value)?.name}`);
             }}
             aria-label="Select Active Property"
-            className="bg-transparent text-xs font-semibold text-slate-800 focus:outline-none cursor-pointer pr-2"
+            className="bg-transparent text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none cursor-pointer pr-1 truncate w-full"
           >
             {properties.map((p) => (
-              <option key={p.id} value={p.id} className="bg-white text-slate-900">
+              <option key={p.id} value={p.id} className="bg-white text-slate-900 font-medium">
                 {p.name} ({p.city})
               </option>
             ))}
           </select>
         </div>
 
-        {/* AI Quick Query Bar */}
+        {/* AI Quick Query Bar (Desktop) */}
         <button
           onClick={() => setShowAiModal(true)}
-          className="hidden md:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-800 hover:border-slate-300 text-xs transition-colors"
+          className="hidden xl:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-800 hover:border-slate-300 text-xs transition-colors"
         >
           <Sparkles className="h-3.5 w-3.5 text-orange-500" />
           <span>Ask PGOS AI (e.g. &ldquo;vacant beds this week&rdquo;)...</span>
           <kbd className="text-[10px] bg-white px-1.5 py-0.5 rounded text-slate-400 border border-slate-200">⌘K</kbd>
+        </button>
+
+        {/* Mobile/Tablet AI Quick Query Icon */}
+        <button
+          onClick={() => setShowAiModal(true)}
+          className="xl:hidden p-2 rounded-xl text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition-colors"
+          title="Ask PGOS AI"
+          aria-label="Open AI Assistant"
+        >
+          <Sparkles className="h-4 w-4 text-orange-600 stroke-[2.5]" />
         </button>
       </div>
 
@@ -112,16 +138,16 @@ export function Topbar() {
             onClick={() => router.push('/properties/new')}
             className="gap-1.5 text-xs border-slate-200 text-slate-700 hover:bg-slate-50"
           >
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
             Add Property
           </Button>
 
           <Button
             size="sm"
             onClick={() => router.push('/tenants/new')}
-            className="gap-1.5 text-xs bg-orange-600 hover:bg-orange-500 text-white shadow-xs"
+            className="gap-1.5 text-xs bg-orange-600 hover:bg-orange-500 text-white shadow-xs font-bold"
           >
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
             Add Tenant
           </Button>
         </div>
@@ -133,26 +159,32 @@ export function Topbar() {
             toast.info('Synchronizing with Supabase...');
           }}
           title={lastSyncedAt ? `Last synced at ${lastSyncedAt}. Click to refresh.` : 'Click to refresh from Supabase'}
-          className={`hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium border transition-colors ${
-            isLiveDB
-              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-              : syncStatus === 'syncing'
-              ? 'bg-amber-50 text-amber-700 border-amber-200 animate-pulse'
-              : 'bg-slate-50 text-slate-600 border-slate-200 hover:text-slate-900'
+          className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
+            dataMode === 'live'
+              ? 'bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200'
+              : dataMode === 'loading'
+              ? 'bg-amber-100 text-amber-900 border-amber-300 animate-pulse'
+              : 'bg-slate-100 text-slate-800 border-slate-300 hover:text-slate-950'
           }`}
         >
-          <span className={`h-1.5 w-1.5 rounded-full ${isLiveDB ? 'bg-emerald-500 animate-pulse' : syncStatus === 'syncing' ? 'bg-amber-500' : 'bg-slate-400'}`} />
-          <span>{isLiveDB ? 'Supabase Live' : syncStatus === 'syncing' ? 'Syncing...' : 'Local Cache'}</span>
-          <RefreshCw className={`h-3 w-3 opacity-60 ml-0.5 ${syncStatus === 'syncing' ? 'animate-spin' : ''}`} />
+          <span className={`h-1.5 w-1.5 rounded-full ${
+            dataMode === 'live'
+              ? 'bg-emerald-600 animate-pulse'
+              : dataMode === 'loading'
+              ? 'bg-amber-600 animate-pulse'
+              : 'bg-blue-600'
+          }`} />
+          <span>{dataMode === 'live' ? 'Supabase Live' : dataMode === 'loading' ? 'Syncing...' : 'Demo Mode'}</span>
+          <RefreshCw className={`h-3 w-3 opacity-75 ml-0.5 ${dataMode === 'loading' ? 'animate-spin' : ''}`} />
         </button>
 
         {/* Notifications Dropdown */}
         <div className="relative">
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
+            className="relative p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
           >
-            <Bell className="h-4 w-4" />
+            <Bell className="h-4 w-4 stroke-[2.2]" />
             {pendingPayments.length > 0 && (
               <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-orange-600 ring-2 ring-white" />
             )}
@@ -196,7 +228,7 @@ export function Topbar() {
               <p className="text-xs font-bold text-slate-900">Anand Owner</p>
               <p className="text-[10px] text-slate-500 font-medium">Verified Owner</p>
             </div>
-            <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+            <ChevronDown className="h-3.5 w-3.5 text-slate-600 stroke-[2.2]" />
           </button>
 
           {showUserMenu && (
@@ -204,7 +236,7 @@ export function Topbar() {
               <Link
                 href="/settings"
                 onClick={() => setShowUserMenu(false)}
-                className="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors font-medium"
               >
                 <User className="h-3.5 w-3.5" />
                 Account Settings
@@ -213,7 +245,7 @@ export function Topbar() {
                 href="/pg/prop-1"
                 target="_blank"
                 onClick={() => setShowUserMenu(false)}
-                className="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors font-medium"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
                 Public PG Page
@@ -262,7 +294,7 @@ export function Topbar() {
                 <Button
                   type="submit"
                   size="sm"
-                  className="absolute right-2 top-2 h-8 text-xs bg-orange-600 hover:bg-orange-500 text-white shadow-xs"
+                  className="absolute right-2 top-2 h-8 text-xs bg-orange-600 hover:bg-orange-500 text-white shadow-xs font-bold"
                   disabled={isAiLoading}
                 >
                   {isAiLoading ? 'Thinking...' : 'Ask AI'}
@@ -276,12 +308,12 @@ export function Topbar() {
                 </div>
               )}
 
-              <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-100">
+              <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-100">
                 <span>Try: &quot;Which rooms are vacant?&quot; or &quot;Total food expenses this month&quot;</span>
                 <button
                   type="button"
                   onClick={() => setShowAiModal(false)}
-                  className="hover:text-slate-700"
+                  className="hover:text-slate-900"
                 >
                   Close
                 </button>

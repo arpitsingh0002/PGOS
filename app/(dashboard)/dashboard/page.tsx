@@ -6,22 +6,19 @@ import { useRouter } from 'next/navigation';
 import {
   Building2,
   Users,
-  BedDouble,
-  TrendingUp,
-  ArrowUpRight,
-  ArrowDownRight,
   CreditCard,
   AlertCircle,
-  Plus,
-  FileSpreadsheet,
-  CheckCircle2,
+  TrendingUp,
+  ArrowUpRight,
   Clock,
   ExternalLink,
   ChevronRight,
-  ShieldAlert,
+  ShieldCheck,
+  Plus,
+  RefreshCw,
+  BedDouble,
+  DoorOpen,
   Calendar,
-  Filter,
-  BarChart2,
   Sparkles,
   Info,
   Maximize2,
@@ -40,6 +37,8 @@ export default function DashboardPage() {
   const router = useRouter();
   const {
     properties,
+    rooms,
+    beds,
     totalProperties,
     totalBuildings,
     totalRooms,
@@ -53,6 +52,8 @@ export default function DashboardPage() {
     pendingPayments,
     complaints,
     payments,
+    dataMode,
+    getPropertyOccupancyStats,
   } = usePGStore();
 
   const [timeframe, setTimeframe] = React.useState<'hourly' | 'daily' | 'monthly'>('daily');
@@ -61,11 +62,31 @@ export default function DashboardPage() {
   const recentPayments = payments.slice(0, 5);
   const activeComplaints = complaints.filter((c) => c.status !== 'resolved').slice(0, 5);
 
+  if (dataMode === 'loading') {
+    return (
+      <div className="space-y-8 animate-pulse p-4">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+          <div className="h-8 bg-slate-200 rounded-xl w-64" />
+          <div className="h-8 bg-slate-200 rounded-xl w-32" />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-32 bg-slate-200 rounded-2xl" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="h-72 bg-slate-200 rounded-2xl lg:col-span-2" />
+          <div className="h-72 bg-slate-200 rounded-2xl" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* ========================================================= */}
-      {/* 1. TOP METRIC STRIP (Directly Inspired by Fingerprint Screenshot) */}
-      {/* Status: Trailing | Plan: Pro Plus | Usage: 477 | Ends: Apr 20 | Health: No issues found */}
+      {/* 1. TOP METRIC STRIP */}
+      {/* Status: Trailing | Plan: Pro Plus | Usage: Beds | Ends: Nov 05 | Health */}
       {/* ========================================================= */}
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs flex flex-wrap items-center justify-between gap-4 text-xs">
         <div className="flex flex-wrap items-center gap-6 sm:gap-8">
@@ -106,24 +127,28 @@ export default function DashboardPage() {
             <div className="font-bold text-slate-900">Nov 05, 2026</div>
           </div>
 
-          {/* Health Pill (Screenshot "No issues found" Emerald Pill) */}
+          {/* Mode Pill */}
           <div className="space-y-0.5">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">System Health</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Database Mode</span>
             <div className="flex items-center gap-1.5">
-              <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
-                No issues found
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                dataMode === 'live'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : 'bg-blue-50 text-blue-700 border-blue-200'
+              }`}>
+                {dataMode === 'live' ? 'Supabase Live' : 'Demo Mode'}
               </span>
               <button
-                onClick={() => toast.success('All properties operating at 100% telemetry uptime.')}
+                onClick={() => toast.success(dataMode === 'live' ? 'Connected directly to Supabase cloud.' : 'Running with instant demo data store.')}
                 className="text-[10px] text-slate-400 hover:text-slate-700 hidden sm:inline"
               >
-                View health &gt;
+                View status &gt;
               </button>
             </div>
           </div>
         </div>
 
-        {/* Top Action Pills (Screenshot "Share feedback", "Ask AI", "Docs", "Support") */}
+        {/* Top Action Pills */}
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => toast.success('Feedback dialog opened')}
@@ -142,7 +167,6 @@ export default function DashboardPage() {
 
       {/* ========================================================= */}
       {/* 2. INSIGHTS HEADER WITH FILTERS & 3 STAT CARDS */}
-      {/* (Fingerprint "Insights" + Usage / Average RPS / Events per visitor) */}
       {/* ========================================================= */}
       <div className="space-y-4">
         {/* Insights Section Bar */}
@@ -174,7 +198,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* 3 Metric Cards (Usage / Average RPS / Events per visitor) */}
+        {/* 3 Metric Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Card 1: Occupancy Usage */}
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs hover:border-orange-500/30 transition-all">
@@ -204,7 +228,7 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          {/* Card 3: Events Per Tenant / Rent Turn */}
+          {/* Card 3: Revenue / Collections */}
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs hover:border-orange-500/30 transition-all">
             <div className="flex items-center justify-between text-slate-400 mb-1">
               <span className="text-xs font-semibold text-slate-500">Current Monthly Revenue</span>
@@ -221,8 +245,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ========================================================= */}
-      {/* 3. MAIN INTERACTIVE CHART CARD ("Events per visitor" Style) */}
-      {/* With Orange Wave Line Chart, Hourly/Daily/Monthly tabs, Tip alert */}
+      {/* 3. MAIN INTERACTIVE CHART CARD */}
       {/* ========================================================= */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
         {/* Chart Header */}
@@ -236,7 +259,7 @@ export default function DashboardPage() {
             </p>
             <div className="mt-2 flex items-baseline gap-2">
               <span className="text-2xl font-black text-slate-900 font-mono tracking-tight">
-                ₹1,85,250
+                {formatINR(currentMonthRevenue || 185250)}
               </span>
               <span className="text-xs font-bold text-emerald-600">
                 +100% compared to previous cycle
@@ -303,7 +326,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* SVG Wave Line Chart (Matching Screenshot's Coral/Orange Peaks) */}
+        {/* SVG Wave Line Chart */}
         <div className="relative h-56 w-full pt-2">
           <svg className="w-full h-full overflow-visible" viewBox="0 0 800 200" preserveAspectRatio="none">
             <defs>
@@ -360,13 +383,13 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Tip / Warning Banner (Matching screenshot bottom banner) */}
+        {/* Tip / Warning Banner */}
         <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2 text-xs text-slate-600">
           <Info className="h-4 w-4 text-slate-400 flex-shrink-0" />
           <span>
             Automated WhatsApp rent reminders sent on the 1st of every month reduce payment delays by 42%.{' '}
             <button
-              onClick={() => toast.info('WhatsApp reminder engine active across all 3 properties.')}
+              onClick={() => toast.info('WhatsApp reminder engine active across all properties.')}
               className="text-orange-600 hover:underline font-bold"
             >
               Learn more
@@ -376,8 +399,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ========================================================= */}
-      {/* 4. THREE BREAKDOWN TABLES (Matching Screenshot Bottom Row: */}
-      {/* Top Operating Systems, Top Browsers, Top URLs) */}
+      {/* 4. THREE BREAKDOWN TABLES */}
       {/* ========================================================= */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Table 1: Top Properties by Occupancy */}
@@ -388,22 +410,27 @@ export default function DashboardPage() {
           </div>
 
           <div className="space-y-2 text-xs">
-            {[
-              { name: 'Royal Palms Residency', beds: '12 / 12 (100%)', pct: 100 },
-              { name: 'Campus View Executive PG', beds: '8 / 9 (88.8%)', pct: 88 },
-              { name: 'Greenox Studio Suites', beds: '4 / 5 (80.0%)', pct: 80 },
-            ].map((item) => (
-              <div key={item.name} className="relative py-1">
-                <div
-                  className="absolute inset-y-0 left-0 bg-orange-50/70 rounded-lg pointer-events-none"
-                  style={{ width: `${item.pct}%` }}
-                />
-                <div className="relative flex items-center justify-between px-2">
-                  <span className="font-semibold text-slate-800">{item.name}</span>
-                  <span className="font-mono text-slate-600 font-bold">{item.beds}</span>
+            {properties.map((prop) => {
+              const stats = getPropertyOccupancyStats(prop.id, rooms, beds);
+              const totalBedsCount = stats.totalBeds;
+              const occupiedBedsCount = stats.occupiedBeds;
+              const occRate = stats.occupancyRate;
+
+              return (
+                <div key={prop.id} className="relative py-1">
+                  <div
+                    className="absolute inset-y-0 left-0 bg-orange-50/70 rounded-lg pointer-events-none"
+                    style={{ width: `${occRate}%` }}
+                  />
+                  <div className="relative flex items-center justify-between px-2">
+                    <span className="font-semibold text-slate-800">{prop.name}</span>
+                    <span className="font-mono text-slate-600 font-bold">
+                      {occupiedBedsCount} / {totalBedsCount} ({occRate}%)
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="pt-2 border-t border-slate-100 text-center">
@@ -496,29 +523,33 @@ export default function DashboardPage() {
           </div>
 
           <div className="mt-4 space-y-3">
-            {pendingPayments.map((p) => (
-              <div
-                key={p.id}
-                className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200"
-              >
-                <div>
-                  <p className="text-xs font-bold text-slate-900">{p.tenant_name}</p>
-                  <p className="text-[11px] text-slate-500">{p.room_number} &bull; For {p.for_month}</p>
-                </div>
+            {pendingPayments.length === 0 ? (
+              <p className="text-xs text-slate-400 py-4 text-center">No pending rent dues recorded.</p>
+            ) : (
+              pendingPayments.map((p) => (
+                <div
+                  key={p.id}
+                  className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200"
+                >
+                  <div>
+                    <p className="text-xs font-bold text-slate-900">{p.tenant_name}</p>
+                    <p className="text-[11px] text-slate-500">{p.room_number} &bull; For {p.for_month}</p>
+                  </div>
 
-                <div className="flex items-center gap-2.5">
-                  <span className="text-xs font-black text-slate-900">{formatINR(p.amount)}</span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => toast.success(`WhatsApp reminder sent to ${p.tenant_name}!`)}
-                    className="h-8 text-xs text-emerald-700 border-emerald-300 hover:bg-emerald-50 gap-1"
-                  >
-                    <Phone className="h-3 w-3" /> Remind
-                  </Button>
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xs font-black text-slate-900">{formatINR(p.amount)}</span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => toast.success(`WhatsApp reminder sent to ${p.tenant_name}!`)}
+                      className="h-8 text-xs text-emerald-700 border-emerald-300 hover:bg-emerald-50 gap-1"
+                    >
+                      <Phone className="h-3 w-3" /> Remind
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
@@ -538,30 +569,34 @@ export default function DashboardPage() {
           </div>
 
           <div className="mt-4 space-y-3">
-            {activeComplaints.slice(0, 3).map((c) => (
-              <div
-                key={c.id}
-                className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between"
-              >
-                <div>
-                  <span className="text-xs font-bold text-slate-900">{c.title}</span>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    Room {c.room_number} &bull; Priority: <span className="text-orange-600 font-bold uppercase">{c.priority}</span>
-                  </p>
-                </div>
-
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    toast.success(`Complaint marked resolved!`);
-                  }}
-                  className="h-8 text-xs border-slate-200 text-slate-700 hover:bg-slate-100"
+            {activeComplaints.length === 0 ? (
+              <p className="text-xs text-slate-400 py-4 text-center">No active maintenance issues reported.</p>
+            ) : (
+              activeComplaints.slice(0, 3).map((c) => (
+                <div
+                  key={c.id}
+                  className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between"
                 >
-                  Resolve &rarr;
-                </Button>
-              </div>
-            ))}
+                  <div>
+                    <span className="text-xs font-bold text-slate-900">{c.title}</span>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Room {c.room_number} &bull; Priority: <span className="text-orange-600 font-bold uppercase">{c.priority}</span>
+                    </p>
+                  </div>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      toast.success(`Complaint marked resolved!`);
+                    }}
+                    className="h-8 text-xs border-slate-200 text-slate-700 hover:bg-slate-100"
+                  >
+                    Resolve &rarr;
+                  </Button>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

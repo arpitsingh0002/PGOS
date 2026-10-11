@@ -309,14 +309,14 @@ export default function TenantProfilePage() {
                     <td className="p-3 text-white font-medium">₹0 Due</td>
                   </tr>
                   <tr>
-                    <td className="p-3">01 Mar 2025</td>
+                    <td className="p-3">{formatDate(new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())}</td>
                     <td className="p-3">Monthly Rent Invoice</td>
                     <td className="p-3 text-rose-400 font-semibold">Debit</td>
                     <td className="p-3 text-rose-400">-{formatINR(tenant.monthly_rent)}</td>
                     <td className="p-3 text-rose-400 font-medium">-{formatINR(tenant.monthly_rent)} Due</td>
                   </tr>
                   <tr>
-                    <td className="p-3">03 Mar 2025</td>
+                    <td className="p-3">{formatDate(new Date(new Date().getFullYear(), new Date().getMonth(), 3).toISOString())}</td>
                     <td className="p-3">Rent Payment Received (UPI)</td>
                     <td className="p-3 text-emerald-400 font-semibold">Credit</td>
                     <td className="p-3 text-emerald-400">+{formatINR(tenant.monthly_rent)}</td>

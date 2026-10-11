@@ -47,7 +47,7 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
 
         <Link
           href="/dashboard"
-          className="text-[11px] font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-lg border border-slate-200"
+          className="text-[11px] font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1 bg-slate-50 hover:bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200 transition-colors"
         >
           <ArrowLeft className="h-3 w-3 text-orange-600" /> Owner Portal
         </Link>
@@ -59,7 +59,7 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
       </main>
 
       {/* Mobile Bottom Navigation Bar (PWA Style) */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto h-16 border-t border-slate-200 bg-white/95 backdrop-blur-xl px-2 flex items-center justify-around z-30">
+      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto h-16 border-t border-slate-200 bg-white/95 backdrop-blur-xl px-2 flex items-center justify-around z-30 shadow-sm">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;

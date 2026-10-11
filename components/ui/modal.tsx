@@ -28,24 +28,24 @@ export function Modal({ isOpen, onClose, title, description, children, maxWidth 
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
       {/* Modal Dialog */}
       <div
         className={cn(
-          'relative w-full rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl transition-all duration-200 z-10 max-h-[90vh] overflow-y-auto',
+          'relative w-full rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl transition-all duration-200 z-10 max-h-[90vh] overflow-y-auto text-slate-900',
           maxWidths[maxWidth]
         )}
       >
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div>
-            <h2 className="text-lg font-semibold text-white">{title}</h2>
-            {description && <p className="text-xs text-slate-400 mt-0.5">{description}</p>}
+            <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
+            {description && <p className="text-xs text-slate-500 mt-0.5">{description}</p>}
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+            className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>

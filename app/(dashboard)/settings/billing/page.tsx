@@ -7,8 +7,13 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { formatDate } from '@/lib/utils/format';
 
 export default function BillingSettingsPage() {
+  const nextRenewalStr = React.useMemo(() => {
+    const d = new Date();
+    return formatDate(new Date(d.getFullYear(), d.getMonth() + 1, 1).toISOString());
+  }, []);
   return (
     <div className="max-w-3xl space-y-6 animate-in fade-in duration-300">
       <div className="pb-2 border-b border-slate-800">
@@ -60,7 +65,7 @@ export default function BillingSettingsPage() {
         </div>
 
         <div className="pt-6 mt-4 border-t border-slate-800 flex items-center justify-between">
-          <span className="text-xs text-slate-400">Next renewal date: April 1, 2025</span>
+          <span className="text-xs text-slate-400">Next renewal date: {nextRenewalStr}</span>
           <Button
             size="sm"
             onClick={() => toast.info('Payment Gateway is in Sandbox / Demo mode.')}

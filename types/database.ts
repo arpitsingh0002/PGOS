@@ -307,7 +307,7 @@ export interface VacancyLead {
   notes?: string;
 }
 
-export type TiffinStatus = 'requested' | 'prepared' | 'dispatched' | 'returned' | 'pending_return';
+export type TiffinStatus = 'requested' | 'prepared' | 'dispatched' | 'returned' | 'pending_return' | 'cancelled';
 
 export interface TiffinOrder {
   id: string;

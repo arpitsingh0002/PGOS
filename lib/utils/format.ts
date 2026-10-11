@@ -13,44 +13,45 @@ export function formatPhone(phone: string): string {
 export function getBedStatusBadge(status: string) {
   switch (status) {
     case 'available':
-      return { label: 'Available', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' };
+      return { label: 'Available', color: 'bg-emerald-100 text-emerald-900 border-emerald-300 font-bold' };
     case 'occupied':
-      return { label: 'Occupied', color: 'bg-rose-500/10 text-rose-400 border-rose-500/20' };
+      return { label: 'Occupied', color: 'bg-rose-100 text-rose-900 border-rose-300 font-bold' };
     case 'reserved':
-      return { label: 'Reserved', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' };
+      return { label: 'Reserved', color: 'bg-amber-100 text-amber-900 border-amber-300 font-bold' };
     case 'maintenance':
-      return { label: 'Maintenance', color: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20' };
+      return { label: 'Maintenance', color: 'bg-slate-100 text-slate-900 border-slate-300 font-bold' };
     default:
-      return { label: status, color: 'bg-slate-500/10 text-slate-400 border-slate-500/20' };
+      return { label: status, color: 'bg-slate-100 text-slate-900 border-slate-300 font-bold' };
   }
 }
 
 export function getPaymentStatusBadge(status: string) {
   switch (status) {
     case 'paid':
-      return { label: 'Paid', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' };
+      return { label: 'Paid', color: 'bg-emerald-100 text-emerald-900 border-emerald-300 font-bold' };
     case 'pending':
-      return { label: 'Pending', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' };
+      return { label: 'Pending', color: 'bg-amber-100 text-amber-900 border-amber-300 font-bold' };
     case 'overdue':
-      return { label: 'Overdue', color: 'bg-rose-500/10 text-rose-400 border-rose-500/20' };
+      return { label: 'Overdue', color: 'bg-rose-100 text-rose-900 border-rose-300 font-bold' };
     case 'partially_paid':
-      return { label: 'Partially Paid', color: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' };
+      return { label: 'Partially Paid', color: 'bg-cyan-100 text-cyan-900 border-cyan-300 font-bold' };
     default:
-      return { label: status, color: 'bg-slate-500/10 text-slate-400 border-slate-500/20' };
+      return { label: status, color: 'bg-slate-100 text-slate-900 border-slate-300 font-bold' };
   }
 }
 
 export function getComplaintStatusBadge(status: string) {
   switch (status) {
     case 'new':
-      return { label: 'New', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' };
+      return { label: 'New', color: 'bg-blue-100 text-blue-900 border-blue-300 font-bold' };
     case 'assigned':
-      return { label: 'Assigned', color: 'bg-purple-500/10 text-purple-400 border-purple-500/20' };
+      return { label: 'Assigned', color: 'bg-purple-100 text-purple-900 border-purple-300 font-bold' };
     case 'in_progress':
-      return { label: 'In Progress', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' };
+      return { label: 'In Progress', color: 'bg-amber-100 text-amber-900 border-amber-300 font-bold' };
     case 'resolved':
-      return { label: 'Resolved', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' };
+      return { label: 'Resolved', color: 'bg-emerald-100 text-emerald-900 border-emerald-300 font-bold' };
     default:
-      return { label: status, color: 'bg-slate-500/10 text-slate-400 border-slate-500/20' };
+      return { label: status, color: 'bg-slate-100 text-slate-900 border-slate-300 font-bold' };
   }
 }
+
